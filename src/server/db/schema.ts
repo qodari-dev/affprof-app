@@ -2,6 +2,7 @@
 // schema.ts — Table and enum definitions (Drizzle ORM)
 // ---------------------------------------------------------------------
 
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   pgEnum,
@@ -12,6 +13,7 @@ import {
   boolean,
   primaryKey,
   unique,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -57,6 +59,17 @@ export const weekdayEnum = pgEnum("weekday", [
   "friday",
   "saturday",
   "sunday",
+]);
+
+export const notificationDispatchTypeEnum = pgEnum("notification_dispatch_type", [
+  "broken_links",
+  "weekly_digest",
+]);
+
+export const notificationDispatchStatusEnum = pgEnum("notification_dispatch_status", [
+  "processing",
+  "sent",
+  "failed",
 ]);
 
 // ─── Users ───────────────────────────────────────────────────────────
@@ -186,6 +199,33 @@ export const userSettings = pgTable("user_settings", {
   ccEmail: text("cc_email"),
   ...timestamps,
 });
+
+// ─── Notification Dispatches ────────────────────────────────────────
+
+export const notificationDispatches = pgTable(
+  "notification_dispatches",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: notificationDispatchTypeEnum("type").notNull(),
+    dedupeKey: text("dedupe_key").notNull(),
+    toEmail: text("to_email").notNull(),
+    ccEmail: text("cc_email"),
+    subject: text("subject").notNull(),
+    status: notificationDispatchStatusEnum("status").notNull().default("processing"),
+    providerMessageId: text("provider_message_id"),
+    error: text("error"),
+    payload: jsonb("payload")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [unique().on(t.userId, t.type, t.dedupeKey)],
+);
 
 // ─── Tags ────────────────────────────────────────────────────────────
 

@@ -219,6 +219,11 @@ export const webhook = tsr.router(contract.webhook, {
           await handleSubscriptionDeleted(event.data.object as RawSubscription);
           break;
 
+        // TODO: Add `customer.subscription.created` if subscriptions can also be created
+        // outside Checkout, for example via Stripe Dashboard or future admin flows.
+        // TODO: Add `checkout.session.async_payment_failed` if you enable async payment methods.
+        // TODO: Add `invoice.finalized` or `invoice.marked_uncollectible` if you later need
+        // finance-grade invoice lifecycle tracking inside the app.
         default:
           break;
       }

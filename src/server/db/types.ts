@@ -10,6 +10,7 @@ import type {
   linkClicks,
   linkChecks,
   userSettings,
+  notificationDispatches,
   tags,
   linkTags,
 } from "./schema";
@@ -21,6 +22,7 @@ export type Users = typeof users.$inferSelect & {
   settings?: UserSettings | null;
   products?: Products[];
   links?: Links[];
+  notificationDispatches?: NotificationDispatches[];
   tags?: Tags[];
 };
 export type NewUsers = typeof users.$inferInsert;
@@ -71,6 +73,13 @@ export type UserSettings = typeof userSettings.$inferSelect & {
   user?: Users;
 };
 export type NewUserSettings = typeof userSettings.$inferInsert;
+
+// ─── Notification Dispatches ────────────────────────────────────────
+
+export type NotificationDispatches = typeof notificationDispatches.$inferSelect & {
+  user?: Users;
+};
+export type NewNotificationDispatches = typeof notificationDispatches.$inferInsert;
 
 // ─── Tags ────────────────────────────────────────────────────────────
 

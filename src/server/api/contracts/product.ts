@@ -2,6 +2,8 @@ import {
   CreateProductBodySchema,
   GetProductQuerySchema,
   ListProductsQuerySchema,
+  PresignProductImageUploadBodySchema,
+  PresignProductImageUploadResponseSchema,
   UpdateProductBodySchema,
 } from '@/schemas/product';
 import { UUIDParamSchema } from '@/schemas/shared';
@@ -11,7 +13,6 @@ import { Products } from '@/server/db';
 import { initContract } from '@ts-rest/core';
 
 const c = initContract();
-const resourceKey = 'products';
 
 export const product = c.router(
   {
@@ -73,6 +74,20 @@ export const product = c.router(
         400: TsRestErrorSchema,
         401: TsRestErrorSchema,
         404: TsRestErrorSchema,
+        500: TsRestErrorSchema,
+      },
+    },
+    presignImageUpload: {
+      method: 'POST',
+      path: '/images/presign',
+      body: PresignProductImageUploadBodySchema,
+      metadata: {
+        auth: 'required',
+      } satisfies TsRestMetaData,
+      responses: {
+        200: PresignProductImageUploadResponseSchema,
+        400: TsRestErrorSchema,
+        401: TsRestErrorSchema,
         500: TsRestErrorSchema,
       },
     },

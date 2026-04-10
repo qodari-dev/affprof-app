@@ -1,7 +1,9 @@
 import { contract } from '@/server/api/contracts';
 import { createNextHandler } from '@ts-rest/serverless/next';
+import { analytics } from './analytics';
 import { auth } from './auth';
 import { billing } from './billing';
+import { profileHandler } from './profile';
 import { product } from './product';
 import { link } from './link';
 import { tag } from './tag';
@@ -11,8 +13,10 @@ import { webhook } from './webhook';
 export const handler = createNextHandler(
   contract,
   {
+    analytics,
     auth,
     billing,
+    profile: profileHandler,
     product,
     link,
     tag,

@@ -9,7 +9,7 @@ export const env = createEnv({
     DATABASE_URL: z.url(),
 
     // IAM / OAuth
-    IAM_APP_SLUG: z.url(),
+    IAM_APP_SLUG: z.string().min(1),
     IAM_BASE_URL: z.url(),
     IAM_TOKEN_URL: z.url(),
     IAM_CLIENT_ID: z.string().min(1),
@@ -31,10 +31,33 @@ export const env = createEnv({
     STRIPE_WEBHOOK_SECRET: z.string().min(1),
     STRIPE_PRO_MONTHLY_PRICE_ID: z.string().min(1),
     STRIPE_PRO_ANNUAL_PRICE_ID: z.string().min(1),
+
+    // DigitalOcean Spaces
+    DO_SPACES_ENDPOINT: z.url().optional(),
+    DO_SPACES_REGION: z.string().min(1).optional(),
+    DO_SPACES_BUCKET: z.string().min(1).optional(),
+    DO_SPACES_KEY: z.string().min(1).optional(),
+    DO_SPACES_SECRET: z.string().min(1).optional(),
+    DO_SPACES_CDN_URL: z.url().optional(),
+
+    // Scheduler
+    PAUSE_SCHEDULER: z
+      .union([z.literal("true"), z.literal("false"), z.literal("1"), z.literal("0")])
+      .optional(),
+    LINK_CHECKER_CRON: z.string().optional().default("0 * * * *"),
+    LINK_CHECKER_BATCH_SIZE: z.coerce.number().int().positive().optional().default(25),
+    WEEKLY_DIGEST_CRON: z.string().optional().default("0 * * * *"),
+    WEEKLY_DIGEST_HOUR: z.coerce.number().int().min(0).max(23).optional().default(9),
+    SCHEDULER_TIMEZONE: z.string().optional().default("America/Bogota"),
+
+    // Email alerts
+    RESEND_API_KEY: z.string().min(1).optional(),
+    RESEND_FROM_EMAIL: z.string().min(1).optional(),
   },
   client: {
     NEXT_PUBLIC_API_URL: z.url(),
     NEXT_PUBLIC_APP_URL: z.url(),
+    NEXT_PUBLIC_SHORTLINK_BASE_URL: z.url().optional(),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
@@ -64,9 +87,30 @@ export const env = createEnv({
     STRIPE_PRO_MONTHLY_PRICE_ID: process.env.STRIPE_PRO_MONTHLY_PRICE_ID,
     STRIPE_PRO_ANNUAL_PRICE_ID: process.env.STRIPE_PRO_ANNUAL_PRICE_ID,
 
+    // DigitalOcean Spaces
+    DO_SPACES_ENDPOINT: process.env.DO_SPACES_ENDPOINT,
+    DO_SPACES_REGION: process.env.DO_SPACES_REGION,
+    DO_SPACES_BUCKET: process.env.DO_SPACES_BUCKET,
+    DO_SPACES_KEY: process.env.DO_SPACES_KEY,
+    DO_SPACES_SECRET: process.env.DO_SPACES_SECRET,
+    DO_SPACES_CDN_URL: process.env.DO_SPACES_CDN_URL,
+
+    // Scheduler
+    PAUSE_SCHEDULER: process.env.PAUSE_SCHEDULER,
+    LINK_CHECKER_CRON: process.env.LINK_CHECKER_CRON,
+    LINK_CHECKER_BATCH_SIZE: process.env.LINK_CHECKER_BATCH_SIZE,
+    WEEKLY_DIGEST_CRON: process.env.WEEKLY_DIGEST_CRON,
+    WEEKLY_DIGEST_HOUR: process.env.WEEKLY_DIGEST_HOUR,
+    SCHEDULER_TIMEZONE: process.env.SCHEDULER_TIMEZONE,
+
+    // Email alerts
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+
     // Client
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_SHORTLINK_BASE_URL: process.env.NEXT_PUBLIC_SHORTLINK_BASE_URL,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });

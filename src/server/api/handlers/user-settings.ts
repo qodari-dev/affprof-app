@@ -1,8 +1,8 @@
-import { db, userSettings } from '@/server/db';
+import { db, notificationDispatches, userSettings } from '@/server/db';
 import { genericTsRestErrorResponse } from '@/server/utils/generic-ts-rest-error';
 import { getAuthContext } from '@/server/utils/auth-context';
 import { tsr } from '@ts-rest/serverless/next';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { contract } from '../contracts';
 
 // ============================================
@@ -34,6 +34,27 @@ export const userSettingsHandler = tsr.router(contract.userSettings, {
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: 'Error fetching settings',
+      });
+    }
+  },
+
+  // ==========================================
+  // HISTORY - GET /settings/history
+  // ==========================================
+  history: async (_args, { request }) => {
+    try {
+      const auth = await getAuthContext(request);
+
+      const history = await db.query.notificationDispatches.findMany({
+        where: eq(notificationDispatches.userId, auth.userId),
+        orderBy: [desc(notificationDispatches.createdAt)],
+        limit: 50,
+      });
+
+      return { status: 200, body: history };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, {
+        genericMsg: 'Error fetching notification history',
       });
     }
   },

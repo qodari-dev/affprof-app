@@ -3,7 +3,13 @@ import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/gener
 import { getAuthContext } from '@/server/utils/auth-context';
 import { tsr } from '@ts-rest/serverless/next';
 import { and, eq, isNull, sql } from 'drizzle-orm';
+import { PRODUCT_IMAGE_ALLOWED_TYPES, PRODUCT_IMAGE_MAX_BYTES } from '@/schemas/product';
 import { contract } from '../contracts';
+import {
+  buildDatedFileKey,
+  createSpacesPresignedPutUrl,
+  createSpacesPublicUrl,
+} from '@/server/utils/storage/spaces-presign';
 
 import { buildTypedIncludes, createIncludeMap } from '@/server/utils/query/include-builder';
 import {
@@ -174,6 +180,49 @@ export const product = tsr.router(contract.product, {
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: `Error updating product ${id}`,
+      });
+    }
+  },
+
+  // ==========================================
+  // PRESIGN IMAGE UPLOAD - POST /products/images/presign
+  // ==========================================
+  presignImageUpload: async ({ body }, { request }) => {
+    try {
+      await getAuthContext(request);
+
+      if (!PRODUCT_IMAGE_ALLOWED_TYPES.includes(body.contentType)) {
+        throwHttpError({
+          status: 400,
+          message: 'Only JPG, PNG, and WEBP images are allowed',
+          code: 'BAD_REQUEST',
+        });
+      }
+
+      if (body.fileSize > PRODUCT_IMAGE_MAX_BYTES) {
+        throwHttpError({
+          status: 400,
+          message: 'Image is too large',
+          code: 'BAD_REQUEST',
+        });
+      }
+
+      const fileKey = buildDatedFileKey('products', body.fileName);
+      const uploadUrl = createSpacesPresignedPutUrl(fileKey, body.contentType);
+      const publicUrl = createSpacesPublicUrl(fileKey);
+
+      return {
+        status: 200 as const,
+        body: {
+          fileKey,
+          uploadUrl,
+          publicUrl,
+          method: 'PUT' as const,
+        },
+      };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, {
+        genericMsg: 'Error generating product image upload URL',
       });
     }
   },

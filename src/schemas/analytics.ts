@@ -1,0 +1,116 @@
+import { z } from 'zod';
+
+// ============================================
+// RANGE
+// ============================================
+
+export const DASHBOARD_RANGES = ['7d', '30d', '90d', '180d', '360d'] as const;
+export type DashboardRange = (typeof DASHBOARD_RANGES)[number];
+
+export const RANGE_DAYS: Record<DashboardRange, number> = {
+  '7d': 7,
+  '30d': 30,
+  '90d': 90,
+  '180d': 180,
+  '360d': 360,
+};
+
+// ============================================
+// QUERY
+// ============================================
+
+export const DashboardQuerySchema = z.object({
+  productId: z.string().uuid().optional(),
+  range: z.enum(DASHBOARD_RANGES).default('30d'),
+});
+
+export type DashboardQuery = z.infer<typeof DashboardQuerySchema>;
+
+// ============================================
+// RESPONSE TYPES
+// ============================================
+
+export type Trend = {
+  value: number;
+  previousValue: number;
+  diff: number; // absolute diff
+  diffPercent: number | null; // null when previous is 0
+};
+
+export type DashboardKpis = {
+  clicks: Trend;
+  links: {
+    total: number;
+    active: number;
+    broken: number;
+    unknown: number;
+  };
+  topCountry: { code: string; clicks: number; percentage: number } | null;
+  mobileShare: number; // percentage 0-100
+  qrShare: number; // percentage 0-100
+};
+
+export type TopProduct = {
+  id: string;
+  name: string;
+  clicks: number;
+  previousClicks: number;
+  diffPercent: number | null;
+};
+
+export type PeakDay = {
+  date: string; // ISO YYYY-MM-DD
+  clicks: number;
+};
+
+export type TimeseriesPoint = {
+  date: string; // ISO date YYYY-MM-DD
+  clicks: number;
+};
+
+export type TopLink = {
+  id: string;
+  slug: string;
+  platform: string;
+  productId: string;
+  productName: string;
+  clicks: number;
+  previousClicks: number;
+  diffPercent: number | null;
+};
+
+export type TrafficSource = {
+  source: string; // youtube | instagram | direct | other | ...
+  clicks: number;
+  percentage: number;
+};
+
+export type TopCountry = {
+  code: string;
+  clicks: number;
+  percentage: number;
+};
+
+export type BrokenLink = {
+  id: string;
+  slug: string;
+  productId: string;
+  productName: string;
+  lastCheckedAt: string | null;
+  consecutiveFailures: number;
+};
+
+export type DashboardAnalytics = {
+  range: DashboardRange;
+  productId: string | null;
+  periodStart: string;
+  periodEnd: string;
+  kpis: DashboardKpis;
+  timeseries: TimeseriesPoint[];
+  peakDay: PeakDay | null;
+  topLinks: TopLink[];
+  topProducts: TopProduct[];
+  trafficSources: TrafficSource[];
+  topCountries: TopCountry[];
+  brokenLinks: BrokenLink[];
+};

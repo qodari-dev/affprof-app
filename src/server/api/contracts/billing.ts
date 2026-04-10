@@ -1,4 +1,5 @@
-import { CreateCheckoutBodySchema } from '@/schemas/billing';
+import { Subscriptions } from '@/server/db';
+import { BillingHistoryResponseSchema, CreateCheckoutBodySchema } from '@/schemas/billing';
 import { TsRestErrorSchema, TsRestMetaData } from '@/schemas/ts-rest';
 import { initContract } from '@ts-rest/core';
 
@@ -6,6 +7,31 @@ const c = initContract();
 
 export const billing = c.router(
   {
+    get: {
+      method: 'GET',
+      path: '/',
+      metadata: {
+        auth: 'required',
+      } satisfies TsRestMetaData,
+      responses: {
+        200: c.type<Subscriptions>(),
+        401: TsRestErrorSchema,
+        404: TsRestErrorSchema,
+        500: TsRestErrorSchema,
+      },
+    },
+    history: {
+      method: 'GET',
+      path: '/history',
+      metadata: {
+        auth: 'required',
+      } satisfies TsRestMetaData,
+      responses: {
+        200: BillingHistoryResponseSchema,
+        401: TsRestErrorSchema,
+        500: TsRestErrorSchema,
+      },
+    },
     createCheckout: {
       method: 'POST',
       path: '/create-checkout',

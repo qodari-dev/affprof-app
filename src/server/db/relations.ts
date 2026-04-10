@@ -11,6 +11,7 @@ import {
   linkClicks,
   linkChecks,
   userSettings,
+  notificationDispatches,
   tags,
   linkTags,
 } from "./schema";
@@ -28,6 +29,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   }),
   products: many(products),
   links: many(links),
+  notificationDispatches: many(notificationDispatches),
   tags: many(tags),
 }));
 
@@ -89,6 +91,15 @@ export const linkChecksRelations = relations(linkChecks, ({ one }) => ({
 export const userSettingsRelations = relations(userSettings, ({ one }) => ({
   user: one(users, {
     fields: [userSettings.userId],
+    references: [users.id],
+  }),
+}));
+
+// ─── Notification Dispatches ────────────────────────────────────────
+
+export const notificationDispatchesRelations = relations(notificationDispatches, ({ one }) => ({
+  user: one(users, {
+    fields: [notificationDispatches.userId],
     references: [users.id],
   }),
 }));

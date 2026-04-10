@@ -17,6 +17,7 @@ const LinkWhereFieldsSchema = z
   .object({
     id: z.union([z.string().uuid(), UUIDOperatorsSchema]).optional(),
     productId: z.union([z.string().uuid(), UUIDOperatorsSchema]).optional(),
+    tagId: z.string().uuid().optional(),
     slug: z.union([z.string(), StringOperatorsSchema]).optional(),
     platform: z.union([z.string(), StringOperatorsSchema]).optional(),
     status: z.union([z.string(), StringOperatorsSchema]).optional(),
@@ -78,6 +79,11 @@ export const CreateLinkBodySchema = z.object({
   }),
   platform: z.string().min(1).max(50).default('other'),
   notes: z.string().max(500).optional(),
+  tagIds: z.array(z.string().uuid()).optional(),
+});
+
+export const CheckLinksBodySchema = z.object({
+  linkIds: z.array(z.string().uuid()).min(1).max(100),
 });
 
 export const UpdateLinkBodySchema = z.object({
@@ -88,6 +94,7 @@ export const UpdateLinkBodySchema = z.object({
   platform: z.string().min(1).max(50).optional(),
   isEnabled: z.boolean().optional(),
   notes: z.string().max(500).optional(),
+  tagIds: z.array(z.string().uuid()).optional(),
 });
 
 // ============================================

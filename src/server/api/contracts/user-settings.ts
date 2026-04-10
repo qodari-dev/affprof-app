@@ -1,6 +1,6 @@
 import { UpdateUserSettingsBodySchema } from '@/schemas/user-settings';
 import { TsRestErrorSchema, TsRestMetaData } from '@/schemas/ts-rest';
-import { UserSettings } from '@/server/db';
+import { UserSettings, NotificationDispatches } from '@/server/db';
 import { initContract } from '@ts-rest/core';
 
 const c = initContract();
@@ -17,6 +17,18 @@ export const userSettings = c.router(
         200: c.type<UserSettings>(),
         401: TsRestErrorSchema,
         404: TsRestErrorSchema,
+        500: TsRestErrorSchema,
+      },
+    },
+    history: {
+      method: 'GET',
+      path: '/history',
+      metadata: {
+        auth: 'required',
+      } satisfies TsRestMetaData,
+      responses: {
+        200: c.type<NotificationDispatches[]>(),
+        401: TsRestErrorSchema,
         500: TsRestErrorSchema,
       },
     },

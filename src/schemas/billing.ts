@@ -25,3 +25,26 @@ export const PortalResponseSchema = z.object({
 });
 
 export type PortalResponse = z.infer<typeof PortalResponseSchema>;
+
+// ============================================
+// BILLING HISTORY
+// ============================================
+
+export const BillingHistoryItemSchema = z.object({
+  id: z.string(),
+  invoiceNumber: z.string().nullable(),
+  status: z.string().nullable(),
+  currency: z.string(),
+  amountPaid: z.number(),
+  amountDue: z.number(),
+  createdAt: z.string(),
+  periodStart: z.string().nullable(),
+  periodEnd: z.string().nullable(),
+  hostedInvoiceUrl: z.string().url().nullable(),
+  invoicePdf: z.string().url().nullable(),
+});
+
+export const BillingHistoryResponseSchema = z.array(BillingHistoryItemSchema);
+
+export type BillingHistoryItem = z.infer<typeof BillingHistoryItemSchema>;
+export type BillingHistoryResponse = z.infer<typeof BillingHistoryResponseSchema>;

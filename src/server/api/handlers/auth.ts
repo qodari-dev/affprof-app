@@ -5,6 +5,7 @@ import { stripe } from '@/server/utils/stripe';
 import { env } from '@/env';
 import { tsr } from '@ts-rest/serverless/next';
 import { eq } from 'drizzle-orm';
+import { cookies } from 'next/headers';
 import { contract } from '../contracts';
 
 // ============================================
@@ -141,6 +142,47 @@ export const auth = tsr.router(contract.auth, {
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: 'Error creating account',
+      });
+    }
+  },
+
+  // ==========================================
+  // LOGOUT - POST /auth/logout
+  // ==========================================
+  logout: async () => {
+    try {
+      const secure = env.NODE_ENV === 'production';
+      const cookieStore = await cookies();
+
+      // Clear access token
+      cookieStore.set(env.ACCESS_TOKEN_NAME, '', {
+        httpOnly: true,
+        secure,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 0,
+      });
+
+      // Clear refresh token
+      cookieStore.set(env.REFRESH_TOKEN_NAME, '', {
+        httpOnly: true,
+        secure,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 0,
+      });
+
+      // Build IAM logout URL
+      const logoutUrl = new URL('/oauth/logout', env.IAM_BASE_URL);
+      logoutUrl.searchParams.set('client_id', env.IAM_CLIENT_ID);
+
+      return {
+        status: 200,
+        body: { logoutUrl: logoutUrl.toString() },
+      };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, {
+        genericMsg: 'Error during logout',
       });
     }
   },

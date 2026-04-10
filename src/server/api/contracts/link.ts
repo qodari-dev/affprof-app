@@ -3,12 +3,14 @@ import {
   GetLinkQuerySchema,
   ListLinksQuerySchema,
   UpdateLinkBodySchema,
+  CheckLinksBodySchema,
 } from '@/schemas/link';
 import { UUIDParamSchema } from '@/schemas/shared';
 import { TsRestErrorSchema, TsRestMetaData } from '@/schemas/ts-rest';
 import { Paginated } from '@/server/utils/query/schemas';
 import { Links } from '@/server/db';
 import { initContract } from '@ts-rest/core';
+import type { LinkCheckResult } from '@/server/services/link-checker';
 
 const c = initContract();
 
@@ -88,6 +90,36 @@ export const link = c.router(
         400: TsRestErrorSchema,
         401: TsRestErrorSchema,
         404: TsRestErrorSchema,
+        500: TsRestErrorSchema,
+      },
+    },
+    check: {
+      method: 'POST',
+      path: '/:id/check',
+      pathParams: UUIDParamSchema,
+      body: c.noBody(),
+      metadata: {
+        auth: 'required',
+      } satisfies TsRestMetaData,
+      responses: {
+        200: c.type<LinkCheckResult>(),
+        400: TsRestErrorSchema,
+        401: TsRestErrorSchema,
+        404: TsRestErrorSchema,
+        500: TsRestErrorSchema,
+      },
+    },
+    checkBulk: {
+      method: 'POST',
+      path: '/check-bulk',
+      body: CheckLinksBodySchema,
+      metadata: {
+        auth: 'required',
+      } satisfies TsRestMetaData,
+      responses: {
+        200: c.type<LinkCheckResult[]>(),
+        400: TsRestErrorSchema,
+        401: TsRestErrorSchema,
         500: TsRestErrorSchema,
       },
     },

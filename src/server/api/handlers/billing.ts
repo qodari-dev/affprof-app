@@ -21,6 +21,86 @@ function getPriceId(plan: 'pro' | 'pro_annual'): string {
 
 export const billing = tsr.router(contract.billing, {
   // ==========================================
+  // GET - GET /billing
+  // ==========================================
+  get: async (_args, { request }) => {
+    try {
+      const auth = await getAuthContext(request);
+
+      const subscription = await db.query.subscriptions.findFirst({
+        where: eq(subscriptions.userId, auth.userId),
+      });
+
+      if (!subscription) {
+        throwHttpError({
+          status: 404,
+          message: 'Subscription not found',
+          code: 'NOT_FOUND',
+        });
+      }
+
+      return {
+        status: 200,
+        body: subscription,
+      };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, {
+        genericMsg: 'Error fetching billing details',
+      });
+    }
+  },
+
+  // ==========================================
+  // HISTORY - GET /billing/history
+  // ==========================================
+  history: async (_args, { request }) => {
+    try {
+      const auth = await getAuthContext(request);
+
+      const subscription = await db.query.subscriptions.findFirst({
+        where: eq(subscriptions.userId, auth.userId),
+      });
+
+      if (!subscription?.stripeCustomerId) {
+        return {
+          status: 200,
+          body: [],
+        };
+      }
+
+      const invoices = await stripe.invoices.list({
+        customer: subscription.stripeCustomerId,
+        limit: 12,
+      });
+
+      return {
+        status: 200,
+        body: invoices.data.map((invoice) => ({
+          id: invoice.id,
+          invoiceNumber: invoice.number,
+          status: invoice.status ?? null,
+          currency: invoice.currency,
+          amountPaid: invoice.amount_paid,
+          amountDue: invoice.amount_due,
+          createdAt: new Date(invoice.created * 1000).toISOString(),
+          periodStart: invoice.period_start
+            ? new Date(invoice.period_start * 1000).toISOString()
+            : null,
+          periodEnd: invoice.period_end
+            ? new Date(invoice.period_end * 1000).toISOString()
+            : null,
+          hostedInvoiceUrl: invoice.hosted_invoice_url ?? null,
+          invoicePdf: invoice.invoice_pdf ?? null,
+        })),
+      };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, {
+        genericMsg: 'Error fetching billing history',
+      });
+    }
+  },
+
+  // ==========================================
   // CREATE CHECKOUT - POST /billing/create-checkout
   // For existing users upgrading from free to pro
   // ==========================================
@@ -115,7 +195,7 @@ export const billing = tsr.router(contract.billing, {
 
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: subscription.stripeCustomerId,
-        return_url: `${env.NEXT_PUBLIC_APP_URL}/settings`,
+        return_url: `${env.NEXT_PUBLIC_APP_URL}/billing`,
       });
 
       return {

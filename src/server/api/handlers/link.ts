@@ -1,9 +1,10 @@
-import { db, links } from '@/server/db';
+import { db, links, linkTags } from '@/server/db';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { getAuthContext } from '@/server/utils/auth-context';
 import { tsr } from '@ts-rest/serverless/next';
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { contract } from '../contracts';
+import { checkLink, checkLinks } from '@/server/services/link-checker';
 
 import { buildTypedIncludes, createIncludeMap } from '@/server/utils/query/include-builder';
 import {
@@ -62,6 +63,18 @@ const LINK_INCLUDES = createIncludeMap<typeof db.query.links>()({
   },
 });
 
+function extractTagIdFilter(where: { and?: Record<string, unknown>[]; or?: Record<string, unknown>[] } | undefined) {
+  const conditions = [...(where?.and ?? []), ...(where?.or ?? [])];
+
+  for (const condition of conditions) {
+    if (typeof condition.tagId === 'string') {
+      return condition.tagId;
+    }
+  }
+
+  return undefined;
+}
+
 // ============================================
 // HANDLER
 // ============================================
@@ -75,6 +88,7 @@ export const link = tsr.router(contract.link, {
       const auth = await getAuthContext(request);
 
       const { page, limit, search, where, sort, include } = query;
+      const tagId = extractTagIdFilter(where);
 
       const {
         whereClause,
@@ -83,11 +97,33 @@ export const link = tsr.router(contract.link, {
         offset,
       } = buildQuery({ page, limit, search, where, sort }, LINK_QUERY_CONFIG);
 
+      const taggedLinkIds = tagId
+        ? (
+            await db
+              .select({ linkId: linkTags.linkId })
+              .from(linkTags)
+              .where(eq(linkTags.tagId, tagId))
+          ).map((row) => row.linkId)
+        : undefined;
+
+      if (tagId && (!taggedLinkIds || taggedLinkIds.length === 0)) {
+        return {
+          status: 200 as const,
+          body: {
+            data: [],
+            meta: buildPaginationMeta(0, page, limit),
+          },
+        };
+      }
+
       const userFilter = eq(links.userId, auth.userId);
       const notDeleted = isNull(links.deletedAt);
+      const tagFilter = taggedLinkIds?.length
+        ? inArray(links.id, taggedLinkIds)
+        : undefined;
       const finalWhere = whereClause
-        ? and(userFilter, notDeleted, whereClause)
-        : and(userFilter, notDeleted);
+        ? and(userFilter, notDeleted, whereClause, tagFilter)
+        : and(userFilter, notDeleted, tagFilter);
 
       const [data, countResult] = await Promise.all([
         db.query.links.findMany({
@@ -154,12 +190,25 @@ export const link = tsr.router(contract.link, {
     try {
       const auth = await getAuthContext(request);
 
+      const { tagIds, ...linkData } = body;
+
       const [newLink] = await db
         .insert(links)
-        .values({ ...body, userId: auth.userId })
+        .values({ ...linkData, userId: auth.userId })
         .returning();
 
-      return { status: 201, body: newLink };
+      if (tagIds?.length) {
+        await db.insert(linkTags).values(
+          tagIds.map((tagId) => ({ linkId: newLink.id, tagId }))
+        );
+      }
+
+      const result = await db.query.links.findFirst({
+        where: eq(links.id, newLink.id),
+        with: { linkTags: { with: { tag: true } } },
+      });
+
+      return { status: 201, body: result! };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: 'Error creating link',
@@ -186,13 +235,29 @@ export const link = tsr.router(contract.link, {
         throwHttpError({ status: 404, message: 'Link not found', code: 'NOT_FOUND' });
       }
 
-      const [updated] = await db
-        .update(links)
-        .set(body)
-        .where(eq(links.id, id))
-        .returning();
+      const { tagIds, ...linkData } = body;
 
-      return { status: 200, body: updated };
+      await db
+        .update(links)
+        .set(linkData)
+        .where(eq(links.id, id));
+
+      if (tagIds !== undefined) {
+        await db.delete(linkTags).where(eq(linkTags.linkId, id));
+
+        if (tagIds.length) {
+          await db.insert(linkTags).values(
+            tagIds.map((tagId) => ({ linkId: id, tagId }))
+          );
+        }
+      }
+
+      const result = await db.query.links.findFirst({
+        where: eq(links.id, id),
+        with: { linkTags: { with: { tag: true } } },
+      });
+
+      return { status: 200, body: result! };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: `Error updating link ${id}`,
@@ -229,6 +294,65 @@ export const link = tsr.router(contract.link, {
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: `Error deleting link ${id}`,
+      });
+    }
+  },
+
+  // ==========================================
+  // CHECK - POST /links/:id/check
+  // ==========================================
+  check: async ({ params: { id } }, { request }) => {
+    try {
+      const auth = await getAuthContext(request);
+
+      const existing = await db.query.links.findFirst({
+        where: and(
+          eq(links.id, id),
+          eq(links.userId, auth.userId),
+          isNull(links.deletedAt)
+        ),
+      });
+
+      if (!existing) {
+        throwHttpError({ status: 404, message: 'Link not found', code: 'NOT_FOUND' });
+      }
+
+      const result = await checkLink(id);
+      return { status: 200, body: result };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, {
+        genericMsg: `Error checking link ${id}`,
+      });
+    }
+  },
+
+  // ==========================================
+  // CHECK BULK - POST /links/check-bulk
+  // ==========================================
+  checkBulk: async ({ body }, { request }) => {
+    try {
+      const auth = await getAuthContext(request);
+
+      // Verify all links belong to the user
+      const userLinks = await db.query.links.findMany({
+        where: and(
+          inArray(links.id, body.linkIds),
+          eq(links.userId, auth.userId),
+          isNull(links.deletedAt)
+        ),
+        columns: { id: true },
+      });
+
+      const validIds = userLinks.map((l) => l.id);
+      if (validIds.length === 0) {
+        throwHttpError({ status: 404, message: 'No valid links found', code: 'NOT_FOUND' });
+      }
+
+      const results = await checkLinks(validIds);
+      return { status: 200, body: results };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, {
+        genericMsg: 'Error checking links',
       });
     }
   },
