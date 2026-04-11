@@ -25,6 +25,7 @@ const LINK_FIELDS: FieldMap = {
   productId: links.productId,
   slug: links.slug,
   platform: links.platform,
+  fallbackUrl: links.fallbackUrl,
   status: links.status,
   isEnabled: links.isEnabled,
   totalClicks: links.totalClicks,

@@ -74,6 +74,7 @@ export const GetLinkQuerySchema = z.object({
 export const CreateLinkBodySchema = z.object({
   productId: z.string().uuid(),
   originalUrl: z.string().url().max(2048),
+  fallbackUrl: z.string().url().max(2048).optional(),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, {
     message: 'Slug must contain only lowercase letters, numbers, and hyphens',
   }),
@@ -88,6 +89,7 @@ export const CheckLinksBodySchema = z.object({
 
 export const UpdateLinkBodySchema = z.object({
   originalUrl: z.string().url().max(2048).optional(),
+  fallbackUrl: z.string().url().max(2048).optional().nullable(),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, {
     message: 'Slug must contain only lowercase letters, numbers, and hyphens',
   }).optional(),

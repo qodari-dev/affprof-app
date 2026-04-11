@@ -3,7 +3,7 @@ import { createHash } from 'crypto';
 import { after, type NextRequest } from 'next/server';
 import { and, eq, isNull, sql } from 'drizzle-orm';
 
-import { db, customDomains, linkClicks, links, users } from '@/server/db';
+import { db, customDomains, linkClicks, links, userSettings, users } from '@/server/db';
 
 function hashIp(ip: string): string {
   return createHash('sha256').update(ip).digest('hex').slice(0, 16);
@@ -111,22 +111,72 @@ function normalizeRequestHostname(request: NextRequest) {
   return host.trim().toLowerCase().replace(/:\d+$/, '');
 }
 
-async function findEnabledLink(userId: string, linkSlug: string) {
+async function findRedirectableLink(userId: string, linkSlug: string) {
   return db.query.links.findFirst({
     where: and(
       eq(links.userId, userId),
       eq(links.slug, linkSlug),
-      eq(links.isEnabled, true),
       isNull(links.deletedAt),
     ),
     columns: {
       id: true,
       originalUrl: true,
+      fallbackUrl: true,
+      status: true,
+      isEnabled: true,
     },
   });
 }
 
-async function redirectToLink(request: NextRequest, link: { id: string; originalUrl: string }) {
+async function getDefaultFallbackUrl(userId: string) {
+  const settings = await db.query.userSettings.findFirst({
+    where: eq(userSettings.userId, userId),
+    columns: {
+      defaultFallbackUrl: true,
+    },
+  });
+
+  return settings?.defaultFallbackUrl ?? null;
+}
+
+function resolveRedirectTarget(link: {
+  originalUrl: string;
+  fallbackUrl: string | null;
+  defaultFallbackUrl: string | null;
+  status: 'active' | 'broken' | 'unknown';
+  isEnabled: boolean;
+}) {
+  const shouldUseFallback = !link.isEnabled || link.status === 'broken';
+  const fallbackUrl = link.fallbackUrl ?? link.defaultFallbackUrl;
+
+  if (shouldUseFallback) {
+    return fallbackUrl
+      ? { destinationUrl: fallbackUrl, usedFallback: true }
+      : null;
+  }
+
+  return {
+    destinationUrl: link.originalUrl,
+    usedFallback: false,
+  };
+}
+
+async function redirectToLink(
+  request: NextRequest,
+  link: {
+    id: string;
+    originalUrl: string;
+    fallbackUrl: string | null;
+    defaultFallbackUrl: string | null;
+    status: 'active' | 'broken' | 'unknown';
+    isEnabled: boolean;
+  },
+) {
+  const target = resolveRedirectTarget(link);
+  if (!target) {
+    return new Response('Not found', { status: 404 });
+  }
+
   const ua = request.headers.get('user-agent') ?? '';
   const referrer = request.headers.get('referer') ?? null;
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
@@ -139,7 +189,7 @@ async function redirectToLink(request: NextRequest, link: { id: string; original
   const utmMedium = searchParams.get('utm_medium') ?? null;
   const utmCampaign = searchParams.get('utm_campaign') ?? null;
   const { country, city } = parseGeo(request.headers);
-  const redirectUrl = buildRedirectUrl(link.originalUrl, searchParams);
+  const redirectUrl = buildRedirectUrl(target.destinationUrl, searchParams);
 
   after(async () => {
     try {
@@ -155,6 +205,7 @@ async function redirectToLink(request: NextRequest, link: { id: string; original
           referrer: referrer?.slice(0, 2048) ?? null,
           referrerSource: parseReferrerSource(referrer),
           isQr,
+          usedFallback: target.usedFallback,
           ipHash: ip ? hashIp(ip) : null,
           utmSource,
           utmMedium,
@@ -187,12 +238,15 @@ export async function handleDefaultShortLinkRedirect(
     return new Response('Not found', { status: 404 });
   }
 
-  const link = await findEnabledLink(user.id, input.linkSlug);
+  const link = await findRedirectableLink(user.id, input.linkSlug);
   if (!link) {
     return new Response('Not found', { status: 404 });
   }
 
-  return redirectToLink(request, link);
+  return redirectToLink(request, {
+    ...link,
+    defaultFallbackUrl: await getDefaultFallbackUrl(user.id),
+  });
 }
 
 export async function handleCustomDomainRedirect(
@@ -212,10 +266,13 @@ export async function handleCustomDomainRedirect(
     return new Response('Not found', { status: 404 });
   }
 
-  const link = await findEnabledLink(domain.userId, input.linkSlug);
+  const link = await findRedirectableLink(domain.userId, input.linkSlug);
   if (!link) {
     return new Response('Not found', { status: 404 });
   }
 
-  return redirectToLink(request, link);
+  return redirectToLink(request, {
+    ...link,
+    defaultFallbackUrl: await getDefaultFallbackUrl(domain.userId),
+  });
 }

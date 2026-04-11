@@ -40,6 +40,7 @@ export function NotificationsCard() {
       weeklyDigest: true,
       digestDay: 'monday',
       ccEmail: null,
+      defaultFallbackUrl: null,
     },
   });
 
@@ -51,6 +52,7 @@ export function NotificationsCard() {
         weeklyDigest: s.weeklyDigest ?? true,
         digestDay: (s.digestDay as FormValues['digestDay']) ?? 'monday',
         ccEmail: s.ccEmail ?? null,
+        defaultFallbackUrl: s.defaultFallbackUrl ?? null,
       });
       setIsFormReady(true);
     }
@@ -186,6 +188,27 @@ export function NotificationsCard() {
                 />
                 <FieldDescription>
                   Optionally send a copy of all alert emails to this address.
+                </FieldDescription>
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+
+          {/* Default fallback URL */}
+          <Controller
+            name="defaultFallbackUrl"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid || undefined}>
+                <FieldLabel>Default fallback URL</FieldLabel>
+                <Input
+                  type="url"
+                  placeholder="https://yourbrand.com/backup-page"
+                  value={field.value ?? ''}
+                  onChange={(e) => field.onChange(e.target.value || null)}
+                />
+                <FieldDescription>
+                  Used when a short link is disabled or broken and that specific link does not have its own fallback URL.
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>

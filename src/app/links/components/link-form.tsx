@@ -49,6 +49,7 @@ import { buildShortLinkPattern } from '@/utils/short-link';
 const LinkFormSchema = z.object({
   productId: z.string().uuid({ message: 'Please select a product' }),
   originalUrl: z.string().url().max(2048),
+  fallbackUrl: z.union([z.literal(''), z.string().url().max(2048)]).optional(),
   platform: z.string().min(1, 'Platform is required').max(50),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, {
     message: 'Slug must contain only lowercase letters, numbers, and hyphens',
@@ -163,6 +164,7 @@ export function LinkForm({
     defaultValues: {
       productId: '',
       originalUrl: '',
+      fallbackUrl: '',
       platform: '',
       slug: '',
       isEnabled: true,
@@ -175,6 +177,7 @@ export function LinkForm({
       form.reset({
         productId: link?.productId ?? '',
         originalUrl: link?.originalUrl ?? '',
+        fallbackUrl: link?.fallbackUrl ?? '',
         platform: link?.platform ?? '',
         slug: link?.slug ?? '',
         isEnabled: link?.isEnabled ?? true,
@@ -222,6 +225,7 @@ export function LinkForm({
           params: { id: link.id },
           body: {
             originalUrl: values.originalUrl,
+            fallbackUrl: values.fallbackUrl || null,
             slug: values.slug,
             platform: values.platform,
             isEnabled: values.isEnabled,
@@ -234,6 +238,7 @@ export function LinkForm({
           body: {
             productId: values.productId,
             originalUrl: values.originalUrl,
+            fallbackUrl: values.fallbackUrl || undefined,
             slug: values.slug,
             platform: values.platform,
             notes: values.notes || undefined,
@@ -369,6 +374,26 @@ export function LinkForm({
                 />
                 <FieldDescription>
                   The original affiliate URL that users will be redirected to.
+                </FieldDescription>
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+
+          {/* Fallback URL */}
+          <Controller
+            name="fallbackUrl"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid || undefined}>
+                <FieldLabel>Fallback URL</FieldLabel>
+                <Input
+                  placeholder="https://yourbrand.com/backup-page"
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                />
+                <FieldDescription>
+                  If this link is disabled or currently marked broken, visitors will be redirected here instead.
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>

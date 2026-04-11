@@ -29,6 +29,20 @@
       "when": 1775892600000,
       "tag": "0003_lucky_hummingbird",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1775896200000,
+      "tag": "0004_swift_gorilla",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1775897400000,
+      "tag": "0005_calm_otter",
+      "breakpoints": true
     }
   ]
 }

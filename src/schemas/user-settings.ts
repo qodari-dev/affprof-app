@@ -11,4 +11,5 @@ export const UpdateUserSettingsBodySchema = z.object({
     .enum(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
     .optional(),
   ccEmail: z.string().email().nullable().optional(),
+  defaultFallbackUrl: z.string().url().max(2048).nullable().optional(),
 });

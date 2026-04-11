@@ -6,7 +6,7 @@ import { DataTableColumnHeader } from '@/components/data-table';
 import { LinkRowActions } from './link-row-actions';
 import { Badge } from '@/components/ui/badge';
 import { LinkStatusBadge } from './link-status-badge';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, CornerDownRight } from 'lucide-react';
 import { TagBadge } from '@/components/tag-badge';
 
 export const linkColumns: ColumnDef<Links>[] = [
@@ -20,6 +20,12 @@ export const linkColumns: ColumnDef<Links>[] = [
           <ExternalLink className="h-3 w-3 shrink-0" />
           {row.original.originalUrl}
         </span>
+        {row.original.fallbackUrl ? (
+          <span className="flex items-center gap-1 max-w-[250px] truncate text-xs text-amber-700 dark:text-amber-300">
+            <CornerDownRight className="h-3 w-3 shrink-0" />
+            {row.original.fallbackUrl}
+          </span>
+        ) : null}
       </div>
     ),
   },

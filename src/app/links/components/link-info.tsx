@@ -157,6 +157,19 @@ export function LinkInfo({
           value: link.product?.name ?? undefined,
         },
         {
+          label: 'Fallback URL',
+          value: link.fallbackUrl ? (
+            <a
+              href={link.fallbackUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="break-all text-sm text-primary underline underline-offset-2"
+            >
+              {link.fallbackUrl}
+            </a>
+          ) : 'Not configured',
+        },
+        {
           label: 'Platform',
           value: (
             <Badge variant="outline" className="capitalize">

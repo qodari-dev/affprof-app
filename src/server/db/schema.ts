@@ -156,6 +156,7 @@ export const links = pgTable(
     originalUrl: text("original_url").notNull(),
     slug: text("slug").notNull(),
     platform: text("platform").notNull().default("other"),
+    fallbackUrl: text("fallback_url"),
     status: linkStatusEnum("status").notNull().default("unknown"),
     isEnabled: boolean("is_enabled").notNull().default(true),
     notes: text("notes"),
@@ -189,6 +190,7 @@ export const linkClicks = pgTable("link_clicks", {
   referrer: text("referrer"),
   referrerSource: text("referrer_source"), // youtube | instagram | twitter | direct | other
   isQr: boolean("is_qr").notNull().default(false),
+  usedFallback: boolean("used_fallback").notNull().default(false),
   ipHash: text("ip_hash"),
   utmSource: text("utm_source"),
   utmMedium: text("utm_medium"),
@@ -222,6 +224,7 @@ export const userSettings = pgTable("user_settings", {
   weeklyDigest: boolean("weekly_digest").notNull().default(true),
   digestDay: weekdayEnum("digest_day").notNull().default("monday"),
   ccEmail: text("cc_email"),
+  defaultFallbackUrl: text("default_fallback_url"),
   ...timestamps,
 });
 
