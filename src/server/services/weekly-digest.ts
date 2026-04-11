@@ -22,6 +22,7 @@ type WeeklyDigestTarget = {
   timezone: string;
   ccEmail: string | null;
   digestDay: Weekday;
+  primaryCustomDomain: string | null;
 };
 
 type WeeklyTopLink = {
@@ -133,6 +134,15 @@ async function getWeeklyDigestTargets(now: Date) {
           slug: true,
           timezone: true,
         },
+        with: {
+          customDomains: {
+            columns: {
+              hostname: true,
+              isPrimary: true,
+              status: true,
+            },
+          },
+        },
       },
     },
   });
@@ -157,6 +167,10 @@ async function getWeeklyDigestTargets(now: Date) {
         timezone,
         ccEmail: setting.ccEmail,
         digestDay: setting.digestDay,
+        primaryCustomDomain:
+          setting.user.customDomains?.find(
+            (domain) => domain.status === 'verified' && domain.isPrimary,
+          )?.hostname ?? null,
       } satisfies WeeklyDigestTarget;
     })
     .filter((target): target is WeeklyDigestTarget => Boolean(target));
@@ -233,7 +247,7 @@ async function getWeeklyDigestData(target: WeeklyDigestTarget, now: Date): Promi
   const brokenLinks = brokenLinksRows.map((item) => ({
     slug: item.slug,
     productName: item.productName,
-    shortUrl: buildShortLinkUrl(target.slug, item.slug),
+    shortUrl: buildShortLinkUrl(target.slug, item.slug, target.primaryCustomDomain),
     statusCode: item.statusCode,
     lastCheckedAt: item.lastCheckedAt,
   }));
@@ -242,7 +256,7 @@ async function getWeeklyDigestData(target: WeeklyDigestTarget, now: Date): Promi
     .map((item) => ({
       slug: item.slug,
       productName: item.productName,
-      shortUrl: buildShortLinkUrl(target.slug, item.slug),
+      shortUrl: buildShortLinkUrl(target.slug, item.slug, target.primaryCustomDomain),
       clicks: item.clicks,
     }));
 

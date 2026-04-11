@@ -43,6 +43,11 @@ export const subscriptionStatusEnum = pgEnum("subscription_status", [
 
 export const planEnum = pgEnum("plan", ["free", "pro", "pro_annual"]);
 
+export const customDomainStatusEnum = pgEnum("custom_domain_status", [
+  "pending",
+  "verified",
+]);
+
 export const linkStatusEnum = pgEnum("link_status", [
   "active",
   "broken",
@@ -101,6 +106,24 @@ export const subscriptions = pgTable("subscriptions", {
   cancelAt: timestamp("cancel_at", { withTimezone: true }),
   trialEndsAt: timestamp("trial_ends_at", { withTimezone: true }),
   canceledAt: timestamp("canceled_at", { withTimezone: true }),
+  ...timestamps,
+});
+
+// ─── Custom Domains ──────────────────────────────────────────────────
+
+export const customDomains = pgTable("custom_domains", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  hostname: text("hostname").notNull().unique(),
+  status: customDomainStatusEnum("status").notNull().default("pending"),
+  isPrimary: boolean("is_primary").notNull().default(false),
+  verificationToken: text("verification_token").notNull(),
+  verificationHost: text("verification_host").notNull(),
+  verificationValue: text("verification_value").notNull(),
+  cnameTarget: text("cname_target").notNull(),
+  verifiedAt: timestamp("verified_at", { withTimezone: true }),
   ...timestamps,
 });
 

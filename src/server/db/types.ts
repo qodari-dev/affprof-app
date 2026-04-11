@@ -5,6 +5,7 @@
 import type {
   users,
   subscriptions,
+  customDomains,
   products,
   links,
   linkClicks,
@@ -19,6 +20,7 @@ import type {
 
 export type Users = typeof users.$inferSelect & {
   subscription?: Subscriptions | null;
+  customDomains?: CustomDomains[];
   settings?: UserSettings | null;
   products?: Products[];
   links?: Links[];
@@ -33,6 +35,13 @@ export type Subscriptions = typeof subscriptions.$inferSelect & {
   user?: Users;
 };
 export type NewSubscriptions = typeof subscriptions.$inferInsert;
+
+// ─── Custom Domains ──────────────────────────────────────────────────
+
+export type CustomDomains = typeof customDomains.$inferSelect & {
+  user?: Users;
+};
+export type NewCustomDomains = typeof customDomains.$inferInsert;
 
 // ─── Products ────────────────────────────────────────────────────────
 

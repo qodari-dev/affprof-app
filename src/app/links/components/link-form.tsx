@@ -33,6 +33,10 @@ import { useCreateLink, useUpdateLink } from '@/hooks/queries/use-link-queries';
 import { useProducts } from '@/hooks/queries/use-product-queries';
 import { useTags } from '@/hooks/queries/use-tag-queries';
 import { useProfile } from '@/hooks/queries/use-profile-queries';
+import {
+  getPrimaryVerifiedCustomDomainHostname,
+  useCustomDomains,
+} from '@/hooks/queries/use-custom-domain-queries';
 import { cn } from '@/lib/utils';
 import type { Links } from '@/server/db';
 import { TagBadge } from '@/components/tag-badge';
@@ -142,7 +146,11 @@ export function LinkForm({
   const allTags = React.useMemo(() => tagList ?? [], [tagList]);
 
   const { data: profileData } = useProfile();
+  const { data: customDomainsData } = useCustomDomains();
   const userSlug = profileData?.status === 200 ? profileData.body.slug : 'your-account';
+  const primaryCustomDomain = customDomainsData?.status === 200
+    ? getPrimaryVerifiedCustomDomainHostname(customDomainsData.body)
+    : null;
 
   // Selected tags (managed outside form since it's a separate API)
   const [selectedTagIds, setSelectedTagIds] = React.useState<string[]>([]);
@@ -419,7 +427,7 @@ export function LinkForm({
                   )}
                 </div>
                 <FieldDescription>
-                  Short link: <strong>{buildShortLinkPattern(userSlug, field.value || 'slug')}</strong>
+                  Short link: <strong>{buildShortLinkPattern(userSlug, field.value || 'slug', primaryCustomDomain)}</strong>
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>

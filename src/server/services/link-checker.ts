@@ -45,6 +45,11 @@ type LinkCheckCandidate = {
     email: string;
     name: string;
     slug: string;
+    customDomains?: Array<{
+      hostname: string;
+      isPrimary: boolean;
+      status: 'pending' | 'verified';
+    }>;
     settings: {
       emailOnBrokenLink: boolean;
       ccEmail: string | null;
@@ -56,6 +61,12 @@ type EvaluatedLinkCheck = {
   result: LinkCheckResult;
   brokenEmailItem?: BrokenLinkEmailItem;
 };
+
+function getPrimaryCustomDomainHostname(candidate: LinkCheckCandidate) {
+  return candidate.user.customDomains?.find(
+    (domain) => domain.status === 'verified' && domain.isPrimary,
+  )?.hostname;
+}
 
 // ============================================================================
 // Core check function — reusable for single link, bulk, and cron
@@ -197,7 +208,11 @@ function buildBrokenEmailItem(
     productName: candidate.product.name,
     linkSlug: candidate.slug,
     originalUrl: candidate.originalUrl,
-    shortUrl: buildShortLinkUrl(candidate.user.slug, candidate.slug),
+    shortUrl: buildShortLinkUrl(
+      candidate.user.slug,
+      candidate.slug,
+      getPrimaryCustomDomainHostname(candidate),
+    ),
     statusCode: result.statusCode,
     responseMs: result.responseMs,
     state: candidate.status === 'broken' ? 'still_broken' : 'newly_broken',
@@ -281,6 +296,13 @@ export async function checkLink(linkId: string): Promise<LinkCheckResult> {
           slug: true,
         },
         with: {
+          customDomains: {
+            columns: {
+              hostname: true,
+              isPrimary: true,
+              status: true,
+            },
+          },
           settings: {
             columns: {
               emailOnBrokenLink: true,
@@ -328,6 +350,13 @@ export async function checkLinks(linkIds: string[]): Promise<LinkCheckResult[]> 
           slug: true,
         },
         with: {
+          customDomains: {
+            columns: {
+              hostname: true,
+              isPrimary: true,
+              status: true,
+            },
+          },
           settings: {
             columns: {
               emailOnBrokenLink: true,
@@ -411,6 +440,13 @@ export async function runScheduledLinkChecks(
           slug: true,
         },
         with: {
+          customDomains: {
+            columns: {
+              hostname: true,
+              isPrimary: true,
+              status: true,
+            },
+          },
           settings: {
             columns: {
               emailOnBrokenLink: true,

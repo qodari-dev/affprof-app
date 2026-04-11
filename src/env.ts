@@ -31,6 +31,7 @@ export const env = createEnv({
     STRIPE_WEBHOOK_SECRET: z.string().min(1),
     STRIPE_PRO_MONTHLY_PRICE_ID: z.string().min(1),
     STRIPE_PRO_ANNUAL_PRICE_ID: z.string().min(1),
+    CUSTOM_DOMAIN_CNAME_TARGET: z.string().min(1).optional(),
 
     // DigitalOcean Spaces
     DO_SPACES_ENDPOINT: z.url().optional(),
@@ -86,6 +87,7 @@ export const env = createEnv({
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     STRIPE_PRO_MONTHLY_PRICE_ID: process.env.STRIPE_PRO_MONTHLY_PRICE_ID,
     STRIPE_PRO_ANNUAL_PRICE_ID: process.env.STRIPE_PRO_ANNUAL_PRICE_ID,
+    CUSTOM_DOMAIN_CNAME_TARGET: process.env.CUSTOM_DOMAIN_CNAME_TARGET,
 
     // DigitalOcean Spaces
     DO_SPACES_ENDPOINT: process.env.DO_SPACES_ENDPOINT,

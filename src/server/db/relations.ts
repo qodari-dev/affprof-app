@@ -6,6 +6,7 @@ import { relations } from "drizzle-orm";
 import {
   users,
   subscriptions,
+  customDomains,
   products,
   links,
   linkClicks,
@@ -23,6 +24,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     fields: [users.id],
     references: [subscriptions.userId],
   }),
+  customDomains: many(customDomains),
   settings: one(userSettings, {
     fields: [users.id],
     references: [userSettings.userId],
@@ -38,6 +40,15 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   user: one(users, {
     fields: [subscriptions.userId],
+    references: [users.id],
+  }),
+}));
+
+// ─── Custom Domains ──────────────────────────────────────────────────
+
+export const customDomainsRelations = relations(customDomains, ({ one }) => ({
+  user: one(users, {
+    fields: [customDomains.userId],
     references: [users.id],
   }),
 }));

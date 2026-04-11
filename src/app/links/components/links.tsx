@@ -20,6 +20,10 @@ import { useLinks, useDeleteLink } from '@/hooks/queries/use-link-queries';
 import { useProducts } from '@/hooks/queries/use-product-queries';
 import { useProfile } from '@/hooks/queries/use-profile-queries';
 import { useTags } from '@/hooks/queries/use-tag-queries';
+import {
+  getPrimaryVerifiedCustomDomainHostname,
+  useCustomDomains,
+} from '@/hooks/queries/use-custom-domain-queries';
 import type { Links as LinkType } from '@/server/db';
 import type { LinkSortField, LinkInclude } from '@/schemas/link';
 import { buildShortLinkUrl } from '@/utils/short-link';
@@ -35,7 +39,11 @@ export function Links() {
 
   // ---- Profile (for short URL) ----
   const { data: profileData } = useProfile();
+  const { data: customDomainsData } = useCustomDomains();
   const userSlug = profileData?.status === 200 ? profileData.body.slug : '';
+  const primaryCustomDomain = customDomainsData?.status === 200
+    ? getPrimaryVerifiedCustomDomainHostname(customDomainsData.body)
+    : null;
 
   // ---- Data table state ----
   const {
@@ -82,27 +90,27 @@ export function Links() {
   const handleCreate = React.useCallback(() => {
     setLink(undefined);
     setOpenedFormSheet(true);
-  }, []);
+  }, [setOpenedFormSheet]);
 
   const handleRowView = React.useCallback((row: LinkType) => {
     setLink(row);
     setOpenedInfoSheet(true);
-  }, []);
+  }, [setOpenedInfoSheet]);
 
   const handleRowEdit = React.useCallback((row: LinkType) => {
     setLink(row);
     setOpenedFormSheet(true);
-  }, []);
+  }, [setOpenedFormSheet]);
 
   const handleRowDelete = React.useCallback((row: LinkType) => {
     setLink(row);
     setOpenedDeleteDialog(true);
-  }, []);
+  }, [setOpenedDeleteDialog]);
 
   const handleRowQr = React.useCallback((row: LinkType) => {
     setLink(row);
     setOpenedQrDialog(true);
-  }, []);
+  }, [setOpenedQrDialog]);
 
   const handleDelete = React.useCallback(async () => {
     if (!link) return;
@@ -112,7 +120,7 @@ export function Links() {
     } catch {
       // Error handled by mutation onError
     }
-  }, [link, deleteLink]);
+  }, [deleteLink, link, setOpenedDeleteDialog]);
 
   const productFilter = typeof filters.productId === 'string' ? filters.productId : undefined;
   const tagFilter = typeof filters.tagId === 'string' ? filters.tagId : undefined;
@@ -169,7 +177,7 @@ export function Links() {
 
   // ---- Short URL builder ----
   const shortUrl = link && userSlug
-    ? buildShortLinkUrl(userSlug, link.slug)
+    ? buildShortLinkUrl(userSlug, link.slug, primaryCustomDomain)
     : '';
 
   // ---- Table meta ----

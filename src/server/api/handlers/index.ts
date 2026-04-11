@@ -3,6 +3,7 @@ import { createNextHandler } from '@ts-rest/serverless/next';
 import { analytics } from './analytics';
 import { auth } from './auth';
 import { billing } from './billing';
+import { customDomainHandler } from './custom-domain';
 import { profileHandler } from './profile';
 import { product } from './product';
 import { link } from './link';
@@ -15,6 +16,7 @@ export const handler = createNextHandler(
     analytics,
     auth,
     billing,
+    customDomain: customDomainHandler,
     profile: profileHandler,
     product,
     link,

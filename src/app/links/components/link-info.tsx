@@ -22,6 +22,10 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { useProfile } from '@/hooks/queries/use-profile-queries';
+import {
+  getPrimaryVerifiedCustomDomainHostname,
+  useCustomDomains,
+} from '@/hooks/queries/use-custom-domain-queries';
 import { useUpdateLink } from '@/hooks/queries/use-link-queries';
 import { buildShortLinkUrl } from '@/utils/short-link';
 
@@ -90,8 +94,12 @@ export function LinkInfo({
   onOpened: (opened: boolean) => void;
 }) {
   const { data: profileData } = useProfile();
+  const { data: customDomainsData } = useCustomDomains();
   const { mutateAsync: updateLink, isPending: isUpdating } = useUpdateLink();
   const userSlug = profileData?.status === 200 ? profileData.body.slug : '';
+  const primaryCustomDomain = customDomainsData?.status === 200
+    ? getPrimaryVerifiedCustomDomainHostname(customDomainsData.body)
+    : null;
   const [isEnabled, setIsEnabled] = React.useState(link?.isEnabled ?? true);
 
   React.useEffect(() => {
@@ -119,7 +127,7 @@ export function LinkInfo({
 
   const tags = link.linkTags?.map((lt) => lt.tag).filter(Boolean) ?? [];
   const shortUrl = userSlug
-    ? buildShortLinkUrl(userSlug, link.slug)
+    ? buildShortLinkUrl(userSlug, link.slug, primaryCustomDomain)
     : '';
 
   const sections: DescriptionSection[] = [

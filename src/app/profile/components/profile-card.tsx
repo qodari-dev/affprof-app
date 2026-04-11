@@ -13,6 +13,10 @@ import { Input } from '@/components/ui/input';
 import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UpdateProfileBodySchema } from '@/schemas/profile';
+import {
+  getPrimaryVerifiedCustomDomainHostname,
+  useCustomDomains,
+} from '@/hooks/queries/use-custom-domain-queries';
 import { useProfile, useUpdateProfile } from '@/hooks/queries/use-profile-queries';
 import { buildShortLinkPattern } from '@/utils/short-link';
 
@@ -42,8 +46,12 @@ const COMMON_TIMEZONES = [
 
 export function ProfileCard() {
   const { data: profileData, isLoading } = useProfile();
+  const { data: customDomainsData } = useCustomDomains();
   const { mutateAsync: updateProfile, isPending: isSaving } = useUpdateProfile();
   const [isFormReady, setIsFormReady] = React.useState(false);
+  const primaryCustomDomain = customDomainsData?.status === 200
+    ? getPrimaryVerifiedCustomDomainHostname(customDomainsData.body)
+    : null;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(UpdateProfileBodySchema),
@@ -139,7 +147,7 @@ export function ProfileCard() {
                   onChange={field.onChange}
                 />
                 <FieldDescription>
-                  Your short links will be: <strong>{buildShortLinkPattern(field.value || 'my-brand')}</strong>
+                  Your short links will be: <strong>{buildShortLinkPattern(field.value || 'my-brand', 'link-slug', primaryCustomDomain)}</strong>
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
