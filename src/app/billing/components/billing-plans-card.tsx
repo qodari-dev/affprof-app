@@ -1,10 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { Check, Loader2, Sparkles } from 'lucide-react';
+import { Check, ExternalLink, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useBilling, useCreateCheckout } from '@/hooks/queries/use-billing-queries';
+import { useBilling, useCreateCheckout, useCreatePortal } from '@/hooks/queries/use-billing-queries';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +14,7 @@ const PLANS = [
   {
     id: 'pro' as const,
     name: 'Pro monthly',
-    price: 'Monthly subscription',
+    price: '$12/month',
     description: 'Best if you want flexibility while validating your creator workflow.',
     highlight: false,
     features: [
@@ -26,7 +26,7 @@ const PLANS = [
   {
     id: 'pro_annual' as const,
     name: 'Pro annual',
-    price: 'Annual subscription',
+    price: '$120/year',
     description: 'Best if AffProf is already part of your operating stack.',
     highlight: true,
     features: [
@@ -40,8 +40,14 @@ const PLANS = [
 export function BillingPlansCard() {
   const { data } = useBilling();
   const { mutateAsync: createCheckout, isPending } = useCreateCheckout();
+  const { mutateAsync: createPortal, isPending: isOpeningPortal } = useCreatePortal();
 
   const subscription = data?.status === 200 ? data.body : null;
+  const hasActivePaidPlan =
+    subscription?.status === 'active' &&
+    subscription.plan !== 'free' &&
+    Boolean(subscription.stripeSubscriptionId);
+  const currentPlan = subscription?.plan ?? 'free';
 
   const handleCheckout = React.useCallback(
     async (plan: 'pro' | 'pro_annual') => {
@@ -59,18 +65,31 @@ export function BillingPlansCard() {
     [createCheckout],
   );
 
+  const handleOpenPortal = React.useCallback(async () => {
+    const result = await createPortal({});
+
+    if (result.status === 200) {
+      window.location.href = result.body.portalUrl;
+      return;
+    }
+
+    toast.error('Could not open Stripe portal');
+  }, [createPortal]);
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Upgrade plans</CardTitle>
+        <CardTitle>Plans</CardTitle>
         <CardDescription>
-          Keep pricing logic in Stripe and use webhooks to sync the final subscription state back into AffProf.
+          Choose monthly or annual billing. If you already have a paid plan, use billing to switch cadence or manage cancellation.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 lg:grid-cols-2">
         {PLANS.map((plan) => {
           const isCurrentPlan = subscription?.plan === plan.id;
-          const isFreeUser = subscription?.plan === 'free';
+          const canStartCheckout = currentPlan === 'free';
+          const shouldRouteToPortal = hasActivePaidPlan && !isCurrentPlan;
+          const isBusy = isPending || isOpeningPortal;
 
           return (
             <div
@@ -111,12 +130,28 @@ export function BillingPlansCard() {
                 type="button"
                 className="h-11 w-full rounded-lg"
                 variant={plan.highlight ? 'default' : 'outline'}
-                disabled={isPending || isCurrentPlan || !isFreeUser}
-                onClick={() => handleCheckout(plan.id)}
+                disabled={isBusy || isCurrentPlan}
+                onClick={() => {
+                  if (shouldRouteToPortal) {
+                    void handleOpenPortal();
+                    return;
+                  }
+
+                  void handleCheckout(plan.id);
+                }}
               >
-                {isPending ? <Loader2 className="animate-spin" /> : null}
-                {isCurrentPlan ? 'Current plan' : 'Start with Stripe Checkout'}
+                {isBusy ? <Loader2 className="animate-spin" /> : shouldRouteToPortal ? <ExternalLink /> : null}
+                {isCurrentPlan
+                  ? 'Current plan'
+                  : canStartCheckout
+                    ? 'Choose plan'
+                    : 'Switch in billing'}
               </Button>
+              {!isCurrentPlan && shouldRouteToPortal ? (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  You already have an active paid plan. Open billing to switch between monthly and annual or manage cancellation.
+                </p>
+              ) : null}
             </div>
           );
         })}

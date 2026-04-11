@@ -17,14 +17,16 @@ function formatPlan(plan: string) {
   return 'Free';
 }
 
-function formatStatus(status: string) {
+function formatStatus(plan: string, status: string) {
+  if (plan === 'free') return 'Free plan';
   if (status === 'past_due') return 'Past due';
   if (status === 'canceled') return 'Canceled';
   if (status === 'paused') return 'Paused';
   return 'Active';
 }
 
-function getStatusVariant(status: string): 'secondary' | 'outline' | 'destructive' {
+function getStatusVariant(plan: string, status: string): 'secondary' | 'outline' | 'destructive' {
+  if (plan === 'free') return 'outline';
   if (status === 'active') return 'secondary';
   if (status === 'past_due') return 'destructive';
   return 'outline';
@@ -51,7 +53,7 @@ export function BillingOverviewCard() {
       <Card>
         <CardHeader>
           <CardTitle>Subscription overview</CardTitle>
-          <CardDescription>Stripe is the billing source of truth for your SaaS account.</CardDescription>
+          <CardDescription>Your current plan, renewal timeline, and billing access.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
@@ -63,13 +65,30 @@ export function BillingOverviewCard() {
   }
 
   const hasPortalAccess = Boolean(subscription.stripeCustomerId);
+  const hasActivePaidPlan =
+    subscription.status === 'active' &&
+    subscription.plan !== 'free' &&
+    Boolean(subscription.stripeSubscriptionId);
+  const cancelAtDate = subscription.cancelAt ? new Date(subscription.cancelAt) : null;
+  const isScheduledToCancel =
+    subscription.status === 'active' &&
+    (Boolean(subscription.cancelAtPeriodEnd) || cancelAtDate !== null);
+  const periodLabel = isScheduledToCancel ? 'Ends' : 'Renews';
+  const periodDate = isScheduledToCancel ? cancelAtDate : subscription.currentPeriodEnd
+    ? new Date(subscription.currentPeriodEnd)
+    : null;
+  const periodValue = periodDate
+    ? format(periodDate, 'MMM d, yyyy')
+    : isScheduledToCancel
+      ? 'Cancellation pending'
+      : 'No renewal date';
 
   return (
-    <Card>
+      <Card>
       <CardHeader>
         <CardTitle>Subscription overview</CardTitle>
         <CardDescription>
-          Stripe handles checkout, recurring billing, customer portal, and webhook-driven subscription updates.
+          Review your current plan, renewal date, and billing access in one place.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
@@ -87,47 +106,54 @@ export function BillingOverviewCard() {
               <ShieldCheck className="size-4" />
               <span className="text-xs font-medium uppercase tracking-wide">Status</span>
             </div>
-            <Badge variant={getStatusVariant(subscription.status)}>{formatStatus(subscription.status)}</Badge>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={getStatusVariant(subscription.plan, subscription.status)}>
+                {formatStatus(subscription.plan, subscription.status)}
+              </Badge>
+              {isScheduledToCancel ? <Badge variant="outline">Scheduled to cancel</Badge> : null}
+            </div>
           </div>
 
           <div className="rounded-xl border bg-muted/20 p-4">
             <div className="mb-2 flex items-center gap-2 text-muted-foreground">
               <Webhook className="size-4" />
-              <span className="text-xs font-medium uppercase tracking-wide">Renews</span>
+              <span className="text-xs font-medium uppercase tracking-wide">{periodLabel}</span>
             </div>
-            <div className="text-sm font-medium">
-              {subscription.currentPeriodEnd
-                ? format(new Date(subscription.currentPeriodEnd), 'MMM d, yyyy')
-                : 'No renewal date'}
-            </div>
+            <div className="text-sm font-medium">{periodValue}</div>
           </div>
 
           <div className="rounded-xl border bg-muted/20 p-4">
             <div className="mb-2 flex items-center gap-2 text-muted-foreground">
               <ExternalLink className="size-4" />
-              <span className="text-xs font-medium uppercase tracking-wide">Portal</span>
+              <span className="text-xs font-medium uppercase tracking-wide">Billing account</span>
             </div>
-            <div className="text-sm font-medium">{hasPortalAccess ? 'Available' : 'Unlock after first checkout'}</div>
+            <div className="text-sm font-medium">
+              {hasPortalAccess ? 'Ready to manage' : 'Created after first payment'}
+            </div>
           </div>
         </div>
 
         <div className="rounded-xl border bg-card p-4">
           <div className="space-y-2">
-            <div className="text-sm font-medium">Recommended billing model</div>
+            <div className="text-sm font-medium">How billing works</div>
             <p className="text-sm text-muted-foreground">
-              For AffProf as a SaaS, Stripe is the right setup: Checkout for purchases, Customer Portal for self-service changes, and webhooks as the backend truth.
+              Manage your subscription directly from AffProf, with Stripe handling secure checkout and billing details behind the scenes.
             </p>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Checkout creates or upgrades paid subscriptions.</li>
-              <li>Customer Portal lets users update payment method, cancel, or switch plan.</li>
-              <li>Webhooks update local subscription state after Stripe confirms the event.</li>
+              <li>Start a monthly or annual plan when you&apos;re ready to upgrade.</li>
+              <li>Open billing to change payment method, switch cadence, or cancel later.</li>
+              <li>Invoices and receipts stay available here after each successful payment.</li>
             </ul>
           </div>
         </div>
       </CardContent>
       <CardFooter className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <p className="text-sm text-muted-foreground">
-          Your app should trust Stripe events, not only frontend redirects.
+          {isScheduledToCancel
+            ? `Your plan is still active and will end on ${periodValue}. You can reopen billing anytime before then to keep it active.`
+            : hasActivePaidPlan
+              ? 'Need to change billing cycle, update your card, or cancel later? Open billing.'
+              : 'You are currently on the free plan. Upgrade anytime when you need more capacity.'}
         </p>
         <Button
           type="button"
@@ -137,7 +163,7 @@ export function BillingOverviewCard() {
           onClick={handleOpenPortal}
         >
           {isOpeningPortal ? <Loader2 className="animate-spin" /> : <ExternalLink />}
-          Manage in Stripe
+          Open billing
         </Button>
       </CardFooter>
     </Card>

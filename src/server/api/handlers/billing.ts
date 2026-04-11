@@ -1,19 +1,16 @@
 import { db, subscriptions } from '@/server/db';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { getAuthContext } from '@/server/utils/auth-context';
-import { stripe } from '@/server/utils/stripe';
-import { env } from '@/env';
 import { tsr } from '@ts-rest/serverless/next';
 import { eq } from 'drizzle-orm';
+import {
+  createStripeBillingPortalSession,
+  createStripeCheckoutSession,
+  ensureStripeCustomer,
+  hasActivePaidSubscription,
+  listStripeBillingHistory,
+} from '@/server/services/stripe-billing';
 import { contract } from '../contracts';
-
-// ============================================
-// HELPERS
-// ============================================
-
-function getPriceId(plan: 'pro' | 'pro_annual'): string {
-  return plan === 'pro' ? env.STRIPE_PRO_MONTHLY_PRICE_ID : env.STRIPE_PRO_ANNUAL_PRICE_ID;
-}
 
 // ============================================
 // HANDLER
@@ -68,30 +65,9 @@ export const billing = tsr.router(contract.billing, {
         };
       }
 
-      const invoices = await stripe.invoices.list({
-        customer: subscription.stripeCustomerId,
-        limit: 12,
-      });
-
       return {
         status: 200,
-        body: invoices.data.map((invoice) => ({
-          id: invoice.id,
-          invoiceNumber: invoice.number,
-          status: invoice.status ?? null,
-          currency: invoice.currency,
-          amountPaid: invoice.amount_paid,
-          amountDue: invoice.amount_due,
-          createdAt: new Date(invoice.created * 1000).toISOString(),
-          periodStart: invoice.period_start
-            ? new Date(invoice.period_start * 1000).toISOString()
-            : null,
-          periodEnd: invoice.period_end
-            ? new Date(invoice.period_end * 1000).toISOString()
-            : null,
-          hostedInvoiceUrl: invoice.hosted_invoice_url ?? null,
-          invoicePdf: invoice.invoice_pdf ?? null,
-        })),
+        body: await listStripeBillingHistory(subscription.stripeCustomerId),
       };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
@@ -122,8 +98,7 @@ export const billing = tsr.router(contract.billing, {
         });
       }
 
-      // If already has active Stripe subscription, redirect to portal instead
-      if (subscription.stripeSubscriptionId && subscription.status === 'active' && subscription.plan !== 'free') {
+      if (hasActivePaidSubscription(subscription)) {
         throwHttpError({
           status: 400,
           message: 'You already have an active subscription. Use the customer portal to manage it.',
@@ -131,35 +106,16 @@ export const billing = tsr.router(contract.billing, {
         });
       }
 
-      // Create or reuse Stripe customer
-      let customerId = subscription.stripeCustomerId;
+      const customerId = await ensureStripeCustomer({
+        subscription,
+        userId: auth.userId,
+        email: auth.user?.email,
+      });
 
-      if (!customerId) {
-        const customer = await stripe.customers.create({
-          email: auth.user?.email,
-          metadata: { userId: auth.userId },
-        });
-        customerId = customer.id;
-
-        await db
-          .update(subscriptions)
-          .set({ stripeCustomerId: customerId })
-          .where(eq(subscriptions.userId, auth.userId));
-      }
-
-      // Create Checkout Session
-      const session = await stripe.checkout.sessions.create({
-        customer: customerId,
-        mode: 'subscription',
-        line_items: [
-          {
-            price: getPriceId(plan),
-            quantity: 1,
-          },
-        ],
-        metadata: { userId: auth.userId },
-        success_url: `${env.NEXT_PUBLIC_APP_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${env.NEXT_PUBLIC_APP_URL}/billing/canceled`,
+      const session = await createStripeCheckoutSession({
+        customerId,
+        userId: auth.userId,
+        plan,
       });
 
       return {
@@ -193,10 +149,7 @@ export const billing = tsr.router(contract.billing, {
         });
       }
 
-      const portalSession = await stripe.billingPortal.sessions.create({
-        customer: subscription.stripeCustomerId,
-        return_url: `${env.NEXT_PUBLIC_APP_URL}/billing`,
-      });
+      const portalSession = await createStripeBillingPortalSession(subscription.stripeCustomerId);
 
       return {
         status: 200,

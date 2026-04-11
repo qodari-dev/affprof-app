@@ -7,7 +7,6 @@ import { product } from './product';
 import { link } from './link';
 import { tag } from './tag';
 import { userSettings } from './user-settings';
-import { webhook } from './webhook';
 
 const c = initContract();
 
@@ -21,7 +20,6 @@ export const contract = c.router(
     link,
     tag,
     userSettings,
-    webhook,
   },
   {
     pathPrefix: '/api/v1',

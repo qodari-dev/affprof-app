@@ -39,7 +39,7 @@ export function BillingHistoryCard() {
       <CardHeader>
         <CardTitle>Billing history</CardTitle>
         <CardDescription>
-          Recent Stripe invoices for this customer. Use this area to review charges, payment status, and downloadable invoice files.
+          Past invoices and receipts for your AffProf subscription.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -57,7 +57,7 @@ export function BillingHistoryCard() {
               </EmptyMedia>
               <EmptyTitle>No billing history yet</EmptyTitle>
               <EmptyDescription>
-                Once Stripe starts creating invoices for this customer, they will appear here.
+                Paid invoices and downloadable receipts will appear here after your first successful charge.
               </EmptyDescription>
             </EmptyHeader>
           </Empty>

@@ -8,7 +8,6 @@ import { product } from './product';
 import { link } from './link';
 import { tag } from './tag';
 import { userSettingsHandler } from './user-settings';
-import { webhook } from './webhook';
 
 export const handler = createNextHandler(
   contract,
@@ -21,7 +20,6 @@ export const handler = createNextHandler(
     link,
     tag,
     userSettings: userSettingsHandler,
-    webhook,
   },
   {
     handlerType: 'app-router',
