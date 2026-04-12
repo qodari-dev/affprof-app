@@ -1,10 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import QRCode from 'qrcode';
-import { Copy, Download } from 'lucide-react';
+import { Copy, Download, Palette } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { BrandLogo } from '@/components/brand-logo';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -14,6 +14,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
+import { useBrands, getDefaultBrandId } from '@/hooks/queries/use-brand-queries';
+import { renderBrandedQrToCanvas } from '@/utils/branded-qr';
 
 interface LinkQrDialogProps {
   shortUrl: string;
@@ -25,6 +28,23 @@ interface LinkQrDialogProps {
 export function LinkQrDialog({ shortUrl, slug, opened, onOpened }: LinkQrDialogProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const qrUrl = shortUrl ? `${shortUrl}?qr=1` : '';
+  const { data: brandsData } = useBrands({ enabled: opened });
+  const brands = React.useMemo(
+    () => (brandsData?.status === 200 ? brandsData.body : []),
+    [brandsData],
+  );
+  const [selectedBrandId, setSelectedBrandId] = React.useState<string>('standard');
+  const selectedBrand = React.useMemo(
+    () => brands.find((brand) => brand.id === selectedBrandId) ?? null,
+    [brands, selectedBrandId],
+  );
+
+  React.useEffect(() => {
+    if (!opened) return;
+
+    const defaultBrandId = getDefaultBrandId(brands);
+    setSelectedBrandId(defaultBrandId ?? 'standard');
+  }, [brands, opened]);
 
   const renderQrCode = React.useCallback(async (canvas: HTMLCanvasElement) => {
     if (!qrUrl) {
@@ -34,16 +54,18 @@ export function LinkQrDialog({ shortUrl, slug, opened, onOpened }: LinkQrDialogP
     }
 
     try {
-      await QRCode.toCanvas(canvas, qrUrl, {
-        width: 280,
+      await renderBrandedQrToCanvas(canvas, {
+        qrUrl,
+        size: 280,
         margin: 2,
-        color: { dark: '#000000', light: '#ffffff' },
-        errorCorrectionLevel: 'M',
+        foreground: selectedBrand?.qrForeground ?? '#111111',
+        background: selectedBrand?.qrBackground ?? '#FFFFFF',
+        logoUrl: selectedBrand?.logoUrl,
       });
     } catch {
       toast.error('Could not generate QR code');
     }
-  }, [qrUrl]);
+  }, [qrUrl, selectedBrand]);
 
   const handleCanvasRef = React.useCallback((node: HTMLCanvasElement | null) => {
     canvasRef.current = node;
@@ -71,20 +93,31 @@ export function LinkQrDialog({ shortUrl, slug, opened, onOpened }: LinkQrDialogP
       return;
     }
 
-    // Re-render at higher resolution for download
     const downloadCanvas = document.createElement('canvas');
-    QRCode.toCanvas(downloadCanvas, qrUrl, {
-      width: 1024,
+
+    void renderBrandedQrToCanvas(downloadCanvas, {
+      qrUrl,
+      size: 1024,
       margin: 3,
-      color: { dark: '#000000', light: '#ffffff' },
-      errorCorrectionLevel: 'M',
-    }, () => {
-      const link = document.createElement('a');
-      link.download = `qr-${slug}.png`;
-      link.href = downloadCanvas.toDataURL('image/png');
-      link.click();
-    });
-  }, [qrUrl, slug]);
+      foreground: selectedBrand?.qrForeground ?? '#111111',
+      background: selectedBrand?.qrBackground ?? '#FFFFFF',
+      logoUrl: selectedBrand?.logoUrl,
+    })
+      .then(() => {
+        const link = document.createElement('a');
+        const fileSuffix = selectedBrand ? `${slug}-${selectedBrand.name}` : slug;
+        link.download = `qr-${fileSuffix.toLowerCase().replace(/[^a-z0-9-]+/g, '-')}.png`;
+        link.href = downloadCanvas.toDataURL('image/png');
+        link.click();
+      })
+      .catch(() => {
+        toast.error('Could not download QR code');
+      });
+  }, [
+    qrUrl,
+    selectedBrand,
+    slug,
+  ]);
 
   const handleCopyUrl = React.useCallback(() => {
     if (!shortUrl) {
@@ -98,7 +131,7 @@ export function LinkQrDialog({ shortUrl, slug, opened, onOpened }: LinkQrDialogP
 
   return (
     <Dialog open={opened} onOpenChange={onOpened}>
-      <DialogContent className="overflow-hidden sm:max-w-sm">
+      <DialogContent className="overflow-hidden sm:max-w-md">
         <DialogHeader>
           <DialogTitle>QR Code</DialogTitle>
           <DialogDescription>
@@ -106,24 +139,71 @@ export function LinkQrDialog({ shortUrl, slug, opened, onOpened }: LinkQrDialogP
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex w-full justify-center rounded-lg border bg-white p-3">
-            {qrUrl ? (
-              <canvas ref={handleCanvasRef} className="block h-auto max-w-full" />
-            ) : (
-              <div className="flex h-[280px] w-[280px] items-center justify-center text-center text-sm text-muted-foreground">
-                Loading short URL...
+        <div className="space-y-4">
+          <Field>
+            <FieldLabel>Brand</FieldLabel>
+            <select
+              className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+              value={selectedBrandId}
+              onChange={(event) => setSelectedBrandId(event.target.value)}
+            >
+              <option value="standard">Standard AffProf QR</option>
+              {brands.map((brand) => (
+                <option key={brand.id} value={brand.id}>
+                  {brand.name}
+                  {brand.isDefault ? ' (Default)' : ''}
+                </option>
+              ))}
+            </select>
+            <FieldDescription>
+              Choose a saved brand to apply its logo and QR colors to this download.
+            </FieldDescription>
+          </Field>
+
+          {selectedBrand ? (
+            <div className="flex items-center gap-3 rounded-xl border bg-muted/20 p-3">
+              <BrandLogo name={selectedBrand.name} logoUrl={selectedBrand.logoUrl} className="size-12 rounded-xl" />
+              <div className="min-w-0 flex-1">
+                <div className="font-medium">{selectedBrand.name}</div>
+                <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Palette className="size-3.5" />
+                  <div
+                    className="size-4 rounded-full border"
+                    style={{ backgroundColor: selectedBrand.qrForeground }}
+                    aria-hidden="true"
+                  />
+                  <div
+                    className="size-4 rounded-full border"
+                    style={{ backgroundColor: selectedBrand.qrBackground }}
+                    aria-hidden="true"
+                  />
+                  <span className="truncate">
+                    {selectedBrand.qrForeground} / {selectedBrand.qrBackground}
+                  </span>
+                </div>
               </div>
-            )}
+            </div>
+          ) : null}
+
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex w-full justify-center rounded-lg border bg-white p-3">
+              {qrUrl ? (
+                <canvas ref={handleCanvasRef} className="block h-auto max-w-full" />
+              ) : (
+                <div className="flex h-[280px] w-[280px] items-center justify-center text-center text-sm text-muted-foreground">
+                  Loading short URL...
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={handleCopyUrl}
+              className="flex w-full max-w-full items-center justify-center gap-1.5 break-all px-2 text-center text-xs text-muted-foreground transition-colors whitespace-normal hover:text-foreground"
+            >
+              <Copy className="h-3 w-3" />
+              {shortUrl}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleCopyUrl}
-            className="flex w-full max-w-full items-center justify-center gap-1.5 break-all px-2 text-center text-xs text-muted-foreground transition-colors whitespace-normal hover:text-foreground"
-          >
-            <Copy className="h-3 w-3" />
-            {shortUrl}
-          </button>
         </div>
 
         <DialogFooter>

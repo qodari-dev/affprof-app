@@ -50,6 +50,13 @@
       "when": 1775900400000,
       "tag": "0006_plain_swallow",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775904000000,
+      "tag": "0007_modern_mockingbird",
+      "breakpoints": true
     }
   ]
 }

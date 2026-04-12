@@ -127,6 +127,21 @@ export const customDomains = pgTable("custom_domains", {
   ...timestamps,
 });
 
+// ─── Brands ──────────────────────────────────────────────────────────
+
+export const brands = pgTable("brands", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  logoUrl: text("logo_url"),
+  qrForeground: text("qr_foreground").notNull().default("#111111"),
+  qrBackground: text("qr_background").notNull().default("#FFFFFF"),
+  isDefault: boolean("is_default").notNull().default(false),
+  ...timestamps,
+});
+
 // ─── Products ────────────────────────────────────────────────────────
 
 export const products = pgTable("products", {

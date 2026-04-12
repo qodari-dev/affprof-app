@@ -7,6 +7,7 @@ import {
   users,
   subscriptions,
   customDomains,
+  brands,
   products,
   links,
   linkClicks,
@@ -25,6 +26,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     references: [subscriptions.userId],
   }),
   customDomains: many(customDomains),
+  brands: many(brands),
   settings: one(userSettings, {
     fields: [users.id],
     references: [userSettings.userId],
@@ -49,6 +51,15 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
 export const customDomainsRelations = relations(customDomains, ({ one }) => ({
   user: one(users, {
     fields: [customDomains.userId],
+    references: [users.id],
+  }),
+}));
+
+// ─── Brands ──────────────────────────────────────────────────────────
+
+export const brandsRelations = relations(brands, ({ one }) => ({
+  user: one(users, {
+    fields: [brands.userId],
     references: [users.id],
   }),
 }));
