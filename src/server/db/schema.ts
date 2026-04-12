@@ -153,7 +153,13 @@ export const links = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    baseUrl: text("base_url").notNull(),
     originalUrl: text("original_url").notNull(),
+    utmSource: text("utm_source"),
+    utmMedium: text("utm_medium"),
+    utmCampaign: text("utm_campaign"),
+    utmContent: text("utm_content"),
+    utmTerm: text("utm_term"),
     slug: text("slug").notNull(),
     platform: text("platform").notNull().default("other"),
     fallbackUrl: text("fallback_url"),

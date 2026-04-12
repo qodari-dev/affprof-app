@@ -73,8 +73,13 @@ export const GetLinkQuerySchema = z.object({
 
 export const CreateLinkBodySchema = z.object({
   productId: z.string().uuid(),
-  originalUrl: z.string().url().max(2048),
+  baseUrl: z.string().url().max(2048),
   fallbackUrl: z.string().url().max(2048).optional(),
+  utmSource: z.string().max(255).optional(),
+  utmMedium: z.string().max(255).optional(),
+  utmCampaign: z.string().max(255).optional(),
+  utmContent: z.string().max(255).optional(),
+  utmTerm: z.string().max(255).optional(),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, {
     message: 'Slug must contain only lowercase letters, numbers, and hyphens',
   }),
@@ -88,8 +93,13 @@ export const CheckLinksBodySchema = z.object({
 });
 
 export const UpdateLinkBodySchema = z.object({
-  originalUrl: z.string().url().max(2048).optional(),
+  baseUrl: z.string().url().max(2048).optional(),
   fallbackUrl: z.string().url().max(2048).optional().nullable(),
+  utmSource: z.string().max(255).optional().nullable(),
+  utmMedium: z.string().max(255).optional().nullable(),
+  utmCampaign: z.string().max(255).optional().nullable(),
+  utmContent: z.string().max(255).optional().nullable(),
+  utmTerm: z.string().max(255).optional().nullable(),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, {
     message: 'Slug must contain only lowercase letters, numbers, and hyphens',
   }).optional(),

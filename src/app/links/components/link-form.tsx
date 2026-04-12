@@ -41,6 +41,10 @@ import { cn } from '@/lib/utils';
 import type { Links } from '@/server/db';
 import { TagBadge } from '@/components/tag-badge';
 import { buildShortLinkPattern } from '@/utils/short-link';
+import {
+  buildTrackedDestinationUrl,
+  parseTrackedDestinationUrl,
+} from '@/utils/tracked-destination-url';
 
 // ============================================================================
 // Types
@@ -48,8 +52,13 @@ import { buildShortLinkPattern } from '@/utils/short-link';
 
 const LinkFormSchema = z.object({
   productId: z.string().uuid({ message: 'Please select a product' }),
-  originalUrl: z.string().url().max(2048),
+  baseUrl: z.string().url().max(2048),
   fallbackUrl: z.union([z.literal(''), z.string().url().max(2048)]).optional(),
+  utmSource: z.union([z.literal(''), z.string().max(255)]).optional(),
+  utmMedium: z.union([z.literal(''), z.string().max(255)]).optional(),
+  utmCampaign: z.union([z.literal(''), z.string().max(255)]).optional(),
+  utmContent: z.union([z.literal(''), z.string().max(255)]).optional(),
+  utmTerm: z.union([z.literal(''), z.string().max(255)]).optional(),
   platform: z.string().min(1, 'Platform is required').max(50),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, {
     message: 'Slug must contain only lowercase letters, numbers, and hyphens',
@@ -163,8 +172,13 @@ export function LinkForm({
     resolver: zodResolver(LinkFormSchema),
     defaultValues: {
       productId: '',
-      originalUrl: '',
+      baseUrl: '',
       fallbackUrl: '',
+      utmSource: '',
+      utmMedium: '',
+      utmCampaign: '',
+      utmContent: '',
+      utmTerm: '',
       platform: '',
       slug: '',
       isEnabled: true,
@@ -174,10 +188,19 @@ export function LinkForm({
 
   React.useEffect(() => {
     if (opened) {
+      const parsedDestination = link
+        ? parseTrackedDestinationUrl(link.baseUrl || link.originalUrl)
+        : null;
+
       form.reset({
         productId: link?.productId ?? '',
-        originalUrl: link?.originalUrl ?? '',
+        baseUrl: parsedDestination?.baseUrl ?? '',
         fallbackUrl: link?.fallbackUrl ?? '',
+        utmSource: link?.utmSource ?? parsedDestination?.utmSource ?? '',
+        utmMedium: link?.utmMedium ?? parsedDestination?.utmMedium ?? '',
+        utmCampaign: link?.utmCampaign ?? parsedDestination?.utmCampaign ?? '',
+        utmContent: link?.utmContent ?? parsedDestination?.utmContent ?? '',
+        utmTerm: link?.utmTerm ?? parsedDestination?.utmTerm ?? '',
         platform: link?.platform ?? '',
         slug: link?.slug ?? '',
         isEnabled: link?.isEnabled ?? true,
@@ -194,6 +217,30 @@ export function LinkForm({
   const selectedProductId = useWatch({
     control: form.control,
     name: 'productId',
+  });
+  const baseUrl = useWatch({
+    control: form.control,
+    name: 'baseUrl',
+  });
+  const utmSource = useWatch({
+    control: form.control,
+    name: 'utmSource',
+  });
+  const utmMedium = useWatch({
+    control: form.control,
+    name: 'utmMedium',
+  });
+  const utmCampaign = useWatch({
+    control: form.control,
+    name: 'utmCampaign',
+  });
+  const utmContent = useWatch({
+    control: form.control,
+    name: 'utmContent',
+  });
+  const utmTerm = useWatch({
+    control: form.control,
+    name: 'utmTerm',
   });
   const selectedProduct = products.find((product) => product.id === selectedProductId);
   const selectedTags = allTags
@@ -218,14 +265,53 @@ export function LinkForm({
     }
   }, [form, products]);
 
+  const handleNormalizeBaseUrl = React.useCallback(() => {
+    const value = form.getValues('baseUrl');
+    if (!value) return;
+
+    try {
+      const parsed = parseTrackedDestinationUrl(value);
+      form.setValue('baseUrl', parsed.baseUrl, { shouldValidate: true });
+
+      if (parsed.utmSource) form.setValue('utmSource', parsed.utmSource, { shouldValidate: false });
+      if (parsed.utmMedium) form.setValue('utmMedium', parsed.utmMedium, { shouldValidate: false });
+      if (parsed.utmCampaign) form.setValue('utmCampaign', parsed.utmCampaign, { shouldValidate: false });
+      if (parsed.utmContent) form.setValue('utmContent', parsed.utmContent, { shouldValidate: false });
+      if (parsed.utmTerm) form.setValue('utmTerm', parsed.utmTerm, { shouldValidate: false });
+    } catch {
+      // Zod validation handles invalid URLs.
+    }
+  }, [form]);
+
+  const finalDestinationUrl = React.useMemo(() => {
+    if (!baseUrl) return '';
+
+    try {
+      return buildTrackedDestinationUrl(baseUrl, {
+        utmSource,
+        utmMedium,
+        utmCampaign,
+        utmContent,
+        utmTerm,
+      });
+    } catch {
+      return '';
+    }
+  }, [baseUrl, utmCampaign, utmContent, utmMedium, utmSource, utmTerm]);
+
   const onSubmit = async (values: FormValues) => {
     try {
       if (isEditing) {
         await update({
           params: { id: link.id },
           body: {
-            originalUrl: values.originalUrl,
+            baseUrl: values.baseUrl,
             fallbackUrl: values.fallbackUrl || null,
+            utmSource: values.utmSource || null,
+            utmMedium: values.utmMedium || null,
+            utmCampaign: values.utmCampaign || null,
+            utmContent: values.utmContent || null,
+            utmTerm: values.utmTerm || null,
             slug: values.slug,
             platform: values.platform,
             isEnabled: values.isEnabled,
@@ -237,8 +323,13 @@ export function LinkForm({
         await create({
           body: {
             productId: values.productId,
-            originalUrl: values.originalUrl,
+            baseUrl: values.baseUrl,
             fallbackUrl: values.fallbackUrl || undefined,
+            utmSource: values.utmSource || undefined,
+            utmMedium: values.utmMedium || undefined,
+            utmCampaign: values.utmCampaign || undefined,
+            utmContent: values.utmContent || undefined,
+            utmTerm: values.utmTerm || undefined,
             slug: values.slug,
             platform: values.platform,
             notes: values.notes || undefined,
@@ -360,25 +451,112 @@ export function LinkForm({
             )}
           />
 
-          {/* Original URL */}
+          {/* Base URL */}
           <Controller
-            name="originalUrl"
+            name="baseUrl"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Affiliate URL</FieldLabel>
+                <FieldLabel>Base URL</FieldLabel>
                 <Input
                   placeholder="https://www.amazon.com/dp/B08N5..."
                   value={field.value}
                   onChange={field.onChange}
+                  onBlur={handleNormalizeBaseUrl}
                 />
                 <FieldDescription>
-                  The original affiliate URL that users will be redirected to.
+                  Paste the destination URL. If it already includes UTM parameters, AffProf will extract them automatically.
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
+
+          {/* UTM Builder */}
+          <div className="rounded-xl border bg-muted/15 p-4">
+            <div className="mb-4 space-y-1">
+              <p className="text-sm font-medium">UTM tracking</p>
+              <p className="text-xs text-muted-foreground">
+                Build a consistent tracked destination URL for campaigns, channels, and placements.
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <Controller
+                name="utmSource"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid || undefined}>
+                    <FieldLabel>UTM Source</FieldLabel>
+                    <Input placeholder="instagram" value={field.value ?? ''} onChange={field.onChange} />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="utmMedium"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid || undefined}>
+                    <FieldLabel>UTM Medium</FieldLabel>
+                    <Input placeholder="bio" value={field.value ?? ''} onChange={field.onChange} />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="utmCampaign"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid || undefined}>
+                    <FieldLabel>UTM Campaign</FieldLabel>
+                    <Input placeholder="spring-launch" value={field.value ?? ''} onChange={field.onChange} />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="utmContent"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid || undefined}>
+                    <FieldLabel>UTM Content</FieldLabel>
+                    <Input placeholder="hero-button" value={field.value ?? ''} onChange={field.onChange} />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="utmTerm"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field className="md:col-span-2" data-invalid={fieldState.invalid || undefined}>
+                    <FieldLabel>UTM Term</FieldLabel>
+                    <Input placeholder="creator-tools" value={field.value ?? ''} onChange={field.onChange} />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+            </div>
+
+            <div className="mt-4 rounded-lg border bg-background p-3">
+              <div className="mb-1 text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
+                Final destination URL
+              </div>
+              <Textarea
+                value={finalDestinationUrl}
+                readOnly
+                className="min-h-[92px] resize-none bg-muted/20"
+              />
+              <p className="mt-2 text-xs text-muted-foreground">
+                AffProf rebuilds and saves this final URL on the backend to keep the destination and UTM fields in sync.
+              </p>
+            </div>
+          </div>
 
           {/* Fallback URL */}
           <Controller

@@ -43,6 +43,13 @@
       "when": 1775897400000,
       "tag": "0005_calm_otter",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1775900400000,
+      "tag": "0006_plain_swallow",
+      "breakpoints": true
     }
   ]
 }

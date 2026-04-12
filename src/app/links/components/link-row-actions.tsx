@@ -69,7 +69,7 @@ export function LinkRowActions({ row, table }: LinkRowActionsProps) {
             onClick={() => window.open(row.original.originalUrl, '_blank')}
           >
             <ExternalLink className="mr-2 h-4 w-4" />
-            Open original URL
+            Open destination URL
           </DropdownMenuItem>
           {onRowQr && (
             <DropdownMenuItem onClick={() => onRowQr(row.original)}>

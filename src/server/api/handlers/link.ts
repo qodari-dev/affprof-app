@@ -5,6 +5,7 @@ import { tsr } from '@ts-rest/serverless/next';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { contract } from '../contracts';
 import { checkLink, checkLinks } from '@/server/services/link-checker';
+import { normalizeTrackedDestinationInput } from '@/utils/tracked-destination-url';
 
 import { buildTypedIncludes, createIncludeMap } from '@/server/utils/query/include-builder';
 import {
@@ -23,9 +24,15 @@ type LinkColumn = keyof typeof links.$inferSelect;
 const LINK_FIELDS: FieldMap = {
   id: links.id,
   productId: links.productId,
+  baseUrl: links.baseUrl,
   slug: links.slug,
   platform: links.platform,
   fallbackUrl: links.fallbackUrl,
+  utmSource: links.utmSource,
+  utmMedium: links.utmMedium,
+  utmCampaign: links.utmCampaign,
+  utmContent: links.utmContent,
+  utmTerm: links.utmTerm,
   status: links.status,
   isEnabled: links.isEnabled,
   totalClicks: links.totalClicks,
@@ -37,7 +44,7 @@ const LINK_FIELDS: FieldMap = {
 
 const LINK_QUERY_CONFIG: QueryConfig = {
   fields: LINK_FIELDS,
-  searchFields: [links.slug, links.originalUrl, links.platform],
+  searchFields: [links.slug, links.originalUrl, links.baseUrl, links.platform, links.utmCampaign],
   defaultSort: { column: links.createdAt, order: 'desc' },
 };
 
@@ -192,10 +199,11 @@ export const link = tsr.router(contract.link, {
       const auth = await getAuthContext(request);
 
       const { tagIds, ...linkData } = body;
+      const destination = normalizeTrackedDestinationInput(linkData);
 
       const [newLink] = await db
         .insert(links)
-        .values({ ...linkData, userId: auth.userId })
+        .values({ ...linkData, ...destination, userId: auth.userId })
         .returning();
 
       if (tagIds?.length) {
@@ -237,10 +245,20 @@ export const link = tsr.router(contract.link, {
       }
 
       const { tagIds, ...linkData } = body;
+      const destination = linkData.baseUrl
+        ? normalizeTrackedDestinationInput({
+            baseUrl: linkData.baseUrl,
+            utmSource: linkData.utmSource,
+            utmMedium: linkData.utmMedium,
+            utmCampaign: linkData.utmCampaign,
+            utmContent: linkData.utmContent,
+            utmTerm: linkData.utmTerm,
+          })
+        : undefined;
 
       await db
         .update(links)
-        .set(linkData)
+        .set(destination ? { ...linkData, ...destination } : linkData)
         .where(eq(links.id, id));
 
       if (tagIds !== undefined) {

@@ -140,7 +140,20 @@ export function LinkInfo({
           value: <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">/{link.slug}</code>,
         },
         {
-          label: 'Original URL',
+          label: 'Base URL',
+          value: (
+            <a
+              href={link.baseUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="break-all text-sm text-primary underline underline-offset-2"
+            >
+              {link.baseUrl}
+            </a>
+          ),
+        },
+        {
+          label: 'Final destination',
           value: (
             <a
               href={link.originalUrl}
@@ -155,6 +168,18 @@ export function LinkInfo({
         {
           label: 'Product',
           value: link.product?.name ?? undefined,
+        },
+        {
+          label: 'UTM tracking',
+          value: (link.utmSource || link.utmMedium || link.utmCampaign || link.utmContent || link.utmTerm) ? (
+            <div className="flex flex-wrap gap-1">
+              {link.utmSource ? <Badge variant="outline">source: {link.utmSource}</Badge> : null}
+              {link.utmMedium ? <Badge variant="outline">medium: {link.utmMedium}</Badge> : null}
+              {link.utmCampaign ? <Badge variant="outline">campaign: {link.utmCampaign}</Badge> : null}
+              {link.utmContent ? <Badge variant="outline">content: {link.utmContent}</Badge> : null}
+              {link.utmTerm ? <Badge variant="outline">term: {link.utmTerm}</Badge> : null}
+            </div>
+          ) : 'Not configured',
         },
         {
           label: 'Fallback URL',
