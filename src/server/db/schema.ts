@@ -165,6 +165,7 @@ export const links = pgTable(
     productId: uuid("product_id")
       .notNull()
       .references(() => products.id, { onDelete: "cascade" }),
+    brandId: uuid("brand_id").references(() => brands.id, { onDelete: "set null" }),
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),

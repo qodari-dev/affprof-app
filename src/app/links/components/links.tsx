@@ -60,7 +60,7 @@ export function Links() {
     resetFilters,
   } = useDataTable<LinkSortField, LinkInclude>({
     defaultPageSize: 20,
-    defaultIncludes: ['product', 'linkTags'],
+    defaultIncludes: ['product', 'brand', 'linkTags'],
     defaultSorting: [{ field: 'createdAt', order: 'desc' }],
   });
 
@@ -242,6 +242,7 @@ export function Links() {
       <LinkQrDialog
         shortUrl={shortUrl}
         slug={link?.slug ?? ''}
+        initialBrandId={link?.brandId ?? null}
         opened={openedQrDialog}
         onOpened={setOpenedQrDialog}
       />

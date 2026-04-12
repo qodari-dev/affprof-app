@@ -1,10 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import QRCode from 'qrcode';
 import { Copy, Download, Loader2, Power, PowerOff } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { BrandLogo } from '@/components/brand-logo';
 import type { Links } from '@/server/db';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,35 +28,48 @@ import {
 } from '@/hooks/queries/use-custom-domain-queries';
 import { useUpdateLink } from '@/hooks/queries/use-link-queries';
 import { buildShortLinkUrl } from '@/utils/short-link';
+import { renderBrandedQrToCanvas } from '@/utils/branded-qr';
 
-function QrPreview({ shortUrl, slug }: { shortUrl: string; slug: string }) {
+function QrPreview({
+  shortUrl,
+  slug,
+  brand,
+}: {
+  shortUrl: string;
+  slug: string;
+  brand?: Links['brand'];
+}) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const qrUrl = `${shortUrl}?qr=1`;
 
   React.useEffect(() => {
     if (!canvasRef.current) return;
-    QRCode.toCanvas(canvasRef.current, qrUrl, {
-      width: 160,
+    void renderBrandedQrToCanvas(canvasRef.current, {
+      qrUrl,
+      size: 160,
       margin: 2,
-      color: { dark: '#000000', light: '#ffffff' },
-      errorCorrectionLevel: 'M',
+      foreground: brand?.qrForeground ?? '#111111',
+      background: brand?.qrBackground ?? '#FFFFFF',
+      logoUrl: brand?.logoUrl,
     });
-  }, [qrUrl]);
+  }, [brand, qrUrl]);
 
   const handleDownload = React.useCallback(() => {
     const downloadCanvas = document.createElement('canvas');
-    QRCode.toCanvas(downloadCanvas, qrUrl, {
-      width: 1024,
+    void renderBrandedQrToCanvas(downloadCanvas, {
+      qrUrl,
+      size: 1024,
       margin: 3,
-      color: { dark: '#000000', light: '#ffffff' },
-      errorCorrectionLevel: 'M',
-    }, () => {
+      foreground: brand?.qrForeground ?? '#111111',
+      background: brand?.qrBackground ?? '#FFFFFF',
+      logoUrl: brand?.logoUrl,
+    }).then(() => {
       const a = document.createElement('a');
       a.download = `qr-${slug}.png`;
       a.href = downloadCanvas.toDataURL('image/png');
       a.click();
     });
-  }, [qrUrl, slug]);
+  }, [brand, qrUrl, slug]);
 
   const handleCopy = React.useCallback(() => {
     navigator.clipboard.writeText(shortUrl);
@@ -65,6 +78,17 @@ function QrPreview({ shortUrl, slug }: { shortUrl: string; slug: string }) {
 
   return (
     <div className="flex flex-col items-center gap-2 rounded-lg border p-4">
+      {brand ? (
+        <div className="mb-1 flex w-full items-center gap-2 rounded-lg border bg-muted/20 px-3 py-2">
+          <BrandLogo name={brand.name} logoUrl={brand.logoUrl} className="size-8 rounded-lg" />
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-medium">{brand.name}</div>
+            <div className="truncate text-xs text-muted-foreground">
+              {brand.qrForeground} / {brand.qrBackground}
+            </div>
+          </div>
+        </div>
+      ) : null}
       <div className="rounded-md bg-white p-2">
         <canvas ref={canvasRef} />
       </div>
@@ -168,6 +192,15 @@ export function LinkInfo({
         {
           label: 'Product',
           value: link.product?.name ?? undefined,
+        },
+        {
+          label: 'QR brand',
+          value: link.brand ? (
+            <div className="flex items-center gap-2">
+              <BrandLogo name={link.brand.name} logoUrl={link.brand.logoUrl} className="size-7 rounded-lg" />
+              <span>{link.brand.name}</span>
+            </div>
+          ) : 'Standard AffProf QR',
         },
         {
           label: 'UTM tracking',
@@ -341,7 +374,7 @@ export function LinkInfo({
             </Button>
           </div>
           <DescriptionList sections={sections} />
-          {shortUrl && <QrPreview shortUrl={shortUrl} slug={link.slug} />}
+          {shortUrl && <QrPreview shortUrl={shortUrl} slug={link.slug} brand={link.brand} />}
         </div>
       </SheetContent>
     </Sheet>

@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Check, ChevronsUpDown, Loader2, Save, Sparkles } from 'lucide-react';
 
+import { BrandLogo } from '@/components/brand-logo';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -37,6 +38,7 @@ import {
   getPrimaryVerifiedCustomDomainHostname,
   useCustomDomains,
 } from '@/hooks/queries/use-custom-domain-queries';
+import { getDefaultBrandId, useBrands } from '@/hooks/queries/use-brand-queries';
 import { cn } from '@/lib/utils';
 import type { Links } from '@/server/db';
 import { TagBadge } from '@/components/tag-badge';
@@ -52,6 +54,7 @@ import {
 
 const LinkFormSchema = z.object({
   productId: z.string().uuid({ message: 'Please select a product' }),
+  brandId: z.union([z.literal(''), z.string().uuid()]).optional(),
   baseUrl: z.string().url().max(2048),
   fallbackUrl: z.union([z.literal(''), z.string().url().max(2048)]).optional(),
   utmSource: z.union([z.literal(''), z.string().max(255)]).optional(),
@@ -154,6 +157,11 @@ export function LinkForm({
   const { data: tagsData } = useTags({ page: 1, limit: 100 });
   const tagList = tagsData?.body?.data;
   const allTags = React.useMemo(() => tagList ?? [], [tagList]);
+  const { data: brandsData } = useBrands();
+  const brands = React.useMemo(
+    () => (brandsData?.status === 200 ? brandsData.body : []),
+    [brandsData],
+  );
 
   const { data: profileData } = useProfile();
   const { data: customDomainsData } = useCustomDomains();
@@ -172,6 +180,7 @@ export function LinkForm({
     resolver: zodResolver(LinkFormSchema),
     defaultValues: {
       productId: '',
+      brandId: '',
       baseUrl: '',
       fallbackUrl: '',
       utmSource: '',
@@ -194,6 +203,7 @@ export function LinkForm({
 
       form.reset({
         productId: link?.productId ?? '',
+        brandId: link?.brandId ?? '',
         baseUrl: parsedDestination?.baseUrl ?? '',
         fallbackUrl: link?.fallbackUrl ?? '',
         utmSource: link?.utmSource ?? parsedDestination?.utmSource ?? '',
@@ -211,12 +221,28 @@ export function LinkForm({
     }
   }, [opened, link, form, isEditing]);
 
+  React.useEffect(() => {
+    if (!opened || isEditing) return;
+
+    const currentBrandId = form.getValues('brandId');
+    if (currentBrandId) return;
+
+    const defaultBrandId = getDefaultBrandId(brands);
+    if (defaultBrandId) {
+      form.setValue('brandId', defaultBrandId, { shouldDirty: false });
+    }
+  }, [opened, isEditing, form, brands]);
+
   const { mutateAsync: create, isPending: isCreating } = useCreateLink();
   const { mutateAsync: update, isPending: isUpdating } = useUpdateLink();
   const isPending = isCreating || isUpdating;
   const selectedProductId = useWatch({
     control: form.control,
     name: 'productId',
+  });
+  const selectedBrandId = useWatch({
+    control: form.control,
+    name: 'brandId',
   });
   const baseUrl = useWatch({
     control: form.control,
@@ -243,6 +269,7 @@ export function LinkForm({
     name: 'utmTerm',
   });
   const selectedProduct = products.find((product) => product.id === selectedProductId);
+  const selectedBrand = brands.find((brand) => brand.id === selectedBrandId);
   const selectedTags = allTags
     .filter((tag) => selectedTagIds.includes(tag.id))
     .sort(compareTagsByName);
@@ -305,6 +332,7 @@ export function LinkForm({
         await update({
           params: { id: link.id },
           body: {
+            brandId: values.brandId || null,
             baseUrl: values.baseUrl,
             fallbackUrl: values.fallbackUrl || null,
             utmSource: values.utmSource || null,
@@ -323,6 +351,7 @@ export function LinkForm({
         await create({
           body: {
             productId: values.productId,
+            brandId: values.brandId || undefined,
             baseUrl: values.baseUrl,
             fallbackUrl: values.fallbackUrl || undefined,
             utmSource: values.utmSource || undefined,
@@ -557,6 +586,57 @@ export function LinkForm({
               </p>
             </div>
           </div>
+
+          {/* QR Brand */}
+          <Controller
+            name="brandId"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid || undefined}>
+                <FieldLabel>QR brand</FieldLabel>
+                <select
+                  className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                >
+                  <option value="">Standard AffProf QR</option>
+                  {brands.map((brand) => (
+                    <option key={brand.id} value={brand.id}>
+                      {brand.name}
+                      {brand.isDefault ? ' (Default)' : ''}
+                    </option>
+                  ))}
+                </select>
+                <FieldDescription>
+                  Pick a saved brand to prefill this link&apos;s QR logo and color style.
+                </FieldDescription>
+                {selectedBrand ? (
+                  <div className="mt-3 flex items-center gap-3 rounded-xl border bg-muted/15 p-3">
+                    <BrandLogo name={selectedBrand.name} logoUrl={selectedBrand.logoUrl} className="size-10 rounded-xl" />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium">{selectedBrand.name}</div>
+                      <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                        <div
+                          className="size-4 rounded-full border"
+                          style={{ backgroundColor: selectedBrand.qrForeground }}
+                          aria-hidden="true"
+                        />
+                        <div
+                          className="size-4 rounded-full border"
+                          style={{ backgroundColor: selectedBrand.qrBackground }}
+                          aria-hidden="true"
+                        />
+                        <span className="truncate">
+                          {selectedBrand.qrForeground} / {selectedBrand.qrBackground}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
 
           {/* Fallback URL */}
           <Controller

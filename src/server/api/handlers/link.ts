@@ -24,6 +24,7 @@ type LinkColumn = keyof typeof links.$inferSelect;
 const LINK_FIELDS: FieldMap = {
   id: links.id,
   productId: links.productId,
+  brandId: links.brandId,
   baseUrl: links.baseUrl,
   slug: links.slug,
   platform: links.platform,
@@ -51,6 +52,10 @@ const LINK_QUERY_CONFIG: QueryConfig = {
 const LINK_INCLUDES = createIncludeMap<typeof db.query.links>()({
   product: {
     relation: 'product',
+    config: true,
+  },
+  brand: {
+    relation: 'brand',
     config: true,
   },
   clicks: {
@@ -203,7 +208,12 @@ export const link = tsr.router(contract.link, {
 
       const [newLink] = await db
         .insert(links)
-        .values({ ...linkData, ...destination, userId: auth.userId })
+        .values({
+          ...linkData,
+          brandId: linkData.brandId || null,
+          ...destination,
+          userId: auth.userId,
+        })
         .returning();
 
       if (tagIds?.length) {
@@ -258,7 +268,18 @@ export const link = tsr.router(contract.link, {
 
       await db
         .update(links)
-        .set(destination ? { ...linkData, ...destination } : linkData)
+        .set(
+          destination
+            ? {
+                ...linkData,
+                brandId: linkData.brandId === undefined ? existing.brandId : (linkData.brandId || null),
+                ...destination,
+              }
+            : {
+                ...linkData,
+                brandId: linkData.brandId === undefined ? existing.brandId : (linkData.brandId || null),
+              }
+        )
         .where(eq(links.id, id));
 
       if (tagIds !== undefined) {

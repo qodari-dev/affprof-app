@@ -21,11 +21,18 @@ import { renderBrandedQrToCanvas } from '@/utils/branded-qr';
 interface LinkQrDialogProps {
   shortUrl: string;
   slug: string;
+  initialBrandId?: string | null;
   opened: boolean;
   onOpened: (opened: boolean) => void;
 }
 
-export function LinkQrDialog({ shortUrl, slug, opened, onOpened }: LinkQrDialogProps) {
+export function LinkQrDialog({
+  shortUrl,
+  slug,
+  initialBrandId,
+  opened,
+  onOpened,
+}: LinkQrDialogProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const qrUrl = shortUrl ? `${shortUrl}?qr=1` : '';
   const { data: brandsData } = useBrands({ enabled: opened });
@@ -42,9 +49,9 @@ export function LinkQrDialog({ shortUrl, slug, opened, onOpened }: LinkQrDialogP
   React.useEffect(() => {
     if (!opened) return;
 
-    const defaultBrandId = getDefaultBrandId(brands);
+    const defaultBrandId = initialBrandId ?? getDefaultBrandId(brands);
     setSelectedBrandId(defaultBrandId ?? 'standard');
-  }, [brands, opened]);
+  }, [brands, initialBrandId, opened]);
 
   const renderQrCode = React.useCallback(async (canvas: HTMLCanvasElement) => {
     if (!qrUrl) {

@@ -17,6 +17,7 @@ const LinkWhereFieldsSchema = z
   .object({
     id: z.union([z.string().uuid(), UUIDOperatorsSchema]).optional(),
     productId: z.union([z.string().uuid(), UUIDOperatorsSchema]).optional(),
+    brandId: z.union([z.string().uuid(), UUIDOperatorsSchema]).optional(),
     tagId: z.string().uuid().optional(),
     slug: z.union([z.string(), StringOperatorsSchema]).optional(),
     platform: z.union([z.string(), StringOperatorsSchema]).optional(),
@@ -47,7 +48,7 @@ const LINK_SORT_FIELDS = [
 // INCLUDE
 // ============================================
 
-const LINK_INCLUDE_OPTIONS = ['product', 'clicks', 'checks', 'linkTags'] as const;
+const LINK_INCLUDE_OPTIONS = ['product', 'brand', 'clicks', 'checks', 'linkTags'] as const;
 const LinkIncludeSchema = createIncludeSchema(LINK_INCLUDE_OPTIONS);
 
 // ============================================
@@ -73,6 +74,7 @@ export const GetLinkQuerySchema = z.object({
 
 export const CreateLinkBodySchema = z.object({
   productId: z.string().uuid(),
+  brandId: z.union([z.string().uuid(), z.literal('')]).optional(),
   baseUrl: z.string().url().max(2048),
   fallbackUrl: z.string().url().max(2048).optional(),
   utmSource: z.string().max(255).optional(),
@@ -93,6 +95,7 @@ export const CheckLinksBodySchema = z.object({
 });
 
 export const UpdateLinkBodySchema = z.object({
+  brandId: z.union([z.string().uuid(), z.literal('')]).optional().nullable(),
   baseUrl: z.string().url().max(2048).optional(),
   fallbackUrl: z.string().url().max(2048).optional().nullable(),
   utmSource: z.string().max(255).optional().nullable(),

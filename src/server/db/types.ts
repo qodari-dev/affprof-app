@@ -64,6 +64,7 @@ export type NewProducts = typeof products.$inferInsert;
 
 export type Links = typeof links.$inferSelect & {
   product?: Products;
+  brand?: Brands | null;
   user?: Users;
   clicks?: LinkClicks[];
   checks?: LinkChecks[];
