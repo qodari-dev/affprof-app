@@ -32,6 +32,7 @@ import { linkColumns } from './link-columns';
 import { LinkToolbar } from './link-toolbar';
 import { LinkForm } from './link-form';
 import { LinkInfo } from './link-info';
+import { LinkImportDialog } from './link-import-dialog';
 import { LinkQrDialog } from './link-qr-dialog';
 
 export function Links() {
@@ -85,6 +86,7 @@ export function Links() {
   const [openedFormSheet, setOpenedFormSheet] = React.useState(false);
   const [openedDeleteDialog, setOpenedDeleteDialog] = React.useState(false);
   const [openedQrDialog, setOpenedQrDialog] = React.useState(false);
+  const [openedImportDialog, setOpenedImportDialog] = React.useState(false);
 
   // ---- Handlers ----
   const handleCreate = React.useCallback(() => {
@@ -225,6 +227,7 @@ export function Links() {
               onTagFilterChange={(value) => handleFilterChange('tagId', value)}
               onReset={resetFilters}
               onCreate={handleCreate}
+              onImport={() => setOpenedImportDialog(true)}
               onRefresh={() => refetch()}
               isRefreshing={isFetching && !isLoading}
             />
@@ -237,6 +240,8 @@ export function Links() {
 
       {/* Form sheet (create / edit) */}
       <LinkForm link={link} opened={openedFormSheet} onOpened={setOpenedFormSheet} />
+
+      <LinkImportDialog opened={openedImportDialog} onOpened={setOpenedImportDialog} />
 
       {/* QR Code dialog */}
       <LinkQrDialog

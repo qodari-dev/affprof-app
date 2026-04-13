@@ -84,6 +84,27 @@ export const PresignProductImageUploadResponseSchema = z.object({
   method: z.literal('PUT'),
 });
 
+const ProductImportRowSchema = z.object({
+  row: z.number().int().min(2),
+  name: z.string().trim().min(1).max(200),
+  description: z.string().max(1000).optional(),
+});
+
+export const ImportProductsBodySchema = z.object({
+  rows: z.array(ProductImportRowSchema).min(1).max(500),
+});
+
+export const ImportProductsResponseSchema = z.object({
+  importedCount: z.number().int().min(0),
+  skippedCount: z.number().int().min(0),
+  errors: z.array(
+    z.object({
+      row: z.number().int().min(2),
+      message: z.string(),
+    }),
+  ),
+});
+
 // ============================================
 // TYPES
 // ============================================

@@ -83,6 +83,30 @@ export function useUpdateLink() {
   });
 }
 
+export function useImportLinksCsv() {
+  const queryClient = api.useQueryClient();
+
+  return api.link.importCsv.useMutation({
+    onSuccess(data) {
+      queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      const { importedCount, skippedCount, createdProductsCount } = data.body;
+      const productNote = createdProductsCount > 0
+        ? ` ${createdProductsCount} product${createdProductsCount === 1 ? '' : 's'} created automatically.`
+        : '';
+
+      toast.success(`Imported ${importedCount} link${importedCount === 1 ? '' : 's'}`, {
+        description: `${skippedCount} row${skippedCount === 1 ? '' : 's'} skipped.${productNote}`.trim(),
+      });
+    },
+    onError(error) {
+      toast.error('Error importing links', {
+        description: getTsRestErrorMessage(error),
+      });
+    },
+  });
+}
+
 // ============================================================================
 // DELETE
 // ============================================================================

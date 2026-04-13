@@ -152,6 +152,71 @@ export const product = tsr.router(contract.product, {
   },
 
   // ==========================================
+  // IMPORT - POST /products/import
+  // ==========================================
+  importCsv: async ({ body }, { request }) => {
+    try {
+      const auth = await getAuthContext(request);
+
+      const existingProducts = await db.query.products.findMany({
+        where: and(eq(products.userId, auth.userId), isNull(products.deletedAt)),
+        columns: {
+          name: true,
+        },
+      });
+
+      const existingNames = new Set(existingProducts.map((product) => product.name.trim().toLowerCase()));
+      const seenNames = new Set<string>();
+      const toCreate: Array<{ name: string; description?: string; userId: string }> = [];
+      const errors: Array<{ row: number; message: string }> = [];
+
+      for (const row of body.rows) {
+        const normalizedName = row.name.trim().toLowerCase();
+
+        if (existingNames.has(normalizedName)) {
+          errors.push({
+            row: row.row,
+            message: `Product "${row.name}" already exists and was skipped.`,
+          });
+          continue;
+        }
+
+        if (seenNames.has(normalizedName)) {
+          errors.push({
+            row: row.row,
+            message: `Product "${row.name}" is duplicated in this file.`,
+          });
+          continue;
+        }
+
+        seenNames.add(normalizedName);
+        toCreate.push({
+          userId: auth.userId,
+          name: row.name.trim(),
+          description: row.description?.trim() || undefined,
+        });
+      }
+
+      if (toCreate.length > 0) {
+        await db.insert(products).values(toCreate);
+      }
+
+      return {
+        status: 200 as const,
+        body: {
+          importedCount: toCreate.length,
+          skippedCount: errors.length,
+          errors,
+        },
+      };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, {
+        genericMsg: 'Error importing products',
+      });
+    }
+  },
+
+  // ==========================================
   // UPDATE - PATCH /products/:id
   // ==========================================
   update: async ({ params: { id }, body }, { request }) => {

@@ -1,4 +1,4 @@
-import { db, links, linkTags } from '@/server/db';
+import { db, links, linkTags, products } from '@/server/db';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { getAuthContext } from '@/server/utils/auth-context';
 import { tsr } from '@ts-rest/serverless/next';
@@ -231,6 +231,151 @@ export const link = tsr.router(contract.link, {
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: 'Error creating link',
+      });
+    }
+  },
+
+  // ==========================================
+  // IMPORT - POST /links/import
+  // ==========================================
+  importCsv: async ({ body }, { request }) => {
+    try {
+      const auth = await getAuthContext(request);
+
+      const [existingProducts, existingLinks] = await Promise.all([
+        db.query.products.findMany({
+          where: and(eq(products.userId, auth.userId), isNull(products.deletedAt)),
+          columns: {
+            id: true,
+            name: true,
+          },
+        }),
+        db.query.links.findMany({
+          where: eq(links.userId, auth.userId),
+          columns: {
+            slug: true,
+          },
+        }),
+      ]);
+
+      const productMap = new Map(
+        existingProducts.map((product) => [product.name.trim().toLowerCase(), product]),
+      );
+      const existingSlugs = new Set(existingLinks.map((link) => link.slug.trim().toLowerCase()));
+      const seenSlugs = new Set<string>();
+      const missingProductNames = new Set<string>();
+      const skippedRows = new Set<number>();
+      const errors: Array<{ row: number; message: string }> = [];
+
+      for (const row of body.rows) {
+        const normalizedSlug = row.slug.trim().toLowerCase();
+        const normalizedProductName = row.productName.trim().toLowerCase();
+
+        if (existingSlugs.has(normalizedSlug)) {
+          skippedRows.add(row.row);
+          errors.push({
+            row: row.row,
+            message: `Slug "${row.slug}" already exists and was skipped.`,
+          });
+          continue;
+        }
+
+        if (seenSlugs.has(normalizedSlug)) {
+          skippedRows.add(row.row);
+          errors.push({
+            row: row.row,
+            message: `Slug "${row.slug}" is duplicated in this file.`,
+          });
+          continue;
+        }
+
+        seenSlugs.add(normalizedSlug);
+
+        if (!productMap.has(normalizedProductName)) {
+          missingProductNames.add(row.productName.trim());
+        }
+      }
+
+      let createdProductsCount = 0;
+      if (missingProductNames.size > 0) {
+        const insertedProducts = await db
+          .insert(products)
+          .values(
+            Array.from(missingProductNames).map((name) => ({
+              userId: auth.userId,
+              name,
+            })),
+          )
+          .returning({
+            id: products.id,
+            name: products.name,
+          });
+
+        createdProductsCount = insertedProducts.length;
+        for (const product of insertedProducts) {
+          productMap.set(product.name.trim().toLowerCase(), product);
+        }
+      }
+
+      const rowsToInsert: Array<typeof links.$inferInsert> = [];
+
+      for (const row of body.rows) {
+        if (skippedRows.has(row.row)) continue;
+
+        const product = productMap.get(row.productName.trim().toLowerCase());
+
+        if (!product) {
+          skippedRows.add(row.row);
+          errors.push({
+            row: row.row,
+            message: `Product "${row.productName}" could not be resolved.`,
+          });
+          continue;
+        }
+
+        const destination = normalizeTrackedDestinationInput({
+          baseUrl: row.baseUrl,
+          utmSource: row.utmSource,
+          utmMedium: row.utmMedium,
+          utmCampaign: row.utmCampaign,
+          utmContent: row.utmContent,
+          utmTerm: row.utmTerm,
+        });
+
+        rowsToInsert.push({
+          userId: auth.userId,
+          productId: product.id,
+          slug: row.slug.trim(),
+          platform: row.platform.trim(),
+          baseUrl: destination.baseUrl,
+          originalUrl: destination.originalUrl,
+          utmSource: row.utmSource,
+          utmMedium: row.utmMedium,
+          utmCampaign: row.utmCampaign,
+          utmContent: row.utmContent,
+          utmTerm: row.utmTerm,
+          fallbackUrl: row.fallbackUrl,
+          isEnabled: row.isEnabled ?? true,
+          notes: row.notes,
+        });
+      }
+
+      if (rowsToInsert.length > 0) {
+        await db.insert(links).values(rowsToInsert);
+      }
+
+      return {
+        status: 200 as const,
+        body: {
+          importedCount: rowsToInsert.length,
+          skippedCount: errors.length,
+          createdProductsCount,
+          errors,
+        },
+      };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, {
+        genericMsg: 'Error importing links',
       });
     }
   },

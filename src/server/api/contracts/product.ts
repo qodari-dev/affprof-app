@@ -1,6 +1,8 @@
 import {
   CreateProductBodySchema,
   GetProductQuerySchema,
+  ImportProductsBodySchema,
+  ImportProductsResponseSchema,
   ListProductsQuerySchema,
   PresignProductImageUploadBodySchema,
   PresignProductImageUploadResponseSchema,
@@ -58,6 +60,20 @@ export const product = c.router(
         400: TsRestErrorSchema,
         401: TsRestErrorSchema,
         409: TsRestErrorSchema,
+        500: TsRestErrorSchema,
+      },
+    },
+    importCsv: {
+      method: 'POST',
+      path: '/import',
+      body: ImportProductsBodySchema,
+      metadata: {
+        auth: 'required',
+      } satisfies TsRestMetaData,
+      responses: {
+        200: ImportProductsResponseSchema,
+        400: TsRestErrorSchema,
+        401: TsRestErrorSchema,
         500: TsRestErrorSchema,
       },
     },

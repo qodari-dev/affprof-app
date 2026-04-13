@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Check, Plus, PlusCircle, RefreshCw, X } from 'lucide-react';
+import { Check, FileUp, Plus, PlusCircle, RefreshCw, X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -132,6 +132,7 @@ interface LinkToolbarProps {
   onReset: () => void;
   onRefresh?: () => void;
   onCreate?: () => void;
+  onImport?: () => void;
   isRefreshing?: boolean;
 }
 
@@ -150,6 +151,7 @@ export function LinkToolbar({
   onReset,
   onRefresh,
   onCreate,
+  onImport,
   isRefreshing,
 }: LinkToolbarProps) {
   const hasActiveFilters = Boolean(searchValue || productFilter || statusFilter || tagFilter);
@@ -194,6 +196,13 @@ export function LinkToolbar({
           <Button variant="outline" onClick={onRefresh} disabled={isRefreshing}>
             <RefreshCw className={isRefreshing ? 'animate-spin' : ''} />
             Refresh
+          </Button>
+        )}
+
+        {onImport && (
+          <Button variant="outline" onClick={onImport}>
+            <FileUp className="mr-2 h-4 w-4" />
+            Import CSV
           </Button>
         )}
 

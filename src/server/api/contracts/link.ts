@@ -1,6 +1,8 @@
 import {
   CreateLinkBodySchema,
   GetLinkQuerySchema,
+  ImportLinksBodySchema,
+  ImportLinksResponseSchema,
   ListLinksQuerySchema,
   UpdateLinkBodySchema,
   CheckLinksBodySchema,
@@ -58,6 +60,20 @@ export const link = c.router(
         400: TsRestErrorSchema,
         401: TsRestErrorSchema,
         409: TsRestErrorSchema,
+        500: TsRestErrorSchema,
+      },
+    },
+    importCsv: {
+      method: 'POST',
+      path: '/import',
+      body: ImportLinksBodySchema,
+      metadata: {
+        auth: 'required',
+      } satisfies TsRestMetaData,
+      responses: {
+        200: ImportLinksResponseSchema,
+        400: TsRestErrorSchema,
+        401: TsRestErrorSchema,
         500: TsRestErrorSchema,
       },
     },

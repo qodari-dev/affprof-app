@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, RefreshCw } from 'lucide-react';
+import { FileUp, Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -9,6 +9,7 @@ interface ProductToolbarProps {
   onSearchChange: (value: string) => void;
   onRefresh?: () => void;
   onCreate?: () => void;
+  onImport?: () => void;
   isRefreshing?: boolean;
 }
 
@@ -17,6 +18,7 @@ export function ProductToolbar({
   onSearchChange,
   onRefresh,
   onCreate,
+  onImport,
   isRefreshing,
 }: ProductToolbarProps) {
   return (
@@ -35,6 +37,13 @@ export function ProductToolbar({
           <Button variant="outline" onClick={onRefresh} disabled={isRefreshing}>
             <RefreshCw className={isRefreshing ? 'animate-spin' : ''} />
             Refresh
+          </Button>
+        )}
+
+        {onImport && (
+          <Button variant="outline" onClick={onImport}>
+            <FileUp className="mr-2 h-4 w-4" />
+            Import CSV
           </Button>
         )}
 

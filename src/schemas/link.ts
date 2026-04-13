@@ -94,6 +94,40 @@ export const CheckLinksBodySchema = z.object({
   linkIds: z.array(z.string().uuid()).min(1).max(100),
 });
 
+const LinkImportRowSchema = z.object({
+  row: z.number().int().min(2),
+  productName: z.string().trim().min(1).max(200),
+  baseUrl: z.string().url().max(2048),
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, {
+    message: 'Slug must contain only lowercase letters, numbers, and hyphens',
+  }),
+  platform: z.string().min(1).max(50),
+  fallbackUrl: z.string().url().max(2048).optional(),
+  utmSource: z.string().max(255).optional(),
+  utmMedium: z.string().max(255).optional(),
+  utmCampaign: z.string().max(255).optional(),
+  utmContent: z.string().max(255).optional(),
+  utmTerm: z.string().max(255).optional(),
+  isEnabled: z.boolean().optional(),
+  notes: z.string().max(500).optional(),
+});
+
+export const ImportLinksBodySchema = z.object({
+  rows: z.array(LinkImportRowSchema).min(1).max(500),
+});
+
+export const ImportLinksResponseSchema = z.object({
+  importedCount: z.number().int().min(0),
+  skippedCount: z.number().int().min(0),
+  createdProductsCount: z.number().int().min(0),
+  errors: z.array(
+    z.object({
+      row: z.number().int().min(2),
+      message: z.string(),
+    }),
+  ),
+});
+
 export const UpdateLinkBodySchema = z.object({
   brandId: z.union([z.string().uuid(), z.literal('')]).optional().nullable(),
   baseUrl: z.string().url().max(2048).optional(),

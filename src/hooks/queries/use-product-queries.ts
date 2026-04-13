@@ -93,6 +93,25 @@ export function usePresignProductImageUpload() {
   });
 }
 
+export function useImportProductsCsv() {
+  const queryClient = api.useQueryClient();
+
+  return api.product.importCsv.useMutation({
+    onSuccess(data) {
+      queryClient.invalidateQueries({ queryKey: productsKeys.lists() });
+      const { importedCount, skippedCount } = data.body;
+      toast.success(`Imported ${importedCount} product${importedCount === 1 ? '' : 's'}`, {
+        description: skippedCount > 0 ? `${skippedCount} row${skippedCount === 1 ? '' : 's'} skipped.` : undefined,
+      });
+    },
+    onError(error) {
+      toast.error('Error importing products', {
+        description: getTsRestErrorMessage(error),
+      });
+    },
+  });
+}
+
 // ============================================================================
 // DELETE
 // ============================================================================
