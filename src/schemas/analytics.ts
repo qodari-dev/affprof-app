@@ -100,6 +100,75 @@ export type BrokenLink = {
   consecutiveFailures: number;
 };
 
+// ============================================
+// LINK ANALYTICS QUERY
+// ============================================
+
+export const LinkAnalyticsQuerySchema = z.object({
+  range: z.enum(DASHBOARD_RANGES).default('30d'),
+});
+
+export type LinkAnalyticsQuery = z.infer<typeof LinkAnalyticsQuerySchema>;
+
+// ============================================
+// LINK ANALYTICS RESPONSE TYPES
+// ============================================
+
+export type DeviceBreakdown = {
+  device: string; // mobile | desktop | tablet
+  clicks: number;
+  percentage: number;
+};
+
+export type BrowserBreakdown = {
+  browser: string;
+  clicks: number;
+  percentage: number;
+};
+
+export type UtmCampaign = {
+  campaign: string;
+  source: string | null;
+  medium: string | null;
+  clicks: number;
+  percentage: number;
+};
+
+export type RecentClick = {
+  id: string;
+  clickedAt: string;
+  country: string | null;
+  city: string | null;
+  device: string | null;
+  browser: string | null;
+  referrerSource: string | null;
+  isQr: boolean;
+};
+
+export type LinkAnalytics = {
+  linkId: string;
+  range: DashboardRange;
+  periodStart: string;
+  periodEnd: string;
+  totalClicks: number;
+  previousClicks: number;
+  diffPercent: number | null;
+  qrClicks: number;
+  qrShare: number;
+  timeseries: TimeseriesPoint[];
+  peakDay: PeakDay | null;
+  countries: TopCountry[];
+  devices: DeviceBreakdown[];
+  browsers: BrowserBreakdown[];
+  sources: TrafficSource[];
+  utmCampaigns: UtmCampaign[];
+  recentClicks: RecentClick[];
+};
+
+// ============================================
+// DASHBOARD ANALYTICS RESPONSE
+// ============================================
+
 export type DashboardAnalytics = {
   range: DashboardRange;
   productId: string | null;

@@ -188,6 +188,8 @@ async function redirectToLink(
   const utmSource = searchParams.get('utm_source') ?? null;
   const utmMedium = searchParams.get('utm_medium') ?? null;
   const utmCampaign = searchParams.get('utm_campaign') ?? null;
+  const utmContent = searchParams.get('utm_content') ?? null;
+  const utmTerm = searchParams.get('utm_term') ?? null;
   const { country, city } = parseGeo(request.headers);
   const redirectUrl = buildRedirectUrl(target.destinationUrl, searchParams);
 
@@ -210,6 +212,8 @@ async function redirectToLink(
           utmSource,
           utmMedium,
           utmCampaign,
+          utmContent,
+          utmTerm,
         });
 
         await tx
@@ -243,10 +247,13 @@ export async function handleDefaultShortLinkRedirect(
     return new Response('Not found', { status: 404 });
   }
 
-  return redirectToLink(request, {
-    ...link,
-    defaultFallbackUrl: await getDefaultFallbackUrl(user.id),
-  });
+  // Only fetch default fallback if we actually need it
+  const needsFallback = !link.isEnabled || link.status === 'broken';
+  const defaultFallbackUrl = needsFallback && !link.fallbackUrl
+    ? await getDefaultFallbackUrl(user.id)
+    : null;
+
+  return redirectToLink(request, { ...link, defaultFallbackUrl });
 }
 
 export async function handleCustomDomainRedirect(
@@ -271,8 +278,10 @@ export async function handleCustomDomainRedirect(
     return new Response('Not found', { status: 404 });
   }
 
-  return redirectToLink(request, {
-    ...link,
-    defaultFallbackUrl: await getDefaultFallbackUrl(domain.userId),
-  });
+  const needsFallback = !link.isEnabled || link.status === 'broken';
+  const defaultFallbackUrl = needsFallback && !link.fallbackUrl
+    ? await getDefaultFallbackUrl(domain.userId)
+    : null;
+
+  return redirectToLink(request, { ...link, defaultFallbackUrl });
 }

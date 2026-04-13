@@ -1,20 +1,25 @@
 import {
   BrokenLink,
+  BrowserBreakdown,
   DashboardAnalytics,
   DashboardKpis,
+  DeviceBreakdown,
+  LinkAnalytics,
   PeakDay,
   RANGE_DAYS,
+  RecentClick,
   TimeseriesPoint,
   TopCountry,
   TopLink,
   TopProduct,
   TrafficSource,
+  UtmCampaign,
 } from '@/schemas/analytics';
-import { db } from '@/server/db';
+import { db, links } from '@/server/db';
 import { getAuthContext } from '@/server/utils/auth-context';
-import { genericTsRestErrorResponse } from '@/server/utils/generic-ts-rest-error';
+import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { tsr } from '@ts-rest/serverless/next';
-import { sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import { contract } from '../contracts';
 
 // ============================================
@@ -384,6 +389,277 @@ export const analytics = tsr.router(contract.analytics, {
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: 'Error loading dashboard analytics',
+      });
+    }
+  },
+
+  // ==========================================
+  // LINK ANALYTICS - GET /analytics/link/:id
+  // ==========================================
+  link: async ({ params: { id }, query }, { request }) => {
+    try {
+      const auth = await getAuthContext(request);
+      const { range } = query;
+
+      // Verify ownership
+      const linkRow = await db.query.links.findFirst({
+        where: and(
+          eq(links.id, id),
+          eq(links.userId, auth.userId),
+          isNull(links.deletedAt)
+        ),
+        columns: { id: true },
+      });
+
+      if (!linkRow) {
+        throwHttpError({ status: 404, message: 'Link not found', code: 'NOT_FOUND' });
+      }
+
+      const now = new Date();
+      const days = RANGE_DAYS[range];
+      const currentStart = new Date(now);
+      currentStart.setUTCDate(currentStart.getUTCDate() - days);
+      const previousStart = new Date(now);
+      previousStart.setUTCDate(previousStart.getUTCDate() - days * 2);
+
+      const [
+        clicksAggResult,
+        timeseriesResult,
+        countriesResult,
+        devicesResult,
+        browsersResult,
+        sourcesResult,
+        utmCampaignsResult,
+        recentClicksResult,
+      ] = await Promise.all([
+        // ---- Aggregates: total, previous, QR ----
+        db.execute(sql`
+          SELECT
+            COUNT(*) FILTER (WHERE lc.clicked_at >= ${currentStart})::int AS current_clicks,
+            COUNT(*) FILTER (WHERE lc.clicked_at >= ${previousStart} AND lc.clicked_at < ${currentStart})::int AS previous_clicks,
+            COUNT(*) FILTER (WHERE lc.clicked_at >= ${currentStart} AND lc.is_qr = true)::int AS qr_clicks
+          FROM link_clicks lc
+          WHERE lc.link_id = ${id}
+            AND lc.clicked_at >= ${previousStart}
+        `),
+
+        // ---- Timeseries ----
+        db.execute(sql`
+          SELECT
+            to_char(date_trunc('day', lc.clicked_at), 'YYYY-MM-DD') AS date,
+            COUNT(*)::int AS clicks
+          FROM link_clicks lc
+          WHERE lc.link_id = ${id}
+            AND lc.clicked_at >= ${currentStart}
+          GROUP BY date_trunc('day', lc.clicked_at)
+          ORDER BY date_trunc('day', lc.clicked_at) ASC
+        `),
+
+        // ---- Countries ----
+        db.execute(sql`
+          SELECT lc.country AS code, COUNT(*)::int AS clicks
+          FROM link_clicks lc
+          WHERE lc.link_id = ${id}
+            AND lc.clicked_at >= ${currentStart}
+            AND lc.country IS NOT NULL
+          GROUP BY lc.country
+          ORDER BY clicks DESC
+          LIMIT 10
+        `),
+
+        // ---- Devices ----
+        db.execute(sql`
+          SELECT
+            COALESCE(lc.device::text, 'unknown') AS device,
+            COUNT(*)::int AS clicks
+          FROM link_clicks lc
+          WHERE lc.link_id = ${id}
+            AND lc.clicked_at >= ${currentStart}
+          GROUP BY lc.device
+          ORDER BY clicks DESC
+        `),
+
+        // ---- Browsers ----
+        db.execute(sql`
+          SELECT
+            COALESCE(NULLIF(lc.browser, ''), 'Unknown') AS browser,
+            COUNT(*)::int AS clicks
+          FROM link_clicks lc
+          WHERE lc.link_id = ${id}
+            AND lc.clicked_at >= ${currentStart}
+          GROUP BY COALESCE(NULLIF(lc.browser, ''), 'Unknown')
+          ORDER BY clicks DESC
+          LIMIT 8
+        `),
+
+        // ---- Traffic sources ----
+        db.execute(sql`
+          SELECT
+            COALESCE(NULLIF(lc.referrer_source, ''), 'direct') AS source,
+            COUNT(*)::int AS clicks
+          FROM link_clicks lc
+          WHERE lc.link_id = ${id}
+            AND lc.clicked_at >= ${currentStart}
+          GROUP BY COALESCE(NULLIF(lc.referrer_source, ''), 'direct')
+          ORDER BY clicks DESC
+          LIMIT 6
+        `),
+
+        // ---- UTM campaigns (top campaigns with source/medium) ----
+        db.execute(sql`
+          SELECT
+            lc.utm_campaign AS campaign,
+            lc.utm_source AS source,
+            lc.utm_medium AS medium,
+            COUNT(*)::int AS clicks
+          FROM link_clicks lc
+          WHERE lc.link_id = ${id}
+            AND lc.clicked_at >= ${currentStart}
+            AND lc.utm_campaign IS NOT NULL
+            AND lc.utm_campaign != ''
+          GROUP BY lc.utm_campaign, lc.utm_source, lc.utm_medium
+          ORDER BY clicks DESC
+          LIMIT 10
+        `),
+
+        // ---- Recent clicks (latest 50) ----
+        db.execute(sql`
+          SELECT
+            lc.id,
+            lc.clicked_at,
+            lc.country,
+            lc.city,
+            lc.device::text,
+            lc.browser,
+            lc.referrer_source,
+            lc.is_qr
+          FROM link_clicks lc
+          WHERE lc.link_id = ${id}
+          ORDER BY lc.clicked_at DESC
+          LIMIT 50
+        `),
+      ]);
+
+      // ---- Process clicks aggregate ----
+      const aggRow = clicksAggResult.rows[0] as
+        | { current_clicks: number; previous_clicks: number; qr_clicks: number }
+        | undefined;
+      const totalClicks = aggRow?.current_clicks ?? 0;
+      const previousClicks = aggRow?.previous_clicks ?? 0;
+      const qrClicks = aggRow?.qr_clicks ?? 0;
+      const diffPercent =
+        previousClicks === 0 ? null : ((totalClicks - previousClicks) / previousClicks) * 100;
+      const qrShare = totalClicks > 0 ? (qrClicks / totalClicks) * 100 : 0;
+
+      // ---- Timeseries with gap filling ----
+      const tsRaw = timeseriesResult.rows as { date: string; clicks: number }[];
+      const timeseries = fillTimeseriesGaps(tsRaw, currentStart, now);
+
+      let peakDay: PeakDay | null = null;
+      for (const point of timeseries) {
+        if (point.clicks > 0 && (!peakDay || point.clicks > peakDay.clicks)) {
+          peakDay = { date: point.date, clicks: point.clicks };
+        }
+      }
+
+      // ---- Countries ----
+      const countriesRaw = countriesResult.rows as { code: string; clicks: number }[];
+      const totalCountryClicks = countriesRaw.reduce((a, r) => a + r.clicks, 0);
+      const countries: TopCountry[] = countriesRaw.map((r) => ({
+        code: r.code,
+        clicks: r.clicks,
+        percentage: totalCountryClicks > 0 ? (r.clicks / totalCountryClicks) * 100 : 0,
+      }));
+
+      // ---- Devices ----
+      const devicesRaw = devicesResult.rows as { device: string; clicks: number }[];
+      const totalDeviceClicks = devicesRaw.reduce((a, r) => a + r.clicks, 0);
+      const devices: DeviceBreakdown[] = devicesRaw.map((r) => ({
+        device: r.device,
+        clicks: r.clicks,
+        percentage: totalDeviceClicks > 0 ? (r.clicks / totalDeviceClicks) * 100 : 0,
+      }));
+
+      // ---- Browsers ----
+      const browsersRaw = browsersResult.rows as { browser: string; clicks: number }[];
+      const totalBrowserClicks = browsersRaw.reduce((a, r) => a + r.clicks, 0);
+      const browsers: BrowserBreakdown[] = browsersRaw.map((r) => ({
+        browser: r.browser,
+        clicks: r.clicks,
+        percentage: totalBrowserClicks > 0 ? (r.clicks / totalBrowserClicks) * 100 : 0,
+      }));
+
+      // ---- Sources ----
+      const sourcesRaw = sourcesResult.rows as { source: string; clicks: number }[];
+      const totalSourceClicks = sourcesRaw.reduce((a, r) => a + r.clicks, 0);
+      const sources: TrafficSource[] = sourcesRaw.map((r) => ({
+        source: r.source,
+        clicks: r.clicks,
+        percentage: totalSourceClicks > 0 ? (r.clicks / totalSourceClicks) * 100 : 0,
+      }));
+
+      // ---- UTM campaigns ----
+      const utmRaw = utmCampaignsResult.rows as {
+        campaign: string;
+        source: string | null;
+        medium: string | null;
+        clicks: number;
+      }[];
+      const totalUtmClicks = utmRaw.reduce((a, r) => a + r.clicks, 0);
+      const utmCampaigns: UtmCampaign[] = utmRaw.map((r) => ({
+        campaign: r.campaign,
+        source: r.source,
+        medium: r.medium,
+        clicks: r.clicks,
+        percentage: totalUtmClicks > 0 ? (r.clicks / totalUtmClicks) * 100 : 0,
+      }));
+
+      // ---- Recent clicks ----
+      const recentRaw = recentClicksResult.rows as {
+        id: string;
+        clicked_at: string;
+        country: string | null;
+        city: string | null;
+        device: string | null;
+        browser: string | null;
+        referrer_source: string | null;
+        is_qr: boolean;
+      }[];
+      const recentClicks: RecentClick[] = recentRaw.map((r) => ({
+        id: r.id,
+        clickedAt: r.clicked_at,
+        country: r.country,
+        city: r.city,
+        device: r.device,
+        browser: r.browser,
+        referrerSource: r.referrer_source,
+        isQr: r.is_qr,
+      }));
+
+      const body: LinkAnalytics = {
+        linkId: id,
+        range,
+        periodStart: currentStart.toISOString(),
+        periodEnd: now.toISOString(),
+        totalClicks,
+        previousClicks,
+        diffPercent,
+        qrClicks,
+        qrShare,
+        timeseries,
+        peakDay,
+        countries,
+        devices,
+        browsers,
+        sources,
+        utmCampaigns,
+        recentClicks,
+      };
+
+      return { status: 200, body };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, {
+        genericMsg: 'Error loading link analytics',
       });
     }
   },

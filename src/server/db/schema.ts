@@ -13,6 +13,8 @@ import {
   boolean,
   primaryKey,
   unique,
+  uniqueIndex,
+  index,
   jsonb,
 } from "drizzle-orm/pg-core";
 
@@ -190,49 +192,78 @@ export const links = pgTable(
     ...softDelete,
     ...timestamps,
   },
-  (t) => [unique().on(t.userId, t.slug)],
+  (t) => [
+    unique().on(t.userId, t.slug),
+    // List/filter links by user — covers pagination, soft-delete filter, sorting
+    index("links_user_deleted_created_idx").on(t.userId, t.deletedAt, t.createdAt),
+    // Dashboard analytics: filter by user + product
+    index("links_user_deleted_product_idx").on(t.userId, t.deletedAt, t.productId),
+    // Link checker cron: pick enabled links ordered by last check
+    index("links_enabled_deleted_checked_idx").on(t.isEnabled, t.deletedAt, t.lastCheckedAt),
+    // Broken links queries (dashboard health banner, digest)
+    index("links_user_deleted_status_idx").on(t.userId, t.deletedAt, t.status),
+  ],
 );
 
 // ─── Link Clicks ─────────────────────────────────────────────────────
 
-export const linkClicks = pgTable("link_clicks", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  linkId: uuid("link_id")
-    .notNull()
-    .references(() => links.id, { onDelete: "cascade" }),
-  clickedAt: timestamp("clicked_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  country: text("country"),
-  city: text("city"),
-  device: deviceEnum("device"),
-  os: text("os"),
-  browser: text("browser"),
-  userAgent: text("user_agent"),
-  referrer: text("referrer"),
-  referrerSource: text("referrer_source"), // youtube | instagram | twitter | direct | other
-  isQr: boolean("is_qr").notNull().default(false),
-  usedFallback: boolean("used_fallback").notNull().default(false),
-  ipHash: text("ip_hash"),
-  utmSource: text("utm_source"),
-  utmMedium: text("utm_medium"),
-  utmCampaign: text("utm_campaign"),
-});
+export const linkClicks = pgTable(
+  "link_clicks",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    linkId: uuid("link_id")
+      .notNull()
+      .references(() => links.id, { onDelete: "cascade" }),
+    clickedAt: timestamp("clicked_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    country: text("country"),
+    city: text("city"),
+    device: deviceEnum("device"),
+    os: text("os"),
+    browser: text("browser"),
+    userAgent: text("user_agent"),
+    referrer: text("referrer"),
+    referrerSource: text("referrer_source"), // youtube | instagram | twitter | direct | other
+    isQr: boolean("is_qr").notNull().default(false),
+    usedFallback: boolean("used_fallback").notNull().default(false),
+    ipHash: text("ip_hash"),
+    utmSource: text("utm_source"),
+    utmMedium: text("utm_medium"),
+    utmCampaign: text("utm_campaign"),
+    utmContent: text("utm_content"),
+    utmTerm: text("utm_term"),
+  },
+  (t) => [
+    // Primary workhorse: covers all analytics queries (agg, timeseries, countries, devices, browsers, sources, UTM)
+    // Both dashboard (JOIN link_clicks ON link_id + clicked_at range) and per-link (WHERE link_id + clicked_at range)
+    index("link_clicks_link_clicked_idx").on(t.linkId, t.clickedAt),
+    // Recent clicks query: WHERE link_id ORDER BY clicked_at DESC LIMIT 50
+    // The above index works for this too (backward scan), but no additional index needed
+  ],
+);
 
 // ─── Link Checks ─────────────────────────────────────────────────────
 
-export const linkChecks = pgTable("link_checks", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  linkId: uuid("link_id")
-    .notNull()
-    .references(() => links.id, { onDelete: "cascade" }),
-  statusCode: integer("status_code"),
-  responseMs: integer("response_ms"),
-  isBroken: boolean("is_broken").notNull(),
-  checkedAt: timestamp("checked_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const linkChecks = pgTable(
+  "link_checks",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    linkId: uuid("link_id")
+      .notNull()
+      .references(() => links.id, { onDelete: "cascade" }),
+    statusCode: integer("status_code"),
+    responseMs: integer("response_ms"),
+    isBroken: boolean("is_broken").notNull(),
+    checkedAt: timestamp("checked_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    // Cron: query checks by link ordered by checked_at for history
+    index("link_checks_link_checked_idx").on(t.linkId, t.checkedAt),
+  ],
+);
 
 // ─── User Settings ───────────────────────────────────────────────────
 

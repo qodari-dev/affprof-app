@@ -21,6 +21,8 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LinkAnalytics } from './link-analytics';
 import { useProfile } from '@/hooks/queries/use-profile-queries';
 import {
   getPrimaryVerifiedCustomDomainHostname,
@@ -347,35 +349,46 @@ export function LinkInfo({
           </SheetTitle>
           <SheetDescription>Link details, monitoring status, and performance.</SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-6 px-6 pb-2">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/20 px-4 py-3">
-            <div className="flex flex-col gap-1">
-              <span className="text-sm font-medium">Link availability</span>
-              <span className="text-sm text-muted-foreground">
-                {isEnabled
-                  ? 'This short link is active and can redirect visitors.'
-                  : 'This short link is disabled and currently returns not found.'}
-              </span>
+        <Tabs defaultValue="overview" className="px-6 pb-2">
+          <TabsList variant="line" className="mb-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview">
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/20 px-4 py-3">
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-medium">Link availability</span>
+                  <span className="text-sm text-muted-foreground">
+                    {isEnabled
+                      ? 'This short link is active and can redirect visitors.'
+                      : 'This short link is disabled and currently returns not found.'}
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant={isEnabled ? 'outline' : 'default'}
+                  onClick={() => void handleToggleEnabled()}
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? (
+                    <Loader2 className="animate-spin" />
+                  ) : isEnabled ? (
+                    <PowerOff />
+                  ) : (
+                    <Power />
+                  )}
+                  {isEnabled ? 'Disable link' : 'Enable link'}
+                </Button>
+              </div>
+              <DescriptionList sections={sections} />
+              {shortUrl && <QrPreview shortUrl={shortUrl} slug={link.slug} brand={link.brand} />}
             </div>
-            <Button
-              type="button"
-              variant={isEnabled ? 'outline' : 'default'}
-              onClick={() => void handleToggleEnabled()}
-              disabled={isUpdating}
-            >
-              {isUpdating ? (
-                <Loader2 className="animate-spin" />
-              ) : isEnabled ? (
-                <PowerOff />
-              ) : (
-                <Power />
-              )}
-              {isEnabled ? 'Disable link' : 'Enable link'}
-            </Button>
-          </div>
-          <DescriptionList sections={sections} />
-          {shortUrl && <QrPreview shortUrl={shortUrl} slug={link.slug} brand={link.brand} />}
-        </div>
+          </TabsContent>
+          <TabsContent value="analytics">
+            <LinkAnalytics linkId={link.id} />
+          </TabsContent>
+        </Tabs>
       </SheetContent>
     </Sheet>
   );
