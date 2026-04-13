@@ -13,7 +13,6 @@ import {
   boolean,
   primaryKey,
   unique,
-  uniqueIndex,
   index,
   jsonb,
 } from "drizzle-orm/pg-core";
@@ -68,16 +67,15 @@ export const weekdayEnum = pgEnum("weekday", [
   "sunday",
 ]);
 
-export const notificationDispatchTypeEnum = pgEnum("notification_dispatch_type", [
-  "broken_links",
-  "weekly_digest",
-]);
+export const notificationDispatchTypeEnum = pgEnum(
+  "notification_dispatch_type",
+  ["broken_links", "weekly_digest"],
+);
 
-export const notificationDispatchStatusEnum = pgEnum("notification_dispatch_status", [
-  "processing",
-  "sent",
-  "failed",
-]);
+export const notificationDispatchStatusEnum = pgEnum(
+  "notification_dispatch_status",
+  ["processing", "sent", "failed"],
+);
 
 // ─── Users ───────────────────────────────────────────────────────────
 
@@ -167,7 +165,9 @@ export const links = pgTable(
     productId: uuid("product_id")
       .notNull()
       .references(() => products.id, { onDelete: "cascade" }),
-    brandId: uuid("brand_id").references(() => brands.id, { onDelete: "set null" }),
+    brandId: uuid("brand_id").references(() => brands.id, {
+      onDelete: "set null",
+    }),
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -195,11 +195,23 @@ export const links = pgTable(
   (t) => [
     unique().on(t.userId, t.slug),
     // List/filter links by user — covers pagination, soft-delete filter, sorting
-    index("links_user_deleted_created_idx").on(t.userId, t.deletedAt, t.createdAt),
+    index("links_user_deleted_created_idx").on(
+      t.userId,
+      t.deletedAt,
+      t.createdAt,
+    ),
     // Dashboard analytics: filter by user + product
-    index("links_user_deleted_product_idx").on(t.userId, t.deletedAt, t.productId),
+    index("links_user_deleted_product_idx").on(
+      t.userId,
+      t.deletedAt,
+      t.productId,
+    ),
     // Link checker cron: pick enabled links ordered by last check
-    index("links_enabled_deleted_checked_idx").on(t.isEnabled, t.deletedAt, t.lastCheckedAt),
+    index("links_enabled_deleted_checked_idx").on(
+      t.isEnabled,
+      t.deletedAt,
+      t.lastCheckedAt,
+    ),
     // Broken links queries (dashboard health banner, digest)
     index("links_user_deleted_status_idx").on(t.userId, t.deletedAt, t.status),
   ],
@@ -295,7 +307,9 @@ export const notificationDispatches = pgTable(
     toEmail: text("to_email").notNull(),
     ccEmail: text("cc_email"),
     subject: text("subject").notNull(),
-    status: notificationDispatchStatusEnum("status").notNull().default("processing"),
+    status: notificationDispatchStatusEnum("status")
+      .notNull()
+      .default("processing"),
     providerMessageId: text("provider_message_id"),
     error: text("error"),
     payload: jsonb("payload")

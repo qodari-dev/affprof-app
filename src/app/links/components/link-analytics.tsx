@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -11,17 +11,16 @@ import {
   QrCode,
   Smartphone,
   Tablet,
-} from 'lucide-react';
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+} from "lucide-react";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
-import { cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from "@/lib/utils";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from '@/components/ui/chart';
+} from "@/components/ui/chart";
 import {
   Table,
   TableBody,
@@ -29,9 +28,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useLinkAnalytics } from '@/hooks/queries/use-analytics-queries';
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useLinkAnalytics } from "@/hooks/queries/use-analytics-queries";
 import type {
   DashboardRange,
   BrowserBreakdown,
@@ -40,21 +39,21 @@ import type {
   TopCountry,
   TrafficSource,
   UtmCampaign,
-} from '@/schemas/analytics';
+} from "@/schemas/analytics";
 
 // ============================================
 // CONFIG
 // ============================================
 
 const RANGE_OPTIONS: { value: DashboardRange; label: string }[] = [
-  { value: '7d', label: '7d' },
-  { value: '30d', label: '30d' },
-  { value: '90d', label: '90d' },
-  { value: '180d', label: '180d' },
+  { value: "7d", label: "7d" },
+  { value: "30d", label: "30d" },
+  { value: "90d", label: "90d" },
+  { value: "180d", label: "180d" },
 ];
 
 const chartConfig = {
-  clicks: { label: 'Clicks', color: 'var(--chart-1)' },
+  clicks: { label: "Clicks", color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
 // ============================================
@@ -62,37 +61,45 @@ const chartConfig = {
 // ============================================
 
 function formatNumber(n: number) {
-  return new Intl.NumberFormat('en-US').format(n);
+  return new Intl.NumberFormat("en-US").format(n);
 }
 
 function formatDateShort(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function countryFlag(code: string) {
-  if (!code || code.length !== 2) return '🌐';
+  if (!code || code.length !== 2) return "🌐";
   const base = 0x1f1e6;
   return code
     .toUpperCase()
-    .split('')
-    .map((c) => String.fromCodePoint(base + (c.charCodeAt(0) - 'A'.charCodeAt(0))))
-    .join('');
+    .split("")
+    .map((c) =>
+      String.fromCodePoint(base + (c.charCodeAt(0) - "A".charCodeAt(0))),
+    )
+    .join("");
 }
 
-const DEVICE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+const DEVICE_ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
   mobile: Smartphone,
   desktop: Monitor,
   tablet: Tablet,
 };
 
 const SOURCE_COLORS: Record<string, string> = {
-  youtube: 'bg-red-500',
-  instagram: 'bg-pink-500',
-  twitter: 'bg-sky-500',
-  tiktok: 'bg-neutral-800 dark:bg-neutral-200',
-  direct: 'bg-emerald-500',
-  facebook: 'bg-blue-600',
-  other: 'bg-neutral-400',
+  youtube: "bg-red-500",
+  instagram: "bg-pink-500",
+  twitter: "bg-sky-500",
+  tiktok: "bg-neutral-800 dark:bg-neutral-200",
+  direct: "bg-emerald-500",
+  facebook: "bg-blue-600",
+  other: "bg-neutral-400",
 };
 
 // ============================================
@@ -100,7 +107,7 @@ const SOURCE_COLORS: Record<string, string> = {
 // ============================================
 
 export function LinkAnalytics({ linkId }: { linkId: string }) {
-  const [range, setRange] = React.useState<DashboardRange>('30d');
+  const [range, setRange] = React.useState<DashboardRange>("30d");
   const { data, isLoading } = useLinkAnalytics(linkId, { range });
   const analytics = data?.body;
 
@@ -115,14 +122,15 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
       {/* Range selector */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {formatNumber(totalClicks)} {totalClicks === 1 ? 'click' : 'clicks'} in period
+          {formatNumber(totalClicks)} {totalClicks === 1 ? "click" : "clicks"}{" "}
+          in period
           {diffPercent !== null && (
             <span
               className={cn(
-                'ml-2 inline-flex items-center gap-0.5 text-xs font-medium',
+                "ml-2 inline-flex items-center gap-0.5 text-xs font-medium",
                 diffPercent >= 0
-                  ? 'text-emerald-600 dark:text-emerald-500'
-                  : 'text-red-600 dark:text-red-500',
+                  ? "text-emerald-600 dark:text-emerald-500"
+                  : "text-red-600 dark:text-red-500",
               )}
             >
               {diffPercent >= 0 ? (
@@ -141,10 +149,10 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
               type="button"
               onClick={() => setRange(opt.value)}
               className={cn(
-                'px-2.5 py-1 text-xs font-medium rounded-sm transition-colors',
+                "px-2.5 py-1 text-xs font-medium rounded-sm transition-colors",
                 range === opt.value
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground',
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               {opt.label}
@@ -163,7 +171,11 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
         <MiniKpi
           icon={QrCode}
           label="QR scans"
-          value={qrClicks > 0 ? `${formatNumber(qrClicks)} (${qrShare.toFixed(0)}%)` : '0'}
+          value={
+            qrClicks > 0
+              ? `${formatNumber(qrClicks)} (${qrShare.toFixed(0)}%)`
+              : "0"
+          }
         />
         <MiniKpi
           icon={Globe2}
@@ -243,12 +255,23 @@ function ClicksChart({
         )}
       </div>
       {hasData ? (
-        <ChartContainer config={chartConfig} className="h-[180px] w-full">
-          <AreaChart data={data} margin={{ left: 0, right: 4, top: 4, bottom: 0 }}>
+        <ChartContainer config={chartConfig} className="h-45 w-full">
+          <AreaChart
+            data={data}
+            margin={{ left: 0, right: 4, top: 4, bottom: 0 }}
+          >
             <defs>
               <linearGradient id="linkFillClicks" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-clicks)" stopOpacity={0.5} />
-                <stop offset="95%" stopColor="var(--color-clicks)" stopOpacity={0.05} />
+                <stop
+                  offset="5%"
+                  stopColor="var(--color-clicks)"
+                  stopOpacity={0.5}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="var(--color-clicks)"
+                  stopOpacity={0.05}
+                />
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -270,14 +293,14 @@ function ClicksChart({
               className="text-[10px]"
             />
             <ChartTooltip
-              cursor={{ stroke: 'var(--border)', strokeDasharray: '3 3' }}
+              cursor={{ stroke: "var(--border)", strokeDasharray: "3 3" }}
               content={
                 <ChartTooltipContent
                   labelFormatter={(v) =>
-                    new Date(v).toLocaleDateString('en-US', {
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric',
+                    new Date(v).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
                     })
                   }
                 />
@@ -293,7 +316,7 @@ function ClicksChart({
           </AreaChart>
         </ChartContainer>
       ) : (
-        <div className="flex h-[180px] items-center justify-center text-xs text-muted-foreground">
+        <div className="flex h-45 items-center justify-center text-xs text-muted-foreground">
           No clicks in this period.
         </div>
       )}
@@ -318,8 +341,8 @@ function SourcesList({ sources }: { sources: TrafficSource[] }) {
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
               <div
                 className={cn(
-                  'h-full rounded-full',
-                  SOURCE_COLORS[s.source.toLowerCase()] ?? 'bg-neutral-400',
+                  "h-full rounded-full",
+                  SOURCE_COLORS[s.source.toLowerCase()] ?? "bg-neutral-400",
                 )}
                 style={{ width: `${Math.max(s.percentage, 2)}%` }}
               />
@@ -340,7 +363,10 @@ function DevicesList({ devices }: { devices: DeviceBreakdown[] }) {
         {devices.map((d) => {
           const Icon = DEVICE_ICONS[d.device] ?? Monitor;
           return (
-            <div key={d.device} className="flex items-center justify-between text-xs">
+            <div
+              key={d.device}
+              className="flex items-center justify-between text-xs"
+            >
               <div className="flex items-center gap-2">
                 <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="capitalize font-medium">{d.device}</span>
@@ -363,7 +389,10 @@ function CountriesList({ countries }: { countries: TopCountry[] }) {
       <p className="text-sm font-medium mb-3">Countries</p>
       <div className="flex flex-col gap-2">
         {countries.map((c) => (
-          <div key={c.code} className="flex items-center justify-between text-xs">
+          <div
+            key={c.code}
+            className="flex items-center justify-between text-xs"
+          >
             <span>
               <span className="mr-1.5">{countryFlag(c.code)}</span>
               <span className="font-medium">{c.code}</span>
@@ -385,7 +414,10 @@ function BrowsersList({ browsers }: { browsers: BrowserBreakdown[] }) {
       <p className="text-sm font-medium mb-3">Browsers</p>
       <div className="flex flex-col gap-2">
         {browsers.map((b) => (
-          <div key={b.browser} className="flex items-center justify-between text-xs">
+          <div
+            key={b.browser}
+            className="flex items-center justify-between text-xs"
+          >
             <span className="font-medium">{b.browser}</span>
             <span className="text-muted-foreground">
               {formatNumber(b.clicks)} · {b.percentage.toFixed(0)}%
@@ -413,7 +445,9 @@ function RecentClicksTable({ clicks }: { clicks: RecentClick[] }) {
     <div className="rounded-lg border">
       <div className="px-4 pt-4 pb-2">
         <p className="text-sm font-medium">Recent clicks</p>
-        <p className="text-xs text-muted-foreground">Last {clicks.length} clicks</p>
+        <p className="text-xs text-muted-foreground">
+          Last {clicks.length} clicks
+        </p>
       </div>
       <Table>
         <TableHeader>
@@ -428,11 +462,11 @@ function RecentClicksTable({ clicks }: { clicks: RecentClick[] }) {
           {clicks.map((click) => (
             <TableRow key={click.id}>
               <TableCell className="text-xs whitespace-nowrap">
-                {new Date(click.clickedAt).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
+                {new Date(click.clickedAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
                 })}
               </TableCell>
               <TableCell className="text-xs">
@@ -446,7 +480,7 @@ function RecentClicksTable({ clicks }: { clicks: RecentClick[] }) {
                 )}
               </TableCell>
               <TableCell className="text-xs capitalize">
-                {click.device ?? '—'}
+                {click.device ?? "—"}
                 {click.isQr && (
                   <span className="ml-1.5 inline-flex items-center text-muted-foreground">
                     <QrCode className="h-3 w-3" />
@@ -454,7 +488,7 @@ function RecentClicksTable({ clicks }: { clicks: RecentClick[] }) {
                 )}
               </TableCell>
               <TableCell className="text-xs capitalize">
-                {click.referrerSource ?? 'direct'}
+                {click.referrerSource ?? "direct"}
               </TableCell>
             </TableRow>
           ))}
@@ -482,15 +516,17 @@ function UtmCampaignsList({ campaigns }: { campaigns: UtmCampaign[] }) {
             <TableHead className="text-xs">Campaign</TableHead>
             <TableHead className="text-xs">Source / Medium</TableHead>
             <TableHead className="text-xs text-right">Clicks</TableHead>
-            <TableHead className="text-xs text-right w-[70px]">Share</TableHead>
+            <TableHead className="text-xs text-right w-17.5">Share</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {campaigns.map((c, i) => (
             <TableRow key={`${c.campaign}-${c.source}-${c.medium}-${i}`}>
-              <TableCell className="text-xs font-medium">{c.campaign}</TableCell>
+              <TableCell className="text-xs font-medium">
+                {c.campaign}
+              </TableCell>
               <TableCell className="text-xs text-muted-foreground">
-                {[c.source, c.medium].filter(Boolean).join(' / ') || '—'}
+                {[c.source, c.medium].filter(Boolean).join(" / ") || "—"}
               </TableCell>
               <TableCell className="text-xs text-right font-medium">
                 {formatNumber(c.clicks)}
@@ -510,7 +546,9 @@ function EmptyCard({ title }: { title: string }) {
   return (
     <div className="rounded-lg border p-4">
       <p className="text-sm font-medium mb-3">{title}</p>
-      <p className="text-xs text-muted-foreground text-center py-4">No data yet.</p>
+      <p className="text-xs text-muted-foreground text-center py-4">
+        No data yet.
+      </p>
     </div>
   );
 }
@@ -527,12 +565,12 @@ function LinkAnalyticsSkeleton() {
         <Skeleton className="h-16" />
         <Skeleton className="h-16" />
       </div>
-      <Skeleton className="h-[220px]" />
+      <Skeleton className="h-55" />
       <div className="grid grid-cols-2 gap-4">
-        <Skeleton className="h-[160px]" />
-        <Skeleton className="h-[160px]" />
+        <Skeleton className="h-40" />
+        <Skeleton className="h-40" />
       </div>
-      <Skeleton className="h-[200px]" />
+      <Skeleton className="h-50" />
     </div>
   );
 }

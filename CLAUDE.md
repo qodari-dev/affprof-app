@@ -2,229 +2,88 @@
 
 # AffProf — Affiliate Link Manager
 
-## What is this
+SaaS for content creators and affiliate marketers. One place to manage affiliate
+links — short links, QR codes, click analytics, and alerts when links break.
 
-SaaS for content creators and affiliate marketers.
-Manage all your affiliate links in one place — create short links, generate QR codes,
-track clicks and metrics, and get alerted when a link goes down.
-
-## Core value proposition
-
-"Never lose affiliate commissions to broken links or blind traffic again."
-
-## Core user flow
-
-1. User registers → account created in IAM + local users table
-2. User creates a product (e.g. "Blue Yeti Microphone")
-3. User adds affiliate links under that product (Amazon, ShareASale, etc.)
-4. App generates a short link → affprof.com/go/[slug]
-5. App generates a QR code for that short link automatically
-6. Every click on the short link is logged before redirecting
-7. Cron job runs every 24h → pings original affiliate URLs → saves status
-8. If link is broken → send alert email via Resend
-9. Dashboard shows: clicks, sources, devices, countries, link status, etc
+**Value prop**: "Never lose affiliate commissions to broken links or blind traffic again."
 
 ## Tech stack
 
-- **Framework**: Next.js (App Router)
-- **Database**: Postgres
-- **Auth**: External IAM
-- **Cron**: Vercel Cron or regular cron depends at the end
+- **Framework**: Next.js (App Router) — see `AGENTS.md`, this is a non-standard version
+- **Database**: Postgres + Drizzle ORM (`src/server/db/schema.ts` is the source of truth)
+- **API layer**: `ts-rest` contracts + handlers in `src/server/api/`
+- **Frontend data**: `@ts-rest/react-query` hooks in `src/hooks/queries/`
+- **Schemas**: Zod schemas in `src/schemas/` for bodies, queries, and shared types
+- **Auth**: External IAM (`auth.affprof.com`), JWT with `user_id` as PK
 - **Email**: Resend
-- **Payments**: Stripe Checkout (hosted)
-- **Deploy**: Vercel or dokploy or something like that to better control
-- **QR generation**: library npm
+- **Payments**: Stripe Checkout (hosted) + webhooks
+- **QR generation**: `qrcode` npm package + branded QR with logo overlay
+- **UI**: shadcn/ui (Base UI) components in `src/components/ui/`
+- **Charts**: Recharts via `src/components/ui/chart.tsx`
 
 ## Repos
 
-- affprof-web → affprof.com (landing, pricing, marketing)
-- affprof-app → app.affprof.com (dashboard, auth, cron)
+- `affprof-web` → `affprof.com` (landing, pricing)
+- `affprof-app` → `app.affprof.com` (this repo — dashboard, auth, cron, API)
 
 ## URL structure
 
-- affprof.com → landing page (public)
-- app.affprof.com → dashboard (auth required)
-- auth.affprof.com → IAM login (handled by IAM)
-- affprof.com/go/[slug] → short link redirect (public, logs click)
+- `affprof.com` → landing (public)
+- `app.affprof.com` → dashboard (auth required)
+- `auth.affprof.com` → IAM login (handled externally)
+- `affprof.com/go/[account]/[slug]` → short link redirect (public, logs click, < 50ms)
 
-## Auth flow (IAM)
+## Key architectural decisions
 
-- IAM account: AffProf
-- IAM app: AffProf App (has client_key, secret, callback URL)
-- On login: app redirects to auth.affprof.com → IAM handles login/2FA
-  → redirects back with code → app exchanges code for JWT token
-- JWT contains user_id — use this as the primary key in local DB
-- No local password handling. IAM owns all auth logic.
-- On register: app calls IAM POST /register → IAM creates user
-  → returns token → app creates local users row
+### Auth & identity
+- IAM owns all auth (login, 2FA, register, password reset). No local password handling.
+- JWT `user_id` is the PK in the local `users` table (text, not UUID).
+- On login: redirect to IAM → callback exchanges code for JWT.
+- On register: call IAM `/register` → create local `users` row.
 
-## Subscription logic
+### Subscriptions
+- Status lives in the **app DB**, not IAM. IAM = identity. App DB = billing.
+- Stripe webhooks are the source of truth for subscription status changes.
+- Gate dashboard on `subscriptions.status === 'active'`.
 
-- Subscription status lives in the app DB, NOT in IAM
-- IAM = who you are. App DB = if you paid.
-- Stripe sends webhooks on every status change → app updates subscriptions.status
-- Before showing dashboard: check subscriptions.status = 'active'
+### Data model
+- All tables are user-scoped. **Every query must filter by `user_id`.**
+- Soft delete (`deleted_at`) on products and links.
+- Cascade delete on child/pivot tables (`link_clicks`, `link_checks`, `link_tags`).
+- Links support UTM params (`utm_source`, `utm_medium`, etc.), fallback URLs, and QR brands.
 
-## Database schema inicial idea
+### API patterns
+- Contracts in `src/server/api/contracts/`, handlers in `src/server/api/handlers/`.
+- Both registered in their respective `index.ts` barrel files.
+- Follow existing patterns (see `link.ts`, `product.ts`, `analytics.ts`) when adding new resources.
+- Use `genericTsRestErrorResponse` for error handling, `getAuthContext` for auth.
 
-### users
+### Analytics
+- **Dashboard** (`GET /api/v1/analytics/dashboard`): aggregated KPIs, timeseries, top links/products, traffic sources, countries, broken links. Supports `range` (7d/30d/90d/180d/360d) and optional `productId` filter.
+- **Per-link** (`GET /api/v1/analytics/link/:id`): same breakdowns scoped to a single link + device/browser breakdown + recent clicks table. Supports `range`.
+- Queries use raw SQL via drizzle `sql` template for aggregations with `Promise.all`.
 
-- id TEXT PK — user_id from IAM JWT
-- email TEXT
-- name TEXT
-- slug or account TEXT // for shorling generate
-- created_at TIMESTAMP
+### Short link redirect
+- Route: `/go/[account]/[slug]`. Must be fast (< 50ms).
+- Parse UA / referrer / IP / geo → log click → 302 redirect.
+- Detect QR scans via `?qr=1` param. Track `used_fallback` for geo-routing.
 
-### subscriptions
+### Cron / link monitoring
+- Runs every 24h for users with active subscriptions.
+- `GET` original URL with 10s timeout; log to `link_checks`.
+- After N consecutive failures → `status = 'broken'` → alert email (respects `user_settings`).
 
-- id UUID PK
-- user_id TEXT FK → users.id
-- stripe_customer_id TEXT
-- stripe_subscription_id TEXT
-- status TEXT — active | past_due | canceled | paused
-- plan TEXT — free | pro | pro_annual
-- current_period_end TIMESTAMP
-- canceled_at TIMESTAMP
-- created_at TIMESTAMP
+## Non-negotiable rules
 
-### products
-
-- id UUID PK
-- user_id TEXT FK → users.id
-- name TEXT
-- description TEXT
-- created_at TIMESTAMP
-
-### links
-
-- id UUID PK
-- product_id UUID FK → products.id
-- original_url TEXT — the real affiliate URL
-- slug TEXT UNIQUE — short link slug (e.g. "blueyeti-amazon")
-- platform TEXT — amazon | shareasale | impact | other
-- status TEXT — active | broken | unknown
-- last_checked_at TIMESTAMP
-- last_status_code INT
-- last_response_ms INT
-- consecutive_failures INT DEFAULT 0
-- total_clicks INT DEFAULT 0
-- created_at TIMESTAMP
-
-### link_clicks (every click event)
-
-- id UUID PK
-- link_id UUID FK → links.id
-- clicked_at TIMESTAMP
-- country TEXT — from IP geolocation
-- city TEXT
-- device TEXT — mobile | desktop | tablet
-- os TEXT — iOS | Android | Windows | macOS | other
-- browser TEXT — Chrome | Safari | Firefox | other
-- referrer TEXT — full referrer URL
-- referrer_source TEXT — youtube | instagram | twitter | direct | other
-- is_qr BOOLEAN — came from QR code scan?
-- ip_hash TEXT — hashed for privacy, not raw IP
-
-### link_checks (monitoring history)
-
-- id UUID PK
-- link_id UUID FK → links.id
-- status_code INT
-- response_ms INT
-- is_broken BOOLEAN
-- checked_at TIMESTAMP
-
-## Short link redirect logic (affprof.com/go/[account]/[slug])
-
-1. Request hits Next.js API route /go/[account]/[slug]
-2. Look up link by account and slug in DB
-3. Log click: parse user-agent, referrer, IP, country, etc → save to link_clicks
-4. Detect if request is from QR (via ?qr=1 param or known QR scanners)
-5. Increment links.total_clicks
-6. Return 302 redirect to original_url
-7. Total time < 50ms — user doesn't notice (maybe queue to redirect fast but take all the data needed)
-
-## QR Code generation
-
-- Generated server-side using 'qrcode' npm package if that one is the one of the best
-- QR points to: affprof.com/go/[account]/[slug]?qr=1
-- Stored as base64 PNG in DB or generated on-the-fly
-- Available for download (PNG)
-
-## Click analytics (dashboard)
-
-Per link:
-
-- Total clicks (all time, this month, this week, today)
-- Clicks over time chart (daily)
-- Top countries (pie or bar)
-- Top referrer sources (YouTube, Instagram, Twitter, Direct, Other)
-- Device split (mobile vs desktop)
-- QR vs link clicks
-
-Per product (aggregate of all links):
-
-- Best performing link
-- Total clicks across all links
-
-## Cron job logic (runs every 24h via Vercel Cron or regular cron depends on final decision)
-
-1. Fetch all links where user has active subscription
-2. For each link: GET request to original_url with 10s timeout
-3. If status 200 → update status=active, consecutive_failures=0
-4. If status 4xx/5xx or timeout → increment consecutive_failures
-5. If consecutive_failures >= 2 → update status=broken, send alert email -> depends on settings need to think better
-6. Save row in link_checks every run
-7. Free plan: only check links, no click analytics (depends on the plan we design at the end)
-
-## Email alerts (Resend)
-
-- Trigger: link status changes to broken
-- To: user email
-- Subject: "[AffProf] Your link for [product name] is broken"
-- Body: original URL, platform, since when, link to dashboard to fix
-- One email per broken link (not batched)
-- Weekly summary email (Pro): all link statuses + top performing links
-
-## Stripe webhooks to handle -> double check if there are more
-
-- checkout.session.completed → create subscription, status=active
-- invoice.payment_succeeded → update current_period_end
-- invoice.payment_failed → status=past_due
-- customer.subscription.deleted → status=canceled, canceled_at=now
-- customer.subscription.paused → status=paused
-
-## MVP scope (build this first)
-
-- [ ] Auth with IAM (login, register, logout, callback)
-- [ ] Create / edit / delete products
-- [ ] Add / edit / delete links per product
-- [ ] Auto-generate slug for each link
-- [ ] Short link redirect with click logging (/go/[account]/[slug])
-- [ ] QR code generation per link (downloadable PNG)
-- [ ] Dashboard: links list with status badges + total clicks
-- [ ] Click analytics per link (basic: total, country, device, source)
-- [ ] Manual link check button
-- [ ] Cron job 24h automatic check
-- [ ] Email alert when link goes broken
-- [ ] Stripe Checkout (free vs basic vs pro) maybe free no not sure
-- [ ] Webhook handler for Stripe events
-- [ ] Weekly digest email
-- [ ] Basic landing page with pricing
+- **Always filter DB queries by `user_id`.** Users must never see another user's data.
+- **Never store raw IPs.** Hash them (`ip_hash`) for privacy.
+- **Keep `/go/[account]/[slug]` fast.** No heavy work in the redirect path.
+- **Cron only runs for active subscriptions.**
 
 ## Out of scope for MVP
 
-- Import from Amazon Associates / ShareASale API
-- Affiliate tag protection / hijack detection
-- Team members / shared access
+- Amazon/ShareASale API imports
+- Affiliate hijack detection
 - A/B testing links
-- Custom branded short domains
+- Team members / shared access
 - Mobile app
-
-## Key rules
-
-- Always filter DB queries by user_id — users only see their own data
-- Never store raw IPs — hash them for privacy
-- /go/[account]/[slug] route must be fast
-- Cron only runs checks for users with status = active subscription
-- Generate slug from product name + platform, allow manual override
