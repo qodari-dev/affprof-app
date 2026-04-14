@@ -2,6 +2,7 @@
 
 import { AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import type { BrokenLink } from '@/schemas/analytics';
 
@@ -10,6 +11,8 @@ interface DashboardHealthBannerProps {
 }
 
 export function DashboardHealthBanner({ brokenLinks }: DashboardHealthBannerProps) {
+  const t = useTranslations('dashboard.healthBanner');
+
   if (brokenLinks.length === 0) return null;
 
   const first = brokenLinks[0];
@@ -22,13 +25,13 @@ export function DashboardHealthBanner({ brokenLinks }: DashboardHealthBannerProp
         <div>
           <p className="font-medium text-red-900 dark:text-red-200">
             {count === 1
-              ? `1 link is broken right now`
-              : `${count} links are broken right now`}
+              ? t('singleBroken')
+              : t('multipleBroken', { count })}
           </p>
           <p className="text-sm text-red-800/80 dark:text-red-300/80 mt-0.5">
             {count === 1
               ? `/${first.slug} in ${first.productName}`
-              : `Including /${first.slug} in ${first.productName}`}
+              : t('including', { slug: first.slug, productName: first.productName })}
           </p>
         </div>
       </div>
@@ -37,7 +40,7 @@ export function DashboardHealthBanner({ brokenLinks }: DashboardHealthBannerProp
           variant="outline"
           className="border-red-300 bg-white hover:bg-red-50 dark:bg-red-950 dark:border-red-800 dark:hover:bg-red-900"
         >
-          Fix now
+          {t('fixNow')}
         </Button>
       </Link>
     </div>

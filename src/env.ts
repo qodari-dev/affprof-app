@@ -43,12 +43,28 @@ export const env = createEnv({
 
     // Scheduler
     PAUSE_SCHEDULER: z
-      .union([z.literal("true"), z.literal("false"), z.literal("1"), z.literal("0")])
+      .union([
+        z.literal("true"),
+        z.literal("false"),
+        z.literal("1"),
+        z.literal("0"),
+      ])
       .optional(),
     LINK_CHECKER_CRON: z.string().optional().default("0 * * * *"),
-    LINK_CHECKER_BATCH_SIZE: z.coerce.number().int().positive().optional().default(25),
+    LINK_CHECKER_BATCH_SIZE: z.coerce
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .default(25),
     WEEKLY_DIGEST_CRON: z.string().optional().default("0 * * * *"),
-    WEEKLY_DIGEST_HOUR: z.coerce.number().int().min(0).max(23).optional().default(9),
+    WEEKLY_DIGEST_HOUR: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .max(23)
+      .optional()
+      .default(9),
     SCHEDULER_TIMEZONE: z.string().optional().default("America/Bogota"),
 
     // Email alerts

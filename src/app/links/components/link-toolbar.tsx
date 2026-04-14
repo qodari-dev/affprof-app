@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Check, FileUp, Plus, PlusCircle, RefreshCw, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +31,8 @@ interface ToolbarSelectFilterProps {
   value?: string;
   options: FilterOption[];
   onValueChange: (value: string | undefined) => void;
+  clearFilterLabel: string;
+  noResultsLabel: string;
 }
 
 function ToolbarSelectFilter({
@@ -37,6 +40,8 @@ function ToolbarSelectFilter({
   value,
   options,
   onValueChange,
+  clearFilterLabel,
+  noResultsLabel,
 }: ToolbarSelectFilterProps) {
   const selectedOption = React.useMemo(
     () => options.find((option) => option.value === value),
@@ -69,9 +74,9 @@ function ToolbarSelectFilter({
       />
       <PopoverContent className="w-[220px] p-0" align="start">
         <Command>
-          <CommandInput placeholder={`Search ${title.toLowerCase()}...`} />
+          <CommandInput placeholder={`${title}...`} />
           <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandEmpty>{noResultsLabel}</CommandEmpty>
             <CommandGroup>
               {options.map((option) => {
                 const isSelected = value === option.value;
@@ -105,7 +110,7 @@ function ToolbarSelectFilter({
                 <CommandSeparator />
                 <CommandGroup>
                   <CommandItem onSelect={() => onValueChange(undefined)} className="justify-center">
-                    Clear filter
+                    {clearFilterLabel}
                   </CommandItem>
                 </CommandGroup>
               </>
@@ -154,38 +159,47 @@ export function LinkToolbar({
   onImport,
   isRefreshing,
 }: LinkToolbarProps) {
+  const t = useTranslations('links');
+  const tf = useTranslations('links.filters');
+  const tc = useTranslations('common');
   const hasActiveFilters = Boolean(searchValue || productFilter || statusFilter || tagFilter);
 
   return (
     <div className="flex flex-col-reverse gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex flex-1 flex-col-reverse items-start gap-2 lg:flex-row lg:items-center lg:flex-wrap">
         <Input
-          placeholder="Search by slug, URL, or platform..."
+          placeholder={t('searchPlaceholder')}
           value={searchValue}
           onChange={(event) => onSearchChange(event.target.value)}
           className="md:max-w-xs"
         />
         <ToolbarSelectFilter
-          title="Product"
+          title={tf('product')}
           value={productFilter}
           options={productOptions}
           onValueChange={onProductFilterChange}
+          clearFilterLabel={tc('clearFilter')}
+          noResultsLabel={tc('noResultsFound')}
         />
         <ToolbarSelectFilter
-          title="Status"
+          title={tf('status')}
           value={statusFilter}
           options={statusOptions}
           onValueChange={onStatusFilterChange}
+          clearFilterLabel={tc('clearFilter')}
+          noResultsLabel={tc('noResultsFound')}
         />
         <ToolbarSelectFilter
-          title="Tag"
+          title={tf('tag')}
           value={tagFilter}
           options={tagOptions}
           onValueChange={onTagFilterChange}
+          clearFilterLabel={tc('clearFilter')}
+          noResultsLabel={tc('noResultsFound')}
         />
         {hasActiveFilters && (
           <Button variant="ghost" onClick={onReset} className="h-10 px-3.5">
-            Clear
+            {tc('clear')}
             <X className="ml-1.5 h-4 w-4" />
           </Button>
         )}
@@ -195,21 +209,21 @@ export function LinkToolbar({
         {onRefresh && (
           <Button variant="outline" onClick={onRefresh} disabled={isRefreshing}>
             <RefreshCw className={isRefreshing ? 'animate-spin' : ''} />
-            Refresh
+            {tc('refresh')}
           </Button>
         )}
 
         {onImport && (
           <Button variant="outline" onClick={onImport}>
             <FileUp className="mr-2 h-4 w-4" />
-            Import CSV
+            {tc('importCsv')}
           </Button>
         )}
 
         {onCreate && (
           <Button onClick={onCreate}>
             <Plus className="mr-2 h-4 w-4" />
-            New link
+            {t('newLink')}
           </Button>
         )}
       </div>

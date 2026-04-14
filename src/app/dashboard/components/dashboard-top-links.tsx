@@ -2,6 +2,7 @@
 
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -22,9 +23,9 @@ function formatNumber(n: number) {
   return new Intl.NumberFormat('en-US').format(n);
 }
 
-function TrendCell({ diffPercent }: { diffPercent: number | null }) {
+function TrendCell({ diffPercent, newLabel }: { diffPercent: number | null; newLabel: string }) {
   if (diffPercent === null) {
-    return <span className="text-xs text-muted-foreground">new</span>;
+    return <span className="text-xs text-muted-foreground">{newLabel}</span>;
   }
   const up = diffPercent >= 0;
   const Icon = up ? ArrowUpRight : ArrowDownRight;
@@ -42,27 +43,30 @@ function TrendCell({ diffPercent }: { diffPercent: number | null }) {
 }
 
 export function DashboardTopLinks({ topLinks }: DashboardTopLinksProps) {
+  const t = useTranslations('dashboard.topLinks');
+  const tc = useTranslations('common');
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Top performing links</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Best links in the selected period
+          {t('description')}
         </p>
       </CardHeader>
       <CardContent className="p-0">
         {topLinks.length === 0 ? (
           <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
-            No clicks recorded yet.
+            {t('empty')}
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Link</TableHead>
-                <TableHead>Product</TableHead>
-                <TableHead className="text-right">Clicks</TableHead>
-                <TableHead className="text-right">Trend</TableHead>
+                <TableHead>{t('link')}</TableHead>
+                <TableHead>{t('product')}</TableHead>
+                <TableHead className="text-right">{t('clicks')}</TableHead>
+                <TableHead className="text-right">{t('trend')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -86,7 +90,7 @@ export function DashboardTopLinks({ topLinks }: DashboardTopLinksProps) {
                     {formatNumber(link.clicks)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <TrendCell diffPercent={link.diffPercent} />
+                    <TrendCell diffPercent={link.diffPercent} newLabel={tc('new')} />
                   </TableCell>
                 </TableRow>
               ))}

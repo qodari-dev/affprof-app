@@ -22,6 +22,7 @@ type HttpError = {
   status: number;
   message?: unknown;
   code?: unknown;
+  params?: Record<string, unknown>;
 };
 
 function isHttpError(e: unknown): e is HttpError {
@@ -216,8 +217,9 @@ export function genericTsRestErrorResponse(
     const message =
       typeof error.message === 'string' && error.message.length > 0 ? error.message : genericMsg;
     const code = typeof error.code === 'string' && error.code.length > 0 ? error.code : undefined;
+    const params = error.params;
 
-    return { status, body: { message, code } };
+    return { status, body: { message, code, params } };
   }
 
   if (isError(error)) {

@@ -78,6 +78,13 @@
       "when": 1776112844426,
       "tag": "0010_add-analytics-indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1776125990945,
+      "tag": "0011_add-user-language",
+      "breakpoints": true
     }
   ]
 }

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { RefreshCw, ArrowLeft, Zap } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -14,6 +15,8 @@ export default function ErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations('errorPages.serverError');
+
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -32,9 +35,9 @@ export default function ErrorPage({
         </span>
 
         {/* Text */}
-        <h1 className="mb-2 text-2xl font-bold tracking-tight">Something went wrong</h1>
+        <h1 className="mb-2 text-2xl font-bold tracking-tight">{t('title')}</h1>
         <p className="mb-2 max-w-sm text-muted-foreground">
-          An unexpected error occurred. You can try again or head back to the dashboard.
+          {t('description')}
         </p>
 
         {/* Dev error detail */}
@@ -50,7 +53,7 @@ export default function ErrorPage({
         <div className="flex items-center gap-3">
           <Button onClick={reset} variant="outline" size="lg">
             <RefreshCw className="mr-2 h-4 w-4" />
-            Try again
+            {t('tryAgain')}
           </Button>
           <Link
             href="/"
@@ -60,12 +63,12 @@ export default function ErrorPage({
             )}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Go home
+            {t('goHome')}
           </Link>
         </div>
 
         {error.digest && (
-          <p className="mt-6 text-xs text-muted-foreground/60">Error ID: {error.digest}</p>
+          <p className="mt-6 text-xs text-muted-foreground/60">{t('errorId', { digest: error.digest })}</p>
         )}
       </div>
     </div>

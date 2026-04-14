@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -22,44 +23,44 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-function formatDateShort(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function formatPeakDay(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
 export function DashboardChart({ data, peakDay }: DashboardChartProps) {
+  const t = useTranslations('dashboard.chart');
+  const locale = useLocale();
   const hasData = data.some((p) => p.clicks > 0);
   const total = data.reduce((acc, p) => acc + p.clicks, 0);
 
-  // When range is very long, thin out X-axis labels
   const tickInterval = Math.max(0, Math.floor(data.length / 8) - 1);
+
+  function formatDateShort(iso: string) {
+    const d = new Date(iso);
+    return d.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+  }
+
+  function formatPeakDay(iso: string) {
+    const d = new Date(iso);
+    return d.toLocaleDateString(locale, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+  }
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Clicks over time</CardTitle>
+          <CardTitle>{t('overTime')}</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            {total.toLocaleString('en-US')} {total === 1 ? 'click' : 'clicks'} in
-            selected period
+            {total.toLocaleString(locale)} {total === 1 ? 'click' : t('clicks').toLowerCase()} {t('inPeriod')}
             {peakDay && (
               <>
                 {' · '}
                 <span>
-                  Best day:{' '}
+                  {t('bestDay')}{' '}
                   <span className="font-medium text-foreground">
                     {formatPeakDay(peakDay.date)}
                   </span>{' '}
-                  ({peakDay.clicks.toLocaleString('en-US')})
+                  ({peakDay.clicks.toLocaleString(locale)})
                 </span>
               </>
             )}
@@ -97,7 +98,7 @@ export function DashboardChart({ data, peakDay }: DashboardChartProps) {
                 content={
                   <ChartTooltipContent
                     labelFormatter={(value) =>
-                      new Date(value).toLocaleDateString('en-US', {
+                      new Date(value).toLocaleDateString(locale, {
                         month: 'long',
                         day: 'numeric',
                         year: 'numeric',
@@ -117,7 +118,7 @@ export function DashboardChart({ data, peakDay }: DashboardChartProps) {
           </ChartContainer>
         ) : (
           <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
-            No clicks in this period yet.
+            {t('noClicks')}
           </div>
         )}
       </CardContent>

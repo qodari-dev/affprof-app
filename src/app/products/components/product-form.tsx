@@ -5,6 +5,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ImagePlus, Loader2, Save, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -54,6 +55,8 @@ export function ProductForm({
 }) {
   const isEditing = !!product;
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const t = useTranslations('products.form');
+  const tc = useTranslations('common');
 
   const form = useForm<FormInputValues, undefined, FormValues>({
     resolver: zodResolver(CreateProductBodySchema),
@@ -105,13 +108,13 @@ export function ProductForm({
   const handleImageUpload = React.useCallback(
     async (file: File) => {
       if (!PRODUCT_IMAGE_ALLOWED_TYPES.includes(file.type as (typeof PRODUCT_IMAGE_ALLOWED_TYPES)[number])) {
-        toast.error('Only JPG, PNG, and WEBP images are allowed');
+        toast.error(t('invalidFormat'));
         return;
       }
 
       if (file.size > PRODUCT_IMAGE_MAX_BYTES) {
-        toast.error('Image is too large', {
-          description: 'Please choose an image smaller than 4 MB.',
+        toast.error(t('imageTooLarge'), {
+          description: t('imageSizeLimit'),
         });
         return;
       }
@@ -143,9 +146,9 @@ export function ProductForm({
           shouldDirty: true,
           shouldValidate: true,
         });
-        toast.success('Product image uploaded');
+        toast.success(t('imageUploaded'));
       } catch {
-        toast.error('Could not upload image');
+        toast.error(t('imageUploadError'));
       } finally {
         setIsUploadingImage(false);
         if (fileInputRef.current) {
@@ -153,18 +156,16 @@ export function ProductForm({
         }
       }
     },
-    [form, presignImageUpload],
+    [form, presignImageUpload, t],
   );
 
   return (
     <Sheet open={opened} onOpenChange={onOpened}>
       <SheetContent className="overflow-y-auto sm:max-w-xl lg:max-w-2xl">
         <SheetHeader>
-          <SheetTitle>{isEditing ? 'Edit product' : 'Create product'}</SheetTitle>
+          <SheetTitle>{isEditing ? t('editTitle') : t('createTitle')}</SheetTitle>
           <SheetDescription>
-            {isEditing
-              ? 'Update the product details.'
-              : 'Create a new product to group your affiliate links.'}
+            {isEditing ? t('editDescription') : t('createDescription')}
           </SheetDescription>
         </SheetHeader>
 
@@ -175,15 +176,15 @@ export function ProductForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Name</FieldLabel>
+                <FieldLabel>{t('name')}</FieldLabel>
                 <Input
-                  placeholder='e.g. "Blue Yeti Microphone"'
+                  placeholder={t('namePlaceholder')}
                   value={field.value ?? ''}
                   onChange={field.onChange}
                   autoFocus
                 />
                 <FieldDescription>
-                  The product or item you&apos;re promoting with affiliate links.
+                  {t('nameHelp')}
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -196,15 +197,15 @@ export function ProductForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Description</FieldLabel>
+                <FieldLabel>{t('description')}</FieldLabel>
                 <Textarea
-                  placeholder="Optional short description..."
+                  placeholder={t('descriptionPlaceholder')}
                   rows={3}
                   value={field.value ?? ''}
                   onChange={field.onChange}
                 />
                 <FieldDescription>
-                  A brief note about this product (only visible to you).
+                  {t('descriptionHelp')}
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -212,7 +213,7 @@ export function ProductForm({
           />
 
           <Field>
-            <FieldLabel>Product image</FieldLabel>
+            <FieldLabel>{t('image')}</FieldLabel>
             <div className="flex flex-col gap-4 rounded-xl border bg-muted/20 p-4">
               <div className="flex items-start gap-4">
                 <ProductImage
@@ -222,7 +223,7 @@ export function ProductForm({
                 />
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <p className="text-sm font-medium">
-                    {imageUrl ? 'Current image' : 'No image selected'}
+                    {imageUrl ? t('currentImage') : t('noImage')}
                   </p>
                   <p className="break-all text-xs text-muted-foreground">
                     {imageUrl || 'Fallback: /no-imagen.png'}
@@ -239,7 +240,7 @@ export function ProductForm({
                       ) : (
                         <ImagePlus />
                       )}
-                      {imageUrl ? 'Replace image' : 'Upload image'}
+                      {imageUrl ? t('replaceImage') : t('uploadImage')}
                     </Button>
                     <Button
                       type="button"
@@ -253,11 +254,11 @@ export function ProductForm({
                       disabled={!imageUrl}
                     >
                       <Trash2 />
-                      Remove
+                      {t('removeImage')}
                     </Button>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Upload a JPG, PNG, or WEBP image up to 4 MB to store it in DigitalOcean Spaces.
+                    {t('imageHelp')}
                   </p>
                 </div>
               </div>
@@ -274,15 +275,12 @@ export function ProductForm({
                 }}
               />
             </div>
-            <FieldDescription>
-              Images are uploaded directly to DigitalOcean Spaces. Manual URLs are disabled here.
-            </FieldDescription>
           </Field>
         </form>
 
         <SheetFooter>
           <Button variant="outline" className="min-w-32" onClick={() => onOpened(false)}>
-            Cancel
+            {tc('cancel')}
           </Button>
           <Button
             type="submit"
@@ -291,7 +289,7 @@ export function ProductForm({
             onClick={form.handleSubmit(onSubmit)}
           >
             {isPending ? <Loader2 className="animate-spin" /> : <Save />}
-            {isEditing ? 'Save changes' : 'Create product'}
+            {isEditing ? tc('save') : tc('create')}
           </Button>
         </SheetFooter>
       </SheetContent>

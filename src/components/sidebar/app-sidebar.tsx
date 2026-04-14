@@ -10,6 +10,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import * as React from 'react';
 
 import { NavHeader } from '@/components/sidebar/nav-header';
@@ -38,6 +39,7 @@ function withAutoActive<
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useAuthUser();
   const pathname = usePathname();
+  const t = useTranslations('nav');
 
   const data = React.useMemo(() => {
     return {
@@ -51,22 +53,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           items: withAutoActive(
             [
               {
-                title: 'Dashboard',
+                title: t('dashboard'),
                 url: '/dashboard',
                 icon: LayoutDashboard,
               },
               {
-                title: 'Products',
+                title: t('products'),
                 url: '/products',
                 icon: Package,
               },
               {
-                title: 'Links',
+                title: t('links'),
                 url: '/links',
                 icon: Link2,
               },
               {
-                title: 'Tags',
+                title: t('tags'),
                 url: '/tags',
                 icon: Tags,
               },
@@ -75,16 +77,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ),
         },
         {
-          title: 'Account',
+          title: t('account'),
           items: withAutoActive(
             [
               {
-                title: 'Settings',
+                title: t('settings'),
                 url: '/settings',
                 icon: Settings,
               },
               {
-                title: 'Billing',
+                title: t('billing'),
                 url: '/billing',
                 icon: CreditCard,
               },
@@ -94,7 +96,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         },
       ],
     };
-  }, [user, pathname]);
+  }, [user, pathname, t]);
 
   return (
     <Sidebar collapsible="icon" {...props}>

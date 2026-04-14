@@ -1,16 +1,22 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ArrowLeft, BadgeCheck, CreditCard } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 
 import { buttonVariants } from '@/components/ui/button';
 import { SidebarInset } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 
-export const metadata: Metadata = {
-  title: 'Checkout Received — AffProf',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('billing.success');
+  return {
+    title: t('metadataTitle'),
+  };
+}
 
-export default function BillingSuccessPage() {
+export default async function BillingSuccessPage() {
+  const t = await getTranslations('billing.success');
+
   return (
     <SidebarInset>
       <main className="flex min-h-svh flex-1 items-center justify-center px-6 py-10">
@@ -20,12 +26,12 @@ export default function BillingSuccessPage() {
           </div>
 
           <span className="mb-2 text-[5.5rem] font-black leading-none tracking-tighter text-foreground/10">
-            PAID
+            {t('badge')}
           </span>
 
-          <h1 className="mb-2 text-3xl font-bold tracking-tight">Checkout received</h1>
+          <h1 className="mb-2 text-3xl font-bold tracking-tight">{t('title')}</h1>
           <p className="mb-4 max-w-md text-muted-foreground">
-            Stripe accepted the payment. AffProf will finalize your subscription as soon as the webhook confirms the billing event.
+            {t('description')}
           </p>
 
           <div className="mb-8 rounded-2xl border bg-muted/25 p-4 text-left">
@@ -34,9 +40,9 @@ export default function BillingSuccessPage() {
                 <CreditCard className="h-4 w-4 text-emerald-600" />
               </div>
               <div className="space-y-1 text-sm text-muted-foreground">
-                <p className="font-medium text-foreground">What happens next</p>
-                <p>Your plan updates when Stripe sends the webhook successfully.</p>
-                <p>If billing still shows Free after a minute, check the webhook terminal and retry the event.</p>
+                <p className="font-medium text-foreground">{t('whatHappensNext')}</p>
+                <p>{t('whatHappensNextDesc1')}</p>
+                <p>{t('whatHappensNextDesc2')}</p>
               </div>
             </div>
           </div>
@@ -47,13 +53,13 @@ export default function BillingSuccessPage() {
               className={cn(buttonVariants({ variant: 'outline', size: 'lg' }))}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to billing
+              {t('backToBilling')}
             </Link>
             <Link
               href="/dashboard"
               className={cn(buttonVariants({ size: 'lg' }), 'bg-primary text-primary-foreground hover:bg-primary/90')}
             >
-              Go to dashboard
+              {t('goToDashboard')}
             </Link>
           </div>
         </div>

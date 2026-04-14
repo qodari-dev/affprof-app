@@ -13,6 +13,7 @@ import {
   QrCode,
   Trash,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { Links } from '@/server/db';
 
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,8 @@ interface LinkRowActionsProps {
 }
 
 export function LinkRowActions({ row, table }: LinkRowActionsProps) {
+  const t = useTranslations('links.rowActions');
+  const tc = useTranslations('common');
   const { onRowView, onRowEdit, onRowDelete, onRowQr } = (table.options.meta ?? {}) as {
     onRowView?: (link: Links) => void;
     onRowEdit?: (link: Links) => void;
@@ -49,32 +52,32 @@ export function LinkRowActions({ row, table }: LinkRowActionsProps) {
         render={
           <Button variant="ghost" size="icon" className="rounded-lg">
             <MoreHorizontal className="h-4 w-4" />
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">{tc('actions')}</span>
           </Button>
         }
       />
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuLabel>{tc('actions')}</DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           {onRowView && (
             <DropdownMenuItem onClick={() => onRowView(row.original)}>
               <Eye className="mr-2 h-4 w-4" />
-              View details
+              {tc('viewDetails')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem
             onClick={() => window.open(row.original.originalUrl, '_blank')}
           >
             <ExternalLink className="mr-2 h-4 w-4" />
-            Open destination URL
+            {t('openDestination')}
           </DropdownMenuItem>
           {onRowQr && (
             <DropdownMenuItem onClick={() => onRowQr(row.original)}>
               <QrCode className="mr-2 h-4 w-4" />
-              QR Code
+              {t('qrCode')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem
@@ -86,7 +89,7 @@ export function LinkRowActions({ row, table }: LinkRowActionsProps) {
             ) : (
               <Activity className="mr-2 h-4 w-4" />
             )}
-            Check link
+            {t('checkLink')}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() =>
@@ -104,12 +107,12 @@ export function LinkRowActions({ row, table }: LinkRowActionsProps) {
             ) : (
               <Power className="mr-2 h-4 w-4" />
             )}
-            {row.original.isEnabled ? 'Disable link' : 'Enable link'}
+            {row.original.isEnabled ? t('disableLink') : t('enableLink')}
           </DropdownMenuItem>
           {onRowEdit && (
             <DropdownMenuItem onClick={() => onRowEdit(row.original)}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit
+              {tc('edit')}
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
@@ -122,7 +125,7 @@ export function LinkRowActions({ row, table }: LinkRowActionsProps) {
                 className="text-destructive focus:text-destructive"
               >
                 <Trash className="mr-2 h-4 w-4" />
-                Delete
+                {tc('delete')}
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </>

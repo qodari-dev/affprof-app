@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useTranslations } from 'next-intl';
 
 import { PageContent, PageHeader } from '@/components/layout';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,6 +19,7 @@ import { DashboardTopLinks } from './dashboard-top-links';
 import { DashboardTopProducts } from './dashboard-top-products';
 
 export function Dashboard() {
+  const t = useTranslations('dashboard');
   const [range, setRange] = React.useState<DashboardRange>('30d');
   const [productId, setProductId] = React.useState<string | undefined>(undefined);
 
@@ -46,8 +48,8 @@ export function Dashboard() {
   return (
     <>
       <PageHeader
-        title="Dashboard"
-        description="Clicks, link health, and top performers at a glance."
+        title={t('title')}
+        description={t('description')}
       />
       <PageContent>
         <DashboardToolbar

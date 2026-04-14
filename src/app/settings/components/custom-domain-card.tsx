@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { CheckCircle2, Copy, ExternalLink, Globe, Loader2, ShieldCheck, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,22 +25,26 @@ function CopyRow({
   label,
   name,
   value,
+  nameLabel,
+  copiedMessage,
 }: {
   label: string;
   name: string;
   value: string;
+  nameLabel: string;
+  copiedMessage: string;
 }) {
   const handleCopy = React.useCallback(async () => {
     await navigator.clipboard.writeText(value);
-    toast.success(`${label} copied`);
-  }, [label, value]);
+    toast.success(copiedMessage);
+  }, [copiedMessage, value]);
 
   return (
     <div className="rounded-xl border bg-muted/20 p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
           <div className="text-sm font-medium">{label}</div>
-          <div className="text-xs text-muted-foreground">Name: {name}</div>
+          <div className="text-xs text-muted-foreground">{nameLabel}: {name}</div>
           <code className="block break-all rounded-md bg-background px-2 py-1.5 text-xs">{value}</code>
         </div>
         <Button type="button" size="icon" variant="outline" className="size-9 rounded-lg" onClick={handleCopy}>
@@ -55,6 +60,7 @@ function getStatusBadgeVariant(status: 'pending' | 'verified') {
 }
 
 export function CustomDomainCard() {
+  const t = useTranslations('settings.customDomain');
   const { data: domainsData, isLoading } = useCustomDomains();
   const { data: billingData, isLoading: isLoadingBilling } = useBilling();
   const { mutateAsync: createDomain, isPending: isCreating } = useCreateCustomDomain();
@@ -72,7 +78,7 @@ export function CustomDomainCard() {
 
   const handleCreate = React.useCallback(async () => {
     if (!hostname.trim()) {
-      setLocalError('Enter a subdomain like go.yourbrand.com.');
+      setLocalError(t('invalidHostname'));
       return;
     }
 
@@ -85,11 +91,11 @@ export function CustomDomainCard() {
         },
       });
       setHostname('');
-      toast.success('Custom domain added');
+      toast.success(t('toastDomainAdded'));
     } catch (error) {
       setLocalError(getTsRestErrorMessage(error));
     }
-  }, [createDomain, hostname]);
+  }, [createDomain, hostname, t]);
 
   const handleVerify = React.useCallback(async () => {
     if (!currentDomain) return;
@@ -99,11 +105,11 @@ export function CustomDomainCard() {
         params: { id: currentDomain.id },
         body: {},
       });
-      toast.success('Domain verified');
+      toast.success(t('toastDomainVerified'));
     } catch {
       // handled in mutation
     }
-  }, [currentDomain, verifyDomain]);
+  }, [currentDomain, verifyDomain, t]);
 
   const handleSetPrimary = React.useCallback(async () => {
     if (!currentDomain) return;
@@ -113,11 +119,11 @@ export function CustomDomainCard() {
         params: { id: currentDomain.id },
         body: {},
       });
-      toast.success('Primary domain updated');
+      toast.success(t('toastPrimaryUpdated'));
     } catch {
       // handled in mutation
     }
-  }, [currentDomain, setPrimaryDomain]);
+  }, [currentDomain, setPrimaryDomain, t]);
 
   const handleDelete = React.useCallback(async () => {
     if (!currentDomain) return;
@@ -126,18 +132,18 @@ export function CustomDomainCard() {
       await deleteDomain({
         params: { id: currentDomain.id },
       });
-      toast.success('Custom domain removed');
+      toast.success(t('toastDomainRemoved'));
     } catch {
       // handled in mutation
     }
-  }, [currentDomain, deleteDomain]);
+  }, [currentDomain, deleteDomain, t]);
 
   if (isLoading || isLoadingBilling) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Custom domain</CardTitle>
-          <CardDescription>Use your own branded subdomain for short links.</CardDescription>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <Skeleton className="h-10 w-full rounded-lg" />
@@ -151,8 +157,8 @@ export function CustomDomainCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Custom domain</CardTitle>
-        <CardDescription>Connect one branded subdomain for your Pro short links.</CardDescription>
+        <CardTitle>{t('title')}</CardTitle>
+        <CardDescription>{t('cardDescription')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {!isPro ? (
@@ -162,9 +168,9 @@ export function CustomDomainCard() {
                 <Globe className="size-5 text-muted-foreground" />
               </div>
               <div className="space-y-1">
-                <div className="font-medium">Available on Pro</div>
+                <div className="font-medium">{t('availableOnPro')}</div>
                 <p className="text-sm text-muted-foreground">
-                  Upgrade to Pro to use one custom subdomain like <span className="font-medium text-foreground">go.yourbrand.com</span>.
+                  {t('upgradeDescription')}
                 </p>
               </div>
             </div>
@@ -172,20 +178,20 @@ export function CustomDomainCard() {
         ) : !currentDomain ? (
           <div className="space-y-4">
             <Field data-invalid={Boolean(localError) || undefined}>
-              <FieldLabel>Subdomain</FieldLabel>
+              <FieldLabel>{t('subdomain')}</FieldLabel>
               <Input
-                placeholder="go.yourbrand.com"
+                placeholder={t('subdomainPlaceholder')}
                 value={hostname}
                 onChange={(event) => setHostname(event.target.value)}
               />
               <FieldDescription>
-                Use a subdomain only. Root domains like <span className="font-medium text-foreground">yourbrand.com</span> are not supported yet.
+                {t('subdomainHelp')}
               </FieldDescription>
               {localError ? <FieldError errors={[{ message: localError }]} /> : null}
             </Field>
 
             <div className="rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground">
-              After adding the domain, AffProf will show the exact TXT and CNAME records you need to configure before verification.
+              {t('dnsHelp')}
             </div>
           </div>
         ) : (
@@ -196,21 +202,21 @@ export function CustomDomainCard() {
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="text-base font-semibold">{currentDomain.hostname}</div>
                     <Badge variant={getStatusBadgeVariant(currentDomain.status)}>
-                      {currentDomain.status === 'verified' ? 'Verified' : 'Pending verification'}
+                      {currentDomain.status === 'verified' ? t('verified') : t('pendingVerification')}
                     </Badge>
-                    {currentDomain.isPrimary ? <Badge variant="outline">Primary</Badge> : null}
+                    {currentDomain.isPrimary ? <Badge variant="outline">{t('primary')}</Badge> : null}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {currentDomain.status === 'verified'
-                      ? 'New links can use this branded domain immediately.'
-                      : 'Finish the DNS records below, then verify the domain.'}
+                      ? t('verifiedHelp')
+                      : t('pendingHelp')}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {currentDomain.status === 'pending' ? (
                     <Button type="button" size="sm" onClick={handleVerify} disabled={isVerifying}>
                       {isVerifying ? <Loader2 className="animate-spin" /> : <ShieldCheck />}
-                      Verify
+                      {t('verify')}
                     </Button>
                   ) : null}
                   {currentDomain.status === 'verified' && !currentDomain.isPrimary ? (
@@ -222,12 +228,12 @@ export function CustomDomainCard() {
                       disabled={isSettingPrimary}
                     >
                       {isSettingPrimary ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
-                      Set primary
+                      {t('setPrimary')}
                     </Button>
                   ) : null}
                   <Button type="button" size="sm" variant="outline" onClick={handleDelete} disabled={isDeleting}>
                     {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
-                    Remove
+                    {t('remove')}
                   </Button>
                 </div>
               </div>
@@ -236,22 +242,26 @@ export function CustomDomainCard() {
             {currentDomain.status === 'pending' ? (
               <div className="space-y-3">
                 <CopyRow
-                  label="TXT record"
+                  label={t('txtRecord')}
                   name={currentDomain.verificationHost}
                   value={currentDomain.verificationValue}
+                  nameLabel={t('recordName')}
+                  copiedMessage={t('copied', { label: t('txtRecord') })}
                 />
                 <CopyRow
-                  label="CNAME record"
+                  label={t('cnameRecord')}
                   name={currentDomain.hostname}
                   value={currentDomain.cnameTarget}
+                  nameLabel={t('recordName')}
+                  copiedMessage={t('copied', { label: t('cnameRecord') })}
                 />
                 <div className="rounded-xl border border-dashed bg-background p-4 text-sm text-muted-foreground">
-                  DNS updates can take a few minutes. Once both records are live, click <span className="font-medium text-foreground">Verify</span>.
+                  {t('dnsUpdateHelp')}
                 </div>
               </div>
             ) : (
               <div className="rounded-xl border bg-emerald-50/70 p-4 text-sm text-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-100">
-                Your branded links now resolve from <span className="font-medium">{currentDomain.hostname}</span>. Existing links can keep the default AffProf domain, and new links can use the branded one.
+                {t('brandedLinksActive', { hostname: currentDomain.hostname })}
               </div>
             )}
           </div>
@@ -259,12 +269,12 @@ export function CustomDomainCard() {
       </CardContent>
       <CardFooter className="flex flex-col items-start gap-3 border-t bg-muted/10 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
-          For v1, Pro supports one active custom subdomain.
+          {t('proLimitNote')}
         </p>
         {!currentDomain && isPro ? (
           <Button type="button" size="sm" onClick={handleCreate} disabled={isCreating}>
             {isCreating ? <Loader2 className="animate-spin" /> : <ExternalLink />}
-            Add domain
+            {t('addDomain')}
           </Button>
         ) : null}
       </CardFooter>

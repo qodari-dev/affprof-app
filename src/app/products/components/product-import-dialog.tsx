@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useTranslations } from 'next-intl';
 
 import { CsvImportDialog } from '@/components/csv-import-dialog';
 import { useImportProductsCsv } from '@/hooks/queries/use-product-queries';
@@ -22,6 +23,7 @@ export function ProductImportDialog({
   opened: boolean;
   onOpened: (opened: boolean) => void;
 }) {
+  const t = useTranslations('products.import');
   const { mutateAsync: importProducts, isPending } = useImportProductsCsv();
 
   const handleImport = React.useCallback(
@@ -43,23 +45,23 @@ export function ProductImportDialog({
 
   return (
     <CsvImportDialog
-      title="Import products from CSV"
-      description="Use a simple CSV with product names and optional descriptions. Existing names are skipped to avoid duplicates."
+      title={t('title')}
+      description={t('description')}
       opened={opened}
       onOpened={onOpened}
       columns={PRODUCT_IMPORT_COLUMNS.map((column) => ({ ...column }))}
       templateHeaders={PRODUCT_IMPORT_COLUMNS.map((column) => column.name)}
       templateRows={PRODUCT_TEMPLATE_ROWS}
       previewColumns={[
-        { key: 'row', label: 'Row' },
-        { key: 'name', label: 'Name' },
-        { key: 'description', label: 'Description' },
+        { key: 'row', label: t('row') },
+        { key: 'name', label: t('name') },
+        { key: 'description', label: t('descriptionCol') },
       ]}
       normalizeRows={normalizeProductImportRows}
       onImport={handleImport}
       importing={isPending}
-      importLabel="Import products"
-      templateFileName="affprof-products-template.csv"
+      importLabel={t('importButton')}
+      templateFileName={t('templateFile')}
     />
   );
 }

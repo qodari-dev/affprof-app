@@ -3,6 +3,7 @@
 import * as React from 'react';
 import type { TableMeta } from '@tanstack/react-table';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { PageHeader, PageContent } from '@/components/layout';
 import { DataTable, useDataTable } from '@/components/data-table';
@@ -28,7 +29,7 @@ import type { Links as LinkType } from '@/server/db';
 import type { LinkSortField, LinkInclude } from '@/schemas/link';
 import { buildShortLinkUrl } from '@/utils/short-link';
 
-import { linkColumns } from './link-columns';
+import { useLinkColumns } from './link-columns';
 import { LinkToolbar } from './link-toolbar';
 import { LinkForm } from './link-form';
 import { LinkInfo } from './link-info';
@@ -36,6 +37,10 @@ import { LinkImportDialog } from './link-import-dialog';
 import { LinkQrDialog } from './link-qr-dialog';
 
 export function Links() {
+  const t = useTranslations('links');
+  const ts = useTranslations('links.status');
+  const tc = useTranslations('common');
+  const linkColumns = useLinkColumns();
   const [link, setLink] = React.useState<LinkType>();
 
   // ---- Profile (for short URL) ----
@@ -152,12 +157,12 @@ export function Links() {
 
   const statusOptions = React.useMemo(
     () => [
-      { label: 'Active', value: 'active', color: '#16a34a' },
-      { label: 'Broken', value: 'broken', color: '#dc2626' },
-      { label: 'Unknown', value: 'unknown', color: '#6b7280' },
-      { label: 'Disabled', value: 'disabled', color: '#d97706' },
+      { label: ts('active'), value: 'active', color: '#16a34a' },
+      { label: ts('broken'), value: 'broken', color: '#dc2626' },
+      { label: ts('unknown'), value: 'unknown', color: '#6b7280' },
+      { label: ts('disabled'), value: 'disabled', color: '#d97706' },
     ],
-    [],
+    [ts],
   );
 
   const handleStatusFilterChange = React.useCallback((value: string | undefined) => {
@@ -196,8 +201,8 @@ export function Links() {
   return (
     <>
       <PageHeader
-        title="Links"
-        description="Manage your affiliate links, track clicks, and monitor status."
+        title={t('title')}
+        description={t('description')}
       />
       <PageContent>
         <DataTable
@@ -256,19 +261,18 @@ export function Links() {
       <AlertDialog open={openedDeleteDialog} onOpenChange={setOpenedDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>{tc('areYouSure')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the link &ldquo;/{link?.slug}&rdquo; and all its
-              click data. This action cannot be undone.
+              {t('deleteConfirm', { slug: link?.slug ?? '' })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <Button variant="outline" onClick={() => setOpenedDeleteDialog(false)}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button variant="destructive" disabled={isDeleting} onClick={handleDelete}>
               {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Delete
+              {tc('delete')}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

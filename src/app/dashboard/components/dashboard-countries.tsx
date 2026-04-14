@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -30,26 +31,28 @@ function countryFlag(code: string) {
 }
 
 export function DashboardCountries({ countries }: DashboardCountriesProps) {
+  const t = useTranslations('dashboard.countries');
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Top countries</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Where your audience is clicking from
+          {t('description')}
         </p>
       </CardHeader>
       <CardContent className="p-0">
         {countries.length === 0 ? (
           <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
-            No country data yet.
+            {t('empty')}
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Country</TableHead>
-                <TableHead className="text-right">Clicks</TableHead>
-                <TableHead className="text-right w-[120px]">Share</TableHead>
+                <TableHead>{t('country')}</TableHead>
+                <TableHead className="text-right">{t('clicks')}</TableHead>
+                <TableHead className="text-right w-[120px]">{t('share')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

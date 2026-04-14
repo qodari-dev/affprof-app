@@ -3,12 +3,18 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Metadata } from "next";
 import { ArrowLeft, ShieldOff } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
-export const metadata: Metadata = {
-  title: "Unauthorized — AffProf",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('errorPages.unauthorized');
+  return {
+    title: t('metadataTitle'),
+  };
+}
 
-export default function UnauthorizedPage() {
+export default async function UnauthorizedPage() {
+  const t = await getTranslations('errorPages.unauthorized');
+
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6">
       <div className="flex max-w-lg flex-col items-center text-center">
@@ -23,10 +29,9 @@ export default function UnauthorizedPage() {
         </span>
 
         {/* Text */}
-        <h1 className="mb-2 text-2xl font-bold tracking-tight">Unauthorized</h1>
+        <h1 className="mb-2 text-2xl font-bold tracking-tight">{t('title')}</h1>
         <p className="mb-8 max-w-sm text-muted-foreground">
-          Your session may have expired or you don&apos;t have access to this
-          page. Please log in again.
+          {t('description')}
         </p>
 
         {/* Actions */}
@@ -36,7 +41,7 @@ export default function UnauthorizedPage() {
             className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Go back home
+            {t('goBack')}
           </Link>
           <Link
             href="/"
@@ -45,7 +50,7 @@ export default function UnauthorizedPage() {
               "bg-primary text-primary-foreground hover:bg-primary/90",
             )}
           >
-            Log in
+            {t('logIn')}
           </Link>
         </div>
       </div>

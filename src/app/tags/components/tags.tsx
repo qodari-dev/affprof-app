@@ -3,6 +3,7 @@
 import * as React from 'react';
 import type { TableMeta } from '@tanstack/react-table';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { PageHeader, PageContent } from '@/components/layout';
 import { DataTable, useDataTable } from '@/components/data-table';
@@ -20,12 +21,15 @@ import { useTags, useDeleteTag } from '@/hooks/queries/use-tag-queries';
 import type { Tags as TagType } from '@/server/db';
 import type { TagSortField, TagInclude } from '@/schemas/tag';
 
-import { tagColumns } from './tag-columns';
+import { useTagColumns } from './tag-columns';
 import { TagToolbar } from './tag-toolbar';
 import { TagForm } from './tag-form';
 import { TagInfo } from './tag-info';
 
 export function Tags() {
+  const t = useTranslations('tags');
+  const tc = useTranslations('common');
+  const tagColumns = useTagColumns();
   const [tag, setTag] = React.useState<TagType>();
 
   // ---- Data table state ----
@@ -98,7 +102,7 @@ export function Tags() {
 
   return (
     <>
-      <PageHeader title="Tags" description="Organize your links and products with tags." />
+      <PageHeader title={t('title')} description={t('description')} />
       <PageContent>
         <DataTable
           columns={tagColumns}
@@ -134,19 +138,18 @@ export function Tags() {
       <AlertDialog open={openedDeleteDialog} onOpenChange={setOpenedDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>{tc('areYouSure')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the tag
-              &ldquo;{tag?.name}&rdquo;.
+              {t('deleteConfirm', { name: tag?.name ?? '' })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <Button variant="outline" onClick={() => setOpenedDeleteDialog(false)}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button variant="destructive" disabled={isDeleting} onClick={handleDelete}>
               {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Delete
+              {tc('delete')}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

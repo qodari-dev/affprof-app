@@ -12,6 +12,7 @@ import {
   Smartphone,
   Tablet,
 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import { cn } from "@/lib/utils";
@@ -64,13 +65,6 @@ function formatNumber(n: number) {
   return new Intl.NumberFormat("en-US").format(n);
 }
 
-function formatDateShort(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
-
 function countryFlag(code: string) {
   if (!code || code.length !== 2) return "🌐";
   const base = 0x1f1e6;
@@ -110,6 +104,8 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
   const [range, setRange] = React.useState<DashboardRange>("30d");
   const { data, isLoading } = useLinkAnalytics(linkId, { range });
   const analytics = data?.body;
+  const t = useTranslations("links.analytics");
+  const locale = useLocale();
 
   if (isLoading || !analytics) {
     return <LinkAnalyticsSkeleton />;
@@ -122,8 +118,9 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
       {/* Range selector */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {formatNumber(totalClicks)} {totalClicks === 1 ? "click" : "clicks"}{" "}
-          in period
+          {formatNumber(totalClicks)}{" "}
+          {totalClicks === 1 ? "click" : t("clicks")}{" "}
+          {t("inPeriod")}
           {diffPercent !== null && (
             <span
               className={cn(
@@ -165,12 +162,12 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
       <div className="grid grid-cols-3 gap-3">
         <MiniKpi
           icon={MousePointerClick}
-          label="Total"
+          label={t("total")}
           value={formatNumber(totalClicks)}
         />
         <MiniKpi
           icon={QrCode}
-          label="QR scans"
+          label={t("qrScans")}
           value={
             qrClicks > 0
               ? `${formatNumber(qrClicks)} (${qrShare.toFixed(0)}%)`
@@ -179,33 +176,33 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
         />
         <MiniKpi
           icon={Globe2}
-          label="Countries"
+          label={t("countries")}
           value={String(analytics.countries.length)}
         />
       </div>
 
       {/* Timeseries chart */}
-      <ClicksChart data={analytics.timeseries} peakDay={analytics.peakDay} />
+      <ClicksChart data={analytics.timeseries} peakDay={analytics.peakDay} locale={locale} t={t} />
 
       {/* Two columns: sources + devices */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <SourcesList sources={analytics.sources} />
-        <DevicesList devices={analytics.devices} />
+        <SourcesList sources={analytics.sources} t={t} />
+        <DevicesList devices={analytics.devices} t={t} />
       </div>
 
       {/* Two columns: countries + browsers */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <CountriesList countries={analytics.countries} />
-        <BrowsersList browsers={analytics.browsers} />
+        <CountriesList countries={analytics.countries} t={t} />
+        <BrowsersList browsers={analytics.browsers} t={t} />
       </div>
 
       {/* UTM campaigns — only show if there's data */}
       {analytics.utmCampaigns.length > 0 && (
-        <UtmCampaignsList campaigns={analytics.utmCampaigns} />
+        <UtmCampaignsList campaigns={analytics.utmCampaigns} t={t} />
       )}
 
       {/* Recent clicks */}
-      <RecentClicksTable clicks={analytics.recentClicks} />
+      <RecentClicksTable clicks={analytics.recentClicks} locale={locale} t={t} />
     </div>
   );
 }
@@ -213,6 +210,9 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
 // ============================================
 // SUB-COMPONENTS
 // ============================================
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TFunc = (key: string, params?: Record<string, any>) => string;
 
 function MiniKpi({
   icon: Icon,
@@ -237,20 +237,33 @@ function MiniKpi({
 function ClicksChart({
   data,
   peakDay,
+  locale,
+  t,
 }: {
   data: { date: string; clicks: number }[];
   peakDay: { date: string; clicks: number } | null;
+  locale: string;
+  t: TFunc;
 }) {
   const hasData = data.some((p) => p.clicks > 0);
   const tickInterval = Math.max(0, Math.floor(data.length / 6) - 1);
 
+  const formatDateShort = React.useCallback(
+    (iso: string) =>
+      new Date(iso).toLocaleDateString(locale, {
+        month: "short",
+        day: "numeric",
+      }),
+    [locale],
+  );
+
   return (
     <div className="rounded-lg border p-4">
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm font-medium">Clicks over time</p>
+        <p className="text-sm font-medium">{t("overTime")}</p>
         {peakDay && (
           <p className="text-xs text-muted-foreground">
-            Peak: {formatDateShort(peakDay.date)} ({peakDay.clicks})
+            {t("peak")} {formatDateShort(peakDay.date)} ({peakDay.clicks})
           </p>
         )}
       </div>
@@ -297,7 +310,7 @@ function ClicksChart({
               content={
                 <ChartTooltipContent
                   labelFormatter={(v) =>
-                    new Date(v).toLocaleDateString("en-US", {
+                    new Date(v).toLocaleDateString(locale, {
                       month: "long",
                       day: "numeric",
                       year: "numeric",
@@ -317,18 +330,18 @@ function ClicksChart({
         </ChartContainer>
       ) : (
         <div className="flex h-45 items-center justify-center text-xs text-muted-foreground">
-          No clicks in this period.
+          {t("noClicksPeriod")}
         </div>
       )}
     </div>
   );
 }
 
-function SourcesList({ sources }: { sources: TrafficSource[] }) {
-  if (sources.length === 0) return <EmptyCard title="Traffic sources" />;
+function SourcesList({ sources, t }: { sources: TrafficSource[]; t: TFunc }) {
+  if (sources.length === 0) return <EmptyCard title={t("sources")} t={t} />;
   return (
     <div className="rounded-lg border p-4">
-      <p className="text-sm font-medium mb-3">Traffic sources</p>
+      <p className="text-sm font-medium mb-3">{t("sources")}</p>
       <div className="flex flex-col gap-2.5">
         {sources.map((s) => (
           <div key={s.source} className="flex flex-col gap-1">
@@ -354,11 +367,11 @@ function SourcesList({ sources }: { sources: TrafficSource[] }) {
   );
 }
 
-function DevicesList({ devices }: { devices: DeviceBreakdown[] }) {
-  if (devices.length === 0) return <EmptyCard title="Devices" />;
+function DevicesList({ devices, t }: { devices: DeviceBreakdown[]; t: TFunc }) {
+  if (devices.length === 0) return <EmptyCard title={t("devices")} t={t} />;
   return (
     <div className="rounded-lg border p-4">
-      <p className="text-sm font-medium mb-3">Devices</p>
+      <p className="text-sm font-medium mb-3">{t("devices")}</p>
       <div className="flex flex-col gap-2.5">
         {devices.map((d) => {
           const Icon = DEVICE_ICONS[d.device] ?? Monitor;
@@ -382,11 +395,11 @@ function DevicesList({ devices }: { devices: DeviceBreakdown[] }) {
   );
 }
 
-function CountriesList({ countries }: { countries: TopCountry[] }) {
-  if (countries.length === 0) return <EmptyCard title="Countries" />;
+function CountriesList({ countries, t }: { countries: TopCountry[]; t: TFunc }) {
+  if (countries.length === 0) return <EmptyCard title={t("countries")} t={t} />;
   return (
     <div className="rounded-lg border p-4">
-      <p className="text-sm font-medium mb-3">Countries</p>
+      <p className="text-sm font-medium mb-3">{t("countries")}</p>
       <div className="flex flex-col gap-2">
         {countries.map((c) => (
           <div
@@ -407,11 +420,11 @@ function CountriesList({ countries }: { countries: TopCountry[] }) {
   );
 }
 
-function BrowsersList({ browsers }: { browsers: BrowserBreakdown[] }) {
-  if (browsers.length === 0) return <EmptyCard title="Browsers" />;
+function BrowsersList({ browsers, t }: { browsers: BrowserBreakdown[]; t: TFunc }) {
+  if (browsers.length === 0) return <EmptyCard title={t("browsers")} t={t} />;
   return (
     <div className="rounded-lg border p-4">
-      <p className="text-sm font-medium mb-3">Browsers</p>
+      <p className="text-sm font-medium mb-3">{t("browsers")}</p>
       <div className="flex flex-col gap-2">
         {browsers.map((b) => (
           <div
@@ -429,13 +442,13 @@ function BrowsersList({ browsers }: { browsers: BrowserBreakdown[] }) {
   );
 }
 
-function RecentClicksTable({ clicks }: { clicks: RecentClick[] }) {
+function RecentClicksTable({ clicks, locale, t }: { clicks: RecentClick[]; locale: string; t: TFunc }) {
   if (clicks.length === 0) {
     return (
       <div className="rounded-lg border p-4">
-        <p className="text-sm font-medium mb-3">Recent clicks</p>
+        <p className="text-sm font-medium mb-3">{t("recentClicks")}</p>
         <p className="text-xs text-muted-foreground text-center py-6">
-          No clicks recorded yet.
+          {t("noClicks")}
         </p>
       </div>
     );
@@ -444,25 +457,25 @@ function RecentClicksTable({ clicks }: { clicks: RecentClick[] }) {
   return (
     <div className="rounded-lg border">
       <div className="px-4 pt-4 pb-2">
-        <p className="text-sm font-medium">Recent clicks</p>
+        <p className="text-sm font-medium">{t("recentClicks")}</p>
         <p className="text-xs text-muted-foreground">
-          Last {clicks.length} clicks
+          {t("lastClicks", { count: clicks.length })}
         </p>
       </div>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-xs">When</TableHead>
-            <TableHead className="text-xs">Location</TableHead>
-            <TableHead className="text-xs">Device</TableHead>
-            <TableHead className="text-xs">Source</TableHead>
+            <TableHead className="text-xs">{t("when")}</TableHead>
+            <TableHead className="text-xs">{t("location")}</TableHead>
+            <TableHead className="text-xs">{t("device")}</TableHead>
+            <TableHead className="text-xs">{t("source")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {clicks.map((click) => (
             <TableRow key={click.id}>
               <TableCell className="text-xs whitespace-nowrap">
-                {new Date(click.clickedAt).toLocaleDateString("en-US", {
+                {new Date(click.clickedAt).toLocaleDateString(locale, {
                   month: "short",
                   day: "numeric",
                   hour: "2-digit",
@@ -488,7 +501,7 @@ function RecentClicksTable({ clicks }: { clicks: RecentClick[] }) {
                 )}
               </TableCell>
               <TableCell className="text-xs capitalize">
-                {click.referrerSource ?? "direct"}
+                {click.referrerSource ?? t("direct")}
               </TableCell>
             </TableRow>
           ))}
@@ -498,25 +511,25 @@ function RecentClicksTable({ clicks }: { clicks: RecentClick[] }) {
   );
 }
 
-function UtmCampaignsList({ campaigns }: { campaigns: UtmCampaign[] }) {
+function UtmCampaignsList({ campaigns, t }: { campaigns: UtmCampaign[]; t: TFunc }) {
   return (
     <div className="rounded-lg border">
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
           <Megaphone className="h-4 w-4 text-muted-foreground" />
-          <p className="text-sm font-medium">Campaigns</p>
+          <p className="text-sm font-medium">{t("campaigns")}</p>
         </div>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Clicks grouped by utm_campaign
+          {t("campaignsDescription")}
         </p>
       </div>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-xs">Campaign</TableHead>
-            <TableHead className="text-xs">Source / Medium</TableHead>
-            <TableHead className="text-xs text-right">Clicks</TableHead>
-            <TableHead className="text-xs text-right w-17.5">Share</TableHead>
+            <TableHead className="text-xs">{t("campaign")}</TableHead>
+            <TableHead className="text-xs">{t("sourceMedium")}</TableHead>
+            <TableHead className="text-xs text-right">{t("clicks")}</TableHead>
+            <TableHead className="text-xs text-right w-17.5">{t("share")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -542,12 +555,12 @@ function UtmCampaignsList({ campaigns }: { campaigns: UtmCampaign[] }) {
   );
 }
 
-function EmptyCard({ title }: { title: string }) {
+function EmptyCard({ title, t }: { title: string; t: TFunc }) {
   return (
     <div className="rounded-lg border p-4">
       <p className="text-sm font-medium mb-3">{title}</p>
       <p className="text-xs text-muted-foreground text-center py-4">
-        No data yet.
+        {t("noData")}
       </p>
     </div>
   );

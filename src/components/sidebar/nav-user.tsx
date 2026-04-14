@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronsUpDown, CreditCard, LogOut, Settings, User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { api } from '@/clients/api';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -32,6 +33,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const t = useTranslations('nav');
 
   const { mutateAsync: logout, isPending } = api.auth.logout.useMutation({
     onError(error) {
@@ -96,26 +98,26 @@ export function NavUser({
                 onClick={() => (window.location.href = '/profile')}
               >
                 <User />
-                Profile
+                {t('profile')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => (window.location.href = '/settings')}
               >
                 <Settings />
-                Settings
+                {t('settings')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => (window.location.href = '/billing')}
               >
                 <CreditCard />
-                Billing
+                {t('billing')}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={handleLogout} disabled={isPending}>
                 <LogOut />
-                Log out
+                {t('logOut')}
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

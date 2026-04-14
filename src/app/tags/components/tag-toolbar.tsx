@@ -1,6 +1,7 @@
 'use client';
 
 import { Plus, RefreshCw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -19,11 +20,14 @@ export function TagToolbar({
   onCreate,
   isRefreshing,
 }: TagToolbarProps) {
+  const t = useTranslations('tags');
+  const tc = useTranslations('common');
+
   return (
     <div className="flex flex-col-reverse gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex flex-1 flex-col-reverse items-start gap-2 lg:flex-row lg:items-center">
         <Input
-          placeholder="Search tags..."
+          placeholder={t('searchPlaceholder')}
           value={searchValue}
           onChange={(event) => onSearchChange(event.target.value)}
           className="md:max-w-xs"
@@ -34,14 +38,14 @@ export function TagToolbar({
         {onRefresh && (
           <Button variant="outline" onClick={onRefresh} disabled={isRefreshing}>
             <RefreshCw className={isRefreshing ? 'animate-spin' : ''} />
-            Refresh
+            {tc('refresh')}
           </Button>
         )}
 
         {onCreate && (
           <Button onClick={onCreate}>
             <Plus className="mr-2 h-4 w-4" />
-            New tag
+            {t('newTag')}
           </Button>
         )}
       </div>

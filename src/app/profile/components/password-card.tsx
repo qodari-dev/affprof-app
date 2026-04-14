@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,17 +15,22 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { ChangePasswordBodySchema } from '@/schemas/profile';
 import { useChangePassword } from '@/hooks/queries/use-profile-queries';
 
-const PasswordFormSchema = ChangePasswordBodySchema.extend({
-  confirmPassword: z.string().min(8),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
-
-type FormValues = z.infer<typeof PasswordFormSchema>;
-
 export function PasswordCard() {
+  const t = useTranslations('profile.password');
   const { mutateAsync: changePassword, isPending } = useChangePassword();
+
+  const PasswordFormSchema = React.useMemo(
+    () =>
+      ChangePasswordBodySchema.extend({
+        confirmPassword: z.string().min(8),
+      }).refine((data) => data.newPassword === data.confirmPassword, {
+        message: t('mismatch'),
+        path: ['confirmPassword'],
+      }),
+    [t],
+  );
+
+  type FormValues = z.infer<typeof PasswordFormSchema>;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(PasswordFormSchema),
@@ -45,22 +51,22 @@ export function PasswordCard() {
           },
         });
         if (result.status === 204) {
-          toast.success('Password changed successfully');
+          toast.success(t('success'));
           form.reset();
         }
       } catch {
         // Error handled by mutation onError
       }
     },
-    [changePassword, form]
+    [changePassword, form, t]
   );
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
       <Card>
         <CardHeader>
-          <CardTitle>Password</CardTitle>
-          <CardDescription>Change your account password.</CardDescription>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           {/* Current password */}
@@ -69,11 +75,11 @@ export function PasswordCard() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Current password</FieldLabel>
+                <FieldLabel>{t('currentPassword')}</FieldLabel>
                 <Input
                   type="password"
                   autoComplete="current-password"
-                  placeholder="Enter current password"
+                  placeholder={t('currentPasswordPlaceholder')}
                   value={field.value}
                   onChange={field.onChange}
                 />
@@ -88,11 +94,11 @@ export function PasswordCard() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>New password</FieldLabel>
+                <FieldLabel>{t('newPassword')}</FieldLabel>
                 <Input
                   type="password"
                   autoComplete="new-password"
-                  placeholder="Enter new password"
+                  placeholder={t('newPasswordPlaceholder')}
                   value={field.value}
                   onChange={field.onChange}
                 />
@@ -107,11 +113,11 @@ export function PasswordCard() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Confirm new password</FieldLabel>
+                <FieldLabel>{t('confirmPassword')}</FieldLabel>
                 <Input
                   type="password"
                   autoComplete="new-password"
-                  placeholder="Confirm new password"
+                  placeholder={t('confirmPasswordPlaceholder')}
                   value={field.value}
                   onChange={field.onChange}
                 />
@@ -123,7 +129,7 @@ export function PasswordCard() {
         <CardFooter className="flex justify-end">
           <Button type="submit" size="sm" disabled={isPending}>
             {isPending ? <Loader2 className="animate-spin" /> : <KeyRound />}
-            Change password
+            {t('changePassword')}
           </Button>
         </CardFooter>
       </Card>

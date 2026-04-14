@@ -13,6 +13,7 @@ export const UpdateProfileBodySchema = z.object({
     .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens only')
     .optional(),
   timezone: z.string().min(1).max(100).optional(),
+  language: z.enum(['en', 'es']).optional(),
 });
 
 export const ChangePasswordBodySchema = z.object({

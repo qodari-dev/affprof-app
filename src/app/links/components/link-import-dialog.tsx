@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useTranslations } from 'next-intl';
 
 import { CsvImportDialog } from '@/components/csv-import-dialog';
 import { useImportLinksCsv } from '@/hooks/queries/use-link-queries';
@@ -48,6 +49,7 @@ export function LinkImportDialog({
   opened: boolean;
   onOpened: (opened: boolean) => void;
 }) {
+  const t = useTranslations('links.import');
   const { mutateAsync: importLinks, isPending } = useImportLinksCsv();
 
   const handleImport = React.useCallback(
@@ -73,25 +75,25 @@ export function LinkImportDialog({
 
   return (
     <CsvImportDialog
-      title="Import links from CSV"
-      description="Import affiliate links in bulk. Products are matched by name, and missing products will be created automatically. Link status is not imported because AffProf calculates it."
+      title={t('title')}
+      description={t('description')}
       opened={opened}
       onOpened={onOpened}
       columns={LINK_IMPORT_COLUMNS.map((column) => ({ ...column }))}
       templateHeaders={LINK_IMPORT_COLUMNS.map((column) => column.name)}
       templateRows={LINK_TEMPLATE_ROWS}
       previewColumns={[
-        { key: 'row', label: 'Row' },
-        { key: 'productName', label: 'Product' },
-        { key: 'slug', label: 'Slug' },
-        { key: 'platform', label: 'Platform' },
-        { key: 'baseUrl', label: 'Base URL' },
+        { key: 'row', label: t('row') },
+        { key: 'productName', label: t('product') },
+        { key: 'slug', label: t('slug') },
+        { key: 'platform', label: t('platform') },
+        { key: 'baseUrl', label: t('baseUrl') },
       ]}
       normalizeRows={normalizeLinkImportRows}
       onImport={handleImport}
       importing={isPending}
-      importLabel="Import links"
-      templateFileName="affprof-links-template.csv"
+      importLabel={t('importButton')}
+      templateFileName={t('templateFile')}
     />
   );
 }

@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Check, PlusCircle, RefreshCw, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -19,13 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Separator } from '@/components/ui/separator';
 import type { DashboardRange } from '@/schemas/analytics';
 
-const RANGE_OPTIONS: { value: DashboardRange; label: string }[] = [
-  { value: '7d', label: '7d' },
-  { value: '30d', label: '30d' },
-  { value: '90d', label: '90d' },
-  { value: '180d', label: '180d' },
-  { value: '360d', label: '360d' },
-];
+const RANGE_KEYS = ['7d', '30d', '90d', '180d', '360d'] as const;
 
 interface ProductOption {
   label: string;
@@ -51,6 +46,10 @@ export function DashboardToolbar({
   onRefresh,
   isRefreshing,
 }: DashboardToolbarProps) {
+  const t = useTranslations('dashboard.toolbar');
+  const tr = useTranslations('dashboard.ranges');
+  const tc = useTranslations('common');
+
   const selectedProduct = React.useMemo(
     () => productOptions.find((o) => o.value === productId),
     [productOptions, productId],
@@ -64,7 +63,7 @@ export function DashboardToolbar({
             render={
               <Button variant="outline" className="h-10 border-dashed px-4">
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Product
+                {t('product')}
                 {selectedProduct && (
                   <>
                     <Separator orientation="vertical" className="mx-2 h-4" />
@@ -81,9 +80,9 @@ export function DashboardToolbar({
           />
           <PopoverContent className="w-[240px] p-0" align="start">
             <Command>
-              <CommandInput placeholder="Search product..." />
+              <CommandInput placeholder={t('searchProduct')} />
               <CommandList>
-                <CommandEmpty>No products found.</CommandEmpty>
+                <CommandEmpty>{t('noProducts')}</CommandEmpty>
                 <CommandGroup>
                   {productOptions.map((option) => {
                     const isSelected = productId === option.value;
@@ -119,7 +118,7 @@ export function DashboardToolbar({
                         onSelect={() => onProductChange(undefined)}
                         className="justify-center"
                       >
-                        Clear filter
+                        {t('clearFilter')}
                       </CommandItem>
                     </CommandGroup>
                   </>
@@ -135,7 +134,7 @@ export function DashboardToolbar({
             onClick={() => onProductChange(undefined)}
             className="h-10 px-3"
           >
-            Clear
+            {t('clear')}
             <X className="ml-1.5 h-4 w-4" />
           </Button>
         )}
@@ -143,26 +142,26 @@ export function DashboardToolbar({
 
       <div className="flex items-center gap-2">
         <div className="flex items-center rounded-md border bg-background p-0.5">
-          {RANGE_OPTIONS.map((opt) => (
+          {RANGE_KEYS.map((key) => (
             <button
-              key={opt.value}
+              key={key}
               type="button"
-              onClick={() => onRangeChange(opt.value)}
+              onClick={() => onRangeChange(key)}
               className={cn(
                 'px-3 py-1.5 text-xs font-medium rounded-sm transition-colors',
-                range === opt.value
+                range === key
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground',
               )}
             >
-              {opt.label}
+              {tr(key)}
             </button>
           ))}
         </div>
 
         <Button variant="outline" onClick={onRefresh} disabled={isRefreshing}>
           <RefreshCw className={isRefreshing ? 'animate-spin' : ''} />
-          <span className="sr-only">Refresh</span>
+          <span className="sr-only">{tc('refresh')}</span>
         </Button>
       </div>
     </div>

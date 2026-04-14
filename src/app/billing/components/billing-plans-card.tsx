@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Check, ExternalLink, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 import { useBilling, useCreateCheckout, useCreatePortal } from '@/hooks/queries/use-billing-queries';
 import { Badge } from '@/components/ui/badge';
@@ -10,34 +11,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-const PLANS = [
-  {
-    id: 'pro' as const,
-    name: 'Pro monthly',
-    price: '$12/month',
-    description: 'Best if you want flexibility while validating your creator workflow.',
-    highlight: false,
-    features: [
-      'Manage products, links, QR codes, and tags',
-      'Track link performance and broken link alerts',
-      'Stripe-hosted checkout and customer portal',
-    ],
-  },
-  {
-    id: 'pro_annual' as const,
-    name: 'Pro annual',
-    price: '$120/year',
-    description: 'Best if AffProf is already part of your operating stack.',
-    highlight: true,
-    features: [
-      'Everything in Pro monthly',
-      'Longer commitment for serious creator businesses',
-      'Cleaner yearly billing with the same webhook flow',
-    ],
-  },
-] as const;
+const PLAN_IDS = ['pro', 'pro_annual'] as const;
+type PlanId = (typeof PLAN_IDS)[number];
 
 export function BillingPlansCard() {
+  const t = useTranslations('billing.plans');
+  const tPro = useTranslations('billing.plans.pro');
+  const tProAnnual = useTranslations('billing.plans.pro_annual');
+
   const { data } = useBilling();
   const { mutateAsync: createCheckout, isPending } = useCreateCheckout();
   const { mutateAsync: createPortal, isPending: isOpeningPortal } = useCreatePortal();
@@ -49,8 +30,30 @@ export function BillingPlansCard() {
     Boolean(subscription.stripeSubscriptionId);
   const currentPlan = subscription?.plan ?? 'free';
 
+  const plans = React.useMemo(
+    () => [
+      {
+        id: 'pro' as PlanId,
+        name: tPro('name'),
+        price: tPro('price'),
+        description: tPro('description'),
+        highlight: false,
+        features: [tPro('feature1'), tPro('feature2'), tPro('feature3')],
+      },
+      {
+        id: 'pro_annual' as PlanId,
+        name: tProAnnual('name'),
+        price: tProAnnual('price'),
+        description: tProAnnual('description'),
+        highlight: true,
+        features: [tProAnnual('feature1'), tProAnnual('feature2'), tProAnnual('feature3')],
+      },
+    ],
+    [tPro, tProAnnual],
+  );
+
   const handleCheckout = React.useCallback(
-    async (plan: 'pro' | 'pro_annual') => {
+    async (plan: PlanId) => {
       const result = await createCheckout({
         body: { plan },
       });
@@ -60,9 +63,9 @@ export function BillingPlansCard() {
         return;
       }
 
-      toast.error('Could not create Stripe checkout');
+      toast.error(t('toastCheckoutError'));
     },
-    [createCheckout],
+    [createCheckout, t],
   );
 
   const handleOpenPortal = React.useCallback(async () => {
@@ -73,19 +76,19 @@ export function BillingPlansCard() {
       return;
     }
 
-    toast.error('Could not open Stripe portal');
-  }, [createPortal]);
+    toast.error(t('toastCheckoutError'));
+  }, [createPortal, t]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Plans</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
         <CardDescription>
-          Choose monthly or annual billing. If you already have a paid plan, use billing to switch cadence or manage cancellation.
+          {t('description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 lg:grid-cols-2">
-        {PLANS.map((plan) => {
+        {plans.map((plan) => {
           const isCurrentPlan = subscription?.plan === plan.id;
           const canStartCheckout = currentPlan === 'free';
           const shouldRouteToPortal = hasActivePaidPlan && !isCurrentPlan;
@@ -106,10 +109,10 @@ export function BillingPlansCard() {
                     {plan.highlight ? (
                       <Badge variant="secondary">
                         <Sparkles className="size-3" />
-                        Recommended
+                        {t('recommended')}
                       </Badge>
                     ) : null}
-                    {isCurrentPlan ? <Badge variant="outline">Current</Badge> : null}
+                    {isCurrentPlan ? <Badge variant="outline">{t('current')}</Badge> : null}
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
                 </div>
@@ -142,14 +145,14 @@ export function BillingPlansCard() {
               >
                 {isBusy ? <Loader2 className="animate-spin" /> : shouldRouteToPortal ? <ExternalLink /> : null}
                 {isCurrentPlan
-                  ? 'Current plan'
+                  ? t('currentPlan')
                   : canStartCheckout
-                    ? 'Choose plan'
-                    : 'Switch in billing'}
+                    ? t('choosePlan')
+                    : t('switchInBilling')}
               </Button>
               {!isCurrentPlan && shouldRouteToPortal ? (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  You already have an active paid plan. Open billing to switch between monthly and annual or manage cancellation.
+                  {t('switchNote')}
                 </p>
               ) : null}
             </div>

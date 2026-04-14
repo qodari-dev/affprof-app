@@ -2,6 +2,7 @@
 
 import type { Table } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 
 // ============================================================================
@@ -33,6 +34,7 @@ export function DataTablePagination<TData>({
   pageSizeOptions = [10, 20, 30, 50],
   showSelectedCount = true,
 }: DataTablePaginationProps<TData>) {
+  const t = useTranslations('dataTable');
   const selectedCount = table.getFilteredSelectedRowModel().rows.length;
   const rowCount = table.getFilteredRowModel().rows.length;
 
@@ -45,11 +47,11 @@ export function DataTablePagination<TData>({
       <div className="flex-1 text-sm text-muted-foreground">
         {showSelectedCount && selectedCount > 0 ? (
           <span>
-            {selectedCount} of {rowCount} row(s) selected
+            {t('selectedRows', { selected: selectedCount, total: rowCount })}
           </span>
         ) : totalCount ? (
           <span>
-            Showing {startRow} to {endRow} of {totalCount} results
+            {t('showingResults', { start: startRow, end: endRow, total: totalCount })}
           </span>
         ) : null}
       </div>
@@ -58,7 +60,7 @@ export function DataTablePagination<TData>({
       <div className="flex items-center space-x-6 lg:space-x-8">
         {/* Rows per page */}
         <div className="flex flex-col items-center gap-2 lg:flex-row">
-          <p className="text-sm font-medium">Rows per page</p>
+          <p className="text-sm font-medium">{t('rowsPerPage')}</p>
           <select
             className="flex h-9 w-[76px] rounded-lg border border-input bg-transparent px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 dark:bg-input/30"
             value={`${pageSize}`}
@@ -74,7 +76,7 @@ export function DataTablePagination<TData>({
 
         {/* Page info */}
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Page {pageIndex + 1} of {pageCount || 1}
+          {t('pageOf', { current: pageIndex + 1, total: pageCount || 1 })}
         </div>
 
         {/* Navigation */}
@@ -85,7 +87,7 @@ export function DataTablePagination<TData>({
             onClick={() => onPaginationChange(0, pageSize)}
             disabled={pageIndex === 0}
           >
-            <span className="sr-only">Go to first page</span>
+            <span className="sr-only">{t('firstPage')}</span>
             <ChevronsLeft className="h-4 w-4" />
           </Button>
           <Button
@@ -94,7 +96,7 @@ export function DataTablePagination<TData>({
             onClick={() => onPaginationChange(pageIndex - 1, pageSize)}
             disabled={pageIndex === 0}
           >
-            <span className="sr-only">Go to previous page</span>
+            <span className="sr-only">{t('previousPage')}</span>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button
@@ -103,7 +105,7 @@ export function DataTablePagination<TData>({
             onClick={() => onPaginationChange(pageIndex + 1, pageSize)}
             disabled={pageIndex >= pageCount - 1}
           >
-            <span className="sr-only">Go to next page</span>
+            <span className="sr-only">{t('nextPage')}</span>
             <ChevronRight className="h-4 w-4" />
           </Button>
           <Button
@@ -112,7 +114,7 @@ export function DataTablePagination<TData>({
             onClick={() => onPaginationChange(pageCount - 1, pageSize)}
             disabled={pageIndex >= pageCount - 1}
           >
-            <span className="sr-only">Go to last page</span>
+            <span className="sr-only">{t('lastPage')}</span>
             <ChevronsRight className="h-4 w-4" />
           </Button>
         </div>

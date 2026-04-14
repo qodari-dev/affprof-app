@@ -6,6 +6,8 @@ import { getIamAuthContext } from '@/iam/utils/get-auth-context';
 import { AuthStoreProvider } from '@/stores/auth-store-provider';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/sidebar/app-sidebar';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -22,19 +24,25 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const auth = await getIamAuthContext();
+  const [auth, locale, messages] = await Promise.all([
+    getIamAuthContext(),
+    getLocale(),
+    getMessages(),
+  ]);
 
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang={locale} className={inter.variable} suppressHydrationWarning>
       <body className="antialiased">
-        <Providers>
-          <AuthStoreProvider initialAuth={auth}>
-            <SidebarProvider>
-              <AppSidebar />
-              {children}
-            </SidebarProvider>
-          </AuthStoreProvider>
-        </Providers>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>
+            <AuthStoreProvider initialAuth={auth}>
+              <SidebarProvider>
+                <AppSidebar />
+                {children}
+              </SidebarProvider>
+            </AuthStoreProvider>
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

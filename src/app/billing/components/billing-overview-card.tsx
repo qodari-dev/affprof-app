@@ -3,27 +3,15 @@
 import * as React from 'react';
 import { CreditCard, ExternalLink, Loader2, ShieldCheck, Webhook } from 'lucide-react';
 import { format } from 'date-fns';
+import { enUS, es as esLocale } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { useBilling, useCreatePortal } from '@/hooks/queries/use-billing-queries';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-
-function formatPlan(plan: string) {
-  if (plan === 'pro_annual') return 'Pro annual';
-  if (plan === 'pro') return 'Pro monthly';
-  return 'Free';
-}
-
-function formatStatus(plan: string, status: string) {
-  if (plan === 'free') return 'Free plan';
-  if (status === 'past_due') return 'Past due';
-  if (status === 'canceled') return 'Canceled';
-  if (status === 'paused') return 'Paused';
-  return 'Active';
-}
 
 function getStatusVariant(plan: string, status: string): 'secondary' | 'outline' | 'destructive' {
   if (plan === 'free') return 'outline';
@@ -33,10 +21,36 @@ function getStatusVariant(plan: string, status: string): 'secondary' | 'outline'
 }
 
 export function BillingOverviewCard() {
+  const t = useTranslations('billing.overview');
+  const tPlans = useTranslations('billing.planNames');
+  const tStatuses = useTranslations('billing.statuses');
+  const locale = useLocale();
+  const dateFnsLocale = locale === 'es' ? esLocale : enUS;
+
   const { data, isLoading } = useBilling();
   const { mutateAsync: openPortal, isPending: isOpeningPortal } = useCreatePortal();
 
   const subscription = data?.status === 200 ? data.body : null;
+
+  const formatPlan = React.useCallback(
+    (plan: string) => {
+      if (plan === 'pro_annual') return tPlans('pro_annual');
+      if (plan === 'pro') return tPlans('pro');
+      return tPlans('free');
+    },
+    [tPlans],
+  );
+
+  const formatStatus = React.useCallback(
+    (plan: string, status: string) => {
+      if (plan === 'free') return tStatuses('freePlan');
+      if (status === 'past_due') return tStatuses('past_due');
+      if (status === 'canceled') return tStatuses('canceled');
+      if (status === 'paused') return tStatuses('paused');
+      return tStatuses('active');
+    },
+    [tStatuses],
+  );
 
   const handleOpenPortal = React.useCallback(async () => {
     const result = await openPortal({});
@@ -45,15 +59,15 @@ export function BillingOverviewCard() {
       return;
     }
 
-    toast.error('Could not open Stripe portal');
-  }, [openPortal]);
+    toast.error(t('toastPortalError'));
+  }, [openPortal, t]);
 
   if (isLoading || !subscription) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Subscription overview</CardTitle>
-          <CardDescription>Your current plan, renewal timeline, and billing access.</CardDescription>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('loadingDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
@@ -73,22 +87,22 @@ export function BillingOverviewCard() {
   const isScheduledToCancel =
     subscription.status === 'active' &&
     (Boolean(subscription.cancelAtPeriodEnd) || cancelAtDate !== null);
-  const periodLabel = isScheduledToCancel ? 'Ends' : 'Renews';
+  const periodLabel = isScheduledToCancel ? t('ends') : t('renews');
   const periodDate = isScheduledToCancel ? cancelAtDate : subscription.currentPeriodEnd
     ? new Date(subscription.currentPeriodEnd)
     : null;
   const periodValue = periodDate
-    ? format(periodDate, 'MMM d, yyyy')
+    ? format(periodDate, 'PP', { locale: dateFnsLocale })
     : isScheduledToCancel
-      ? 'Cancellation pending'
-      : 'No renewal date';
+      ? t('cancellationPending')
+      : t('noRenewalDate');
 
   return (
       <Card>
       <CardHeader>
-        <CardTitle>Subscription overview</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
         <CardDescription>
-          Review your current plan, renewal date, and billing access in one place.
+          {t('description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
@@ -96,7 +110,7 @@ export function BillingOverviewCard() {
           <div className="rounded-xl border bg-muted/20 p-4">
             <div className="mb-2 flex items-center gap-2 text-muted-foreground">
               <CreditCard className="size-4" />
-              <span className="text-xs font-medium uppercase tracking-wide">Plan</span>
+              <span className="text-xs font-medium uppercase tracking-wide">{t('plan')}</span>
             </div>
             <div className="text-lg font-semibold">{formatPlan(subscription.plan)}</div>
           </div>
@@ -104,13 +118,13 @@ export function BillingOverviewCard() {
           <div className="rounded-xl border bg-muted/20 p-4">
             <div className="mb-2 flex items-center gap-2 text-muted-foreground">
               <ShieldCheck className="size-4" />
-              <span className="text-xs font-medium uppercase tracking-wide">Status</span>
+              <span className="text-xs font-medium uppercase tracking-wide">{t('status')}</span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant={getStatusVariant(subscription.plan, subscription.status)}>
                 {formatStatus(subscription.plan, subscription.status)}
               </Badge>
-              {isScheduledToCancel ? <Badge variant="outline">Scheduled to cancel</Badge> : null}
+              {isScheduledToCancel ? <Badge variant="outline">{t('scheduledCancel')}</Badge> : null}
             </div>
           </div>
 
@@ -125,24 +139,24 @@ export function BillingOverviewCard() {
           <div className="rounded-xl border bg-muted/20 p-4">
             <div className="mb-2 flex items-center gap-2 text-muted-foreground">
               <ExternalLink className="size-4" />
-              <span className="text-xs font-medium uppercase tracking-wide">Billing account</span>
+              <span className="text-xs font-medium uppercase tracking-wide">{t('billingAccount')}</span>
             </div>
             <div className="text-sm font-medium">
-              {hasPortalAccess ? 'Ready to manage' : 'Created after first payment'}
+              {hasPortalAccess ? t('readyToManage') : t('createdAfterPayment')}
             </div>
           </div>
         </div>
 
         <div className="rounded-xl border bg-card p-4">
           <div className="space-y-2">
-            <div className="text-sm font-medium">How billing works</div>
+            <div className="text-sm font-medium">{t('howBillingWorks')}</div>
             <p className="text-sm text-muted-foreground">
-              Manage your subscription directly from AffProf, with Stripe handling secure checkout and billing details behind the scenes.
+              {t('billingExplanation')}
             </p>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Start a monthly or annual plan when you&apos;re ready to upgrade.</li>
-              <li>Open billing to change payment method, switch cadence, or cancel later.</li>
-              <li>Invoices and receipts stay available here after each successful payment.</li>
+              <li>{t('bulletStartPlan')}</li>
+              <li>{t('bulletOpenBilling')}</li>
+              <li>{t('bulletInvoices')}</li>
             </ul>
           </div>
         </div>
@@ -150,10 +164,10 @@ export function BillingOverviewCard() {
       <CardFooter className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <p className="text-sm text-muted-foreground">
           {isScheduledToCancel
-            ? `Your plan is still active and will end on ${periodValue}. You can reopen billing anytime before then to keep it active.`
+            ? t('footerScheduledCancel', { date: periodValue })
             : hasActivePaidPlan
-              ? 'Need to change billing cycle, update your card, or cancel later? Open billing.'
-              : 'You are currently on the free plan. Upgrade anytime when you need more capacity.'}
+              ? t('footerActivePaid')
+              : t('footerFree')}
         </p>
         <Button
           type="button"
@@ -163,7 +177,7 @@ export function BillingOverviewCard() {
           onClick={handleOpenPortal}
         >
           {isOpeningPortal ? <Loader2 className="animate-spin" /> : <ExternalLink />}
-          Open billing
+          {t('openBilling')}
         </Button>
       </CardFooter>
     </Card>

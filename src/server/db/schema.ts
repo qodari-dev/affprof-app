@@ -85,6 +85,7 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(), // for short links: /go/[slug]/...
   timezone: text("timezone").notNull().default("UTC"),
+  language: text("language").notNull().default("en"), // 'en' | 'es'
   ...timestamps,
 });
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
 import type { Products } from '@/server/db';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -25,22 +26,26 @@ export function ProductInfo({
   opened: boolean;
   onOpened: (opened: boolean) => void;
 }) {
+  const t = useTranslations('products.info');
+  const tp = useTranslations('products');
+  const locale = useLocale();
+
   if (!product) return null;
 
   const linksCount = product.links?.length ?? 0;
 
   const sections: DescriptionSection[] = [
     {
-      title: 'General',
+      title: t('general'),
       columns: 1,
       items: [
-        { label: 'Name', value: product.name },
+        { label: t('name'), value: product.name },
         {
-          label: 'Description',
+          label: t('description'),
           value: product.description || undefined,
         },
         {
-          label: 'Image',
+          label: t('image'),
           value: (
             <div className="flex items-center gap-3">
               <ProductImage
@@ -58,7 +63,7 @@ export function ProductInfo({
                   {product.imageUrl}
                 </a>
               ) : (
-                <span className="text-xs text-muted-foreground">No image uploaded</span>
+                <span className="text-xs text-muted-foreground">{t('noImage')}</span>
               )}
             </div>
           ),
@@ -66,30 +71,30 @@ export function ProductInfo({
       ],
     },
     {
-      title: 'Links',
+      title: t('links'),
       columns: 1,
       items: [
         {
-          label: 'Affiliate links',
+          label: t('affiliateLinks'),
           value: (
             <Badge variant={linksCount > 0 ? 'default' : 'outline'}>
-              {linksCount} {linksCount === 1 ? 'link' : 'links'}
+              {tp('linksCount', { count: linksCount })}
             </Badge>
           ),
         },
         {
-          label: 'Link health',
+          label: t('linkHealth'),
           value: <ProductLinkHealth links={product.links} />,
         },
       ],
     },
     {
-      title: 'Activity',
+      title: t('activity'),
       columns: 2,
       items: [
         {
-          label: 'Created',
-          value: new Date(product.createdAt).toLocaleDateString('en-US', {
+          label: t('created'),
+          value: new Date(product.createdAt).toLocaleDateString(locale, {
             month: 'long',
             day: 'numeric',
             year: 'numeric',
@@ -98,9 +103,9 @@ export function ProductInfo({
           }),
         },
         {
-          label: 'Updated',
+          label: t('updated'),
           value: product.updatedAt
-            ? new Date(product.updatedAt).toLocaleDateString('en-US', {
+            ? new Date(product.updatedAt).toLocaleDateString(locale, {
                 month: 'long',
                 day: 'numeric',
                 year: 'numeric',
@@ -125,7 +130,7 @@ export function ProductInfo({
             />
             {product.name}
           </SheetTitle>
-          <SheetDescription>Product details and linked affiliate links.</SheetDescription>
+          <SheetDescription>{t('title')}</SheetDescription>
         </SheetHeader>
         <div className="px-6 pb-2">
           <DescriptionList sections={sections} />

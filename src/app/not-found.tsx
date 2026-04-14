@@ -3,12 +3,18 @@ import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { Metadata } from 'next';
 import { ArrowLeft, Search } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 
-export const metadata: Metadata = {
-  title: 'Not Found — AffProf',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('errorPages.notFound');
+  return {
+    title: t('metadataTitle'),
+  };
+}
 
-export default function NotFoundPage() {
+export default async function NotFoundPage() {
+  const t = await getTranslations('errorPages.notFound');
+
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6">
       <div className="flex max-w-lg flex-col items-center text-center">
@@ -23,10 +29,9 @@ export default function NotFoundPage() {
         </span>
 
         {/* Text */}
-        <h1 className="mb-2 text-2xl font-bold tracking-tight">Page not found</h1>
+        <h1 className="mb-2 text-2xl font-bold tracking-tight">{t('title')}</h1>
         <p className="mb-8 max-w-sm text-muted-foreground">
-          The page you&apos;re looking for doesn&apos;t exist or has been moved. Let&apos;s get you
-          back on track.
+          {t('description')}
         </p>
 
         {/* Actions */}
@@ -38,7 +43,7 @@ export default function NotFoundPage() {
             )}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Go back home
+            {t('goBack')}
           </Link>
           <Link
             href="/dashboard"
@@ -47,7 +52,7 @@ export default function NotFoundPage() {
               'bg-primary text-primary-foreground hover:bg-primary/90',
             )}
           >
-            Dashboard
+            {t('dashboard')}
           </Link>
         </div>
       </div>

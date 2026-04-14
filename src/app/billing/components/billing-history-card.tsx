@@ -1,7 +1,9 @@
 'use client';
 
 import { format } from 'date-fns';
+import { enUS, es as esLocale } from 'date-fns/locale';
 import { ExternalLink, FileText, ReceiptText } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { useBillingHistory } from '@/hooks/queries/use-billing-queries';
 import { Badge } from '@/components/ui/badge';
@@ -12,16 +14,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 
-function formatMoney(amount: number, currency: string) {
-  return new Intl.NumberFormat('en-US', {
+function formatMoney(amount: number, currency: string, locale: string) {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency.toUpperCase(),
   }).format(amount / 100);
-}
-
-function formatInvoiceStatus(status: string | null) {
-  if (!status) return 'Unknown';
-  return status.replaceAll('_', ' ');
 }
 
 function getInvoiceStatusVariant(status: string | null): 'secondary' | 'outline' | 'destructive' {
@@ -31,15 +28,24 @@ function getInvoiceStatusVariant(status: string | null): 'secondary' | 'outline'
 }
 
 export function BillingHistoryCard() {
+  const t = useTranslations('billing.history');
+  const locale = useLocale();
+  const dateFnsLocale = locale === 'es' ? esLocale : enUS;
+
   const { data, isLoading } = useBillingHistory();
   const history = data?.status === 200 ? data.body : [];
+
+  function formatInvoiceStatus(status: string | null) {
+    if (!status) return t('unknown');
+    return status.replaceAll('_', ' ');
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Billing history</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
         <CardDescription>
-          Past invoices and receipts for your AffProf subscription.
+          {t('description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -55,9 +61,9 @@ export function BillingHistoryCard() {
               <EmptyMedia variant="icon">
                 <ReceiptText />
               </EmptyMedia>
-              <EmptyTitle>No billing history yet</EmptyTitle>
+              <EmptyTitle>{t('empty')}</EmptyTitle>
               <EmptyDescription>
-                Paid invoices and downloadable receipts will appear here after your first successful charge.
+                {t('emptyDescription')}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -66,12 +72,12 @@ export function BillingHistoryCard() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className="px-4">Invoice</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Period</TableHead>
-                  <TableHead className="pr-4">Actions</TableHead>
+                  <TableHead className="px-4">{t('invoice')}</TableHead>
+                  <TableHead>{t('amount')}</TableHead>
+                  <TableHead>{t('status')}</TableHead>
+                  <TableHead>{t('created')}</TableHead>
+                  <TableHead>{t('period')}</TableHead>
+                  <TableHead className="pr-4">{t('actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -84,7 +90,7 @@ export function BillingHistoryCard() {
                       </div>
                     </TableCell>
                     <TableCell className="py-3">
-                      <div className="font-medium">{formatMoney(invoice.amountPaid || invoice.amountDue, invoice.currency)}</div>
+                      <div className="font-medium">{formatMoney(invoice.amountPaid || invoice.amountDue, invoice.currency, locale)}</div>
                       <div className="text-xs text-muted-foreground uppercase">{invoice.currency}</div>
                     </TableCell>
                     <TableCell className="py-3">
@@ -93,11 +99,11 @@ export function BillingHistoryCard() {
                       </Badge>
                     </TableCell>
                     <TableCell className="py-3 text-sm text-muted-foreground">
-                      {format(new Date(invoice.createdAt), 'MMM d, yyyy')}
+                      {format(new Date(invoice.createdAt), 'PP', { locale: dateFnsLocale })}
                     </TableCell>
                     <TableCell className="py-3 text-sm text-muted-foreground">
                       {invoice.periodStart && invoice.periodEnd
-                        ? `${format(new Date(invoice.periodStart), 'MMM d')} - ${format(new Date(invoice.periodEnd), 'MMM d')}`
+                        ? `${format(new Date(invoice.periodStart), 'MMM d', { locale: dateFnsLocale })} - ${format(new Date(invoice.periodEnd), 'MMM d', { locale: dateFnsLocale })}`
                         : '—'}
                     </TableCell>
                     <TableCell className="pr-4 py-3">
@@ -110,7 +116,7 @@ export function BillingHistoryCard() {
                             className={cn(buttonVariants({ size: 'sm', variant: 'outline' }), 'rounded-lg')}
                           >
                             <ExternalLink />
-                            View
+                            {t('view')}
                           </a>
                         ) : null}
                         {invoice.invoicePdf ? (
@@ -121,7 +127,7 @@ export function BillingHistoryCard() {
                             className={cn(buttonVariants({ size: 'sm', variant: 'outline' }), 'rounded-lg')}
                           >
                             <FileText />
-                            PDF
+                            {t('pdf')}
                           </a>
                         ) : null}
                       </div>

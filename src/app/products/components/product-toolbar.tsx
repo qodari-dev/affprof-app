@@ -1,6 +1,7 @@
 'use client';
 
 import { FileUp, Plus, RefreshCw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -21,11 +22,14 @@ export function ProductToolbar({
   onImport,
   isRefreshing,
 }: ProductToolbarProps) {
+  const t = useTranslations('products');
+  const tc = useTranslations('common');
+
   return (
     <div className="flex flex-col-reverse gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex flex-1 flex-col-reverse items-start gap-2 lg:flex-row lg:items-center">
         <Input
-          placeholder="Search products..."
+          placeholder={t('searchPlaceholder')}
           value={searchValue}
           onChange={(event) => onSearchChange(event.target.value)}
           className="md:max-w-xs"
@@ -36,21 +40,21 @@ export function ProductToolbar({
         {onRefresh && (
           <Button variant="outline" onClick={onRefresh} disabled={isRefreshing}>
             <RefreshCw className={isRefreshing ? 'animate-spin' : ''} />
-            Refresh
+            {tc('refresh')}
           </Button>
         )}
 
         {onImport && (
           <Button variant="outline" onClick={onImport}>
             <FileUp className="mr-2 h-4 w-4" />
-            Import CSV
+            {tc('importCsv')}
           </Button>
         )}
 
         {onCreate && (
           <Button onClick={onCreate}>
             <Plus className="mr-2 h-4 w-4" />
-            New product
+            {t('newProduct')}
           </Button>
         )}
       </div>

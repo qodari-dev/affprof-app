@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { TrafficSource } from '@/schemas/analytics';
@@ -29,16 +30,18 @@ function formatNumber(n: number) {
 }
 
 export function DashboardSources({ sources }: DashboardSourcesProps) {
+  const t = useTranslations('dashboard.sources');
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Traffic sources</CardTitle>
-        <p className="text-sm text-muted-foreground">Where your clicks come from</p>
+        <CardTitle>{t('title')}</CardTitle>
+        <p className="text-sm text-muted-foreground">{t('description')}</p>
       </CardHeader>
       <CardContent>
         {sources.length === 0 ? (
           <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
-            No traffic data yet.
+            {t('empty')}
           </div>
         ) : (
           <div className="flex flex-col gap-3">

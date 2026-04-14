@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Copy, Download, Loader2, Power, PowerOff } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { BrandLogo } from '@/components/brand-logo';
@@ -41,6 +42,7 @@ function QrPreview({
   slug: string;
   brand?: Links['brand'];
 }) {
+  const tc = useTranslations('common');
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const qrUrl = `${shortUrl}?qr=1`;
 
@@ -104,7 +106,7 @@ function QrPreview({
       </button>
       <Button size="sm" variant="outline" onClick={handleDownload}>
         <Download className="mr-1.5 h-3 w-3" />
-        Download PNG
+        {tc('downloadPng')}
       </Button>
     </div>
   );
@@ -119,6 +121,8 @@ export function LinkInfo({
   opened: boolean;
   onOpened: (opened: boolean) => void;
 }) {
+  const t = useTranslations('links.info');
+  const locale = useLocale();
   const { data: profileData } = useProfile();
   const { data: customDomainsData } = useCustomDomains();
   const { mutateAsync: updateLink, isPending: isUpdating } = useUpdateLink();
@@ -158,15 +162,15 @@ export function LinkInfo({
 
   const sections: DescriptionSection[] = [
     {
-      title: 'Link Details',
+      title: t('linkDetails'),
       columns: 1,
       items: [
         {
-          label: 'Slug',
+          label: t('slug'),
           value: <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">/{link.slug}</code>,
         },
         {
-          label: 'Base URL',
+          label: t('baseUrl'),
           value: (
             <a
               href={link.baseUrl}
@@ -179,7 +183,7 @@ export function LinkInfo({
           ),
         },
         {
-          label: 'Final destination',
+          label: t('finalDestination'),
           value: (
             <a
               href={link.originalUrl}
@@ -192,20 +196,20 @@ export function LinkInfo({
           ),
         },
         {
-          label: 'Product',
+          label: t('product'),
           value: link.product?.name ?? undefined,
         },
         {
-          label: 'QR brand',
+          label: t('qrBrand'),
           value: link.brand ? (
             <div className="flex items-center gap-2">
               <BrandLogo name={link.brand.name} logoUrl={link.brand.logoUrl} className="size-7 rounded-lg" />
               <span>{link.brand.name}</span>
             </div>
-          ) : 'Standard AffProf QR',
+          ) : t('standardQr'),
         },
         {
-          label: 'UTM tracking',
+          label: t('utmTracking'),
           value: (link.utmSource || link.utmMedium || link.utmCampaign || link.utmContent || link.utmTerm) ? (
             <div className="flex flex-wrap gap-1">
               {link.utmSource ? <Badge variant="outline">source: {link.utmSource}</Badge> : null}
@@ -214,10 +218,10 @@ export function LinkInfo({
               {link.utmContent ? <Badge variant="outline">content: {link.utmContent}</Badge> : null}
               {link.utmTerm ? <Badge variant="outline">term: {link.utmTerm}</Badge> : null}
             </div>
-          ) : 'Not configured',
+          ) : t('notConfigured'),
         },
         {
-          label: 'Fallback URL',
+          label: t('fallbackUrl'),
           value: link.fallbackUrl ? (
             <a
               href={link.fallbackUrl}
@@ -227,10 +231,10 @@ export function LinkInfo({
             >
               {link.fallbackUrl}
             </a>
-          ) : 'Not configured',
+          ) : t('notConfigured'),
         },
         {
-          label: 'Platform',
+          label: t('platform'),
           value: (
             <Badge variant="outline" className="capitalize">
               {link.platform}
@@ -238,25 +242,25 @@ export function LinkInfo({
           ),
         },
         {
-          label: 'Notes',
+          label: t('notes'),
           value: link.notes || undefined,
         },
       ],
     },
     {
-      title: 'Status & Monitoring',
+      title: t('statusMonitoring'),
       columns: 2,
       items: [
         {
-          label: 'Status',
+          label: t('status'),
           value: <LinkStatusBadge status={link.status} isEnabled={isEnabled} />,
         },
         {
-          label: 'Enabled',
-          value: isEnabled ? 'Yes' : 'No',
+          label: t('enabled'),
+          value: isEnabled ? t('yes') : t('no'),
         },
         {
-          label: 'Consecutive Failures',
+          label: t('consecutiveFailures'),
           value: (
             <span className={link.consecutiveFailures > 0 ? 'font-medium text-destructive' : ''}>
               {link.consecutiveFailures}
@@ -264,39 +268,39 @@ export function LinkInfo({
           ),
         },
         {
-          label: 'Last Checked',
+          label: t('lastChecked'),
           value: link.lastCheckedAt
-            ? new Date(link.lastCheckedAt).toLocaleDateString('en-US', {
+            ? new Date(link.lastCheckedAt).toLocaleDateString(locale, {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit',
               })
-            : 'Never',
+            : t('never'),
         },
         {
-          label: 'Last Status Code',
+          label: t('lastStatusCode'),
           value: link.lastStatusCode ? (
             <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{link.lastStatusCode}</code>
           ) : undefined,
         },
         {
-          label: 'Last Response',
+          label: t('lastResponse'),
           value: link.lastResponseMs ? `${link.lastResponseMs}ms` : undefined,
         },
       ],
     },
     {
-      title: 'Performance',
+      title: t('performance'),
       columns: 2,
       items: [
         {
-          label: 'Total Clicks',
+          label: t('totalClicks'),
           value: <span className="text-lg font-semibold tabular-nums">{link.totalClicks.toLocaleString()}</span>,
         },
         {
-          label: 'Tags',
+          label: t('tags'),
           value:
             tags.length > 0 ? (
               <div className="flex flex-wrap gap-1">
@@ -305,18 +309,18 @@ export function LinkInfo({
                 ))}
               </div>
             ) : (
-              'No tags'
+              t('noTags')
             ),
         },
       ],
     },
     {
-      title: 'Activity',
+      title: t('activity'),
       columns: 2,
       items: [
         {
-          label: 'Created',
-          value: new Date(link.createdAt).toLocaleDateString('en-US', {
+          label: t('created'),
+          value: new Date(link.createdAt).toLocaleDateString(locale, {
             month: 'long',
             day: 'numeric',
             year: 'numeric',
@@ -325,9 +329,9 @@ export function LinkInfo({
           }),
         },
         {
-          label: 'Updated',
+          label: t('updated'),
           value: link.updatedAt
-            ? new Date(link.updatedAt).toLocaleDateString('en-US', {
+            ? new Date(link.updatedAt).toLocaleDateString(locale, {
                 month: 'long',
                 day: 'numeric',
                 year: 'numeric',
@@ -347,22 +351,20 @@ export function LinkInfo({
           <SheetTitle className="flex items-center gap-2 font-mono">
             /{link.slug}
           </SheetTitle>
-          <SheetDescription>Link details, monitoring status, and performance.</SheetDescription>
+          <SheetDescription>{t('sheetDescription')}</SheetDescription>
         </SheetHeader>
         <Tabs defaultValue="overview" className="px-6 pb-2">
           <TabsList variant="line" className="mb-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="overview">{t('overview')}</TabsTrigger>
+            <TabsTrigger value="analytics">{t('analyticsTab')}</TabsTrigger>
           </TabsList>
           <TabsContent value="overview">
             <div className="flex flex-col gap-6">
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/20 px-4 py-3">
                 <div className="flex flex-col gap-1">
-                  <span className="text-sm font-medium">Link availability</span>
+                  <span className="text-sm font-medium">{t('linkAvailability')}</span>
                   <span className="text-sm text-muted-foreground">
-                    {isEnabled
-                      ? 'This short link is active and can redirect visitors.'
-                      : 'This short link is disabled and currently returns not found.'}
+                    {isEnabled ? t('enabledDescription') : t('disabledDescription')}
                   </span>
                 </div>
                 <Button
@@ -378,7 +380,7 @@ export function LinkInfo({
                   ) : (
                     <Power />
                   )}
-                  {isEnabled ? 'Disable link' : 'Enable link'}
+                  {isEnabled ? t('disableLink') : t('enableLink')}
                 </Button>
               </div>
               <DescriptionList sections={sections} />

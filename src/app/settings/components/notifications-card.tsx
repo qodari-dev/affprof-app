@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,17 +19,11 @@ import { useUserSettings, useUpdateUserSettings } from '@/hooks/queries/use-user
 
 type FormValues = z.infer<typeof UpdateUserSettingsBodySchema>;
 
-const WEEKDAYS = [
-  { value: 'monday', label: 'Monday' },
-  { value: 'tuesday', label: 'Tuesday' },
-  { value: 'wednesday', label: 'Wednesday' },
-  { value: 'thursday', label: 'Thursday' },
-  { value: 'friday', label: 'Friday' },
-  { value: 'saturday', label: 'Saturday' },
-  { value: 'sunday', label: 'Sunday' },
-] as const;
+const WEEKDAY_VALUES = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
 
 export function NotificationsCard() {
+  const t = useTranslations('settings.notifications');
+  const tw = useTranslations('settings.notifications.weekdays');
   const { data: settingsData, isLoading } = useUserSettings();
   const { mutateAsync: updateSettings, isPending: isSaving } = useUpdateUserSettings();
   const [isFormReady, setIsFormReady] = React.useState(false);
@@ -68,21 +63,21 @@ export function NotificationsCard() {
       try {
         const result = await updateSettings({ body: values });
         if (result.status === 200) {
-          toast.success('Notification settings updated');
+          toast.success(t('toastSaved'));
         }
       } catch {
         // Error handled by mutation onError
       }
     },
-    [updateSettings]
+    [updateSettings, t]
   );
 
   if (isLoading || !isFormReady) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Notifications</CardTitle>
-          <CardDescription>Configure email alerts and weekly digest.</CardDescription>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           {Array(3)
@@ -102,8 +97,8 @@ export function NotificationsCard() {
     <form onSubmit={form.handleSubmit(onSubmit)}>
       <Card>
         <CardHeader>
-          <CardTitle>Notifications</CardTitle>
-          <CardDescription>Configure email alerts and weekly digest.</CardDescription>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           {/* Broken link alert */}
@@ -117,9 +112,9 @@ export function NotificationsCard() {
                   onCheckedChange={field.onChange}
                 />
                 <div className="flex flex-col gap-0.5">
-                  <FieldLabel>Broken link alerts</FieldLabel>
+                  <FieldLabel>{t('brokenLinkAlerts')}</FieldLabel>
                   <FieldDescription>
-                    Get notified by email when one of your affiliate links is detected as broken.
+                    {t('brokenLinkAlertsHelp')}
                   </FieldDescription>
                 </div>
               </Field>
@@ -137,9 +132,9 @@ export function NotificationsCard() {
                   onCheckedChange={field.onChange}
                 />
                 <div className="flex flex-col gap-0.5">
-                  <FieldLabel>Weekly digest</FieldLabel>
+                  <FieldLabel>{t('weeklyDigest')}</FieldLabel>
                   <FieldDescription>
-                    Get a summary email with clicks, broken links, and top performers.
+                    {t('weeklyDigestHelp')}
                   </FieldDescription>
                 </div>
               </Field>
@@ -152,21 +147,21 @@ export function NotificationsCard() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Digest day</FieldLabel>
+                <FieldLabel>{t('digestDay')}</FieldLabel>
                 <select
                   className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
                   value={field.value ?? 'monday'}
                   onChange={field.onChange}
                   disabled={!weeklyDigestEnabled}
                 >
-                  {WEEKDAYS.map((day) => (
-                    <option key={day.value} value={day.value}>
-                      {day.label}
+                  {WEEKDAY_VALUES.map((day) => (
+                    <option key={day} value={day}>
+                      {tw(day)}
                     </option>
                   ))}
                 </select>
                 <FieldDescription>
-                  The day of the week you want to receive your digest email.
+                  {t('digestDayHelp')}
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -179,15 +174,15 @@ export function NotificationsCard() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>CC email</FieldLabel>
+                <FieldLabel>{t('ccEmail')}</FieldLabel>
                 <Input
                   type="email"
-                  placeholder="team@example.com"
+                  placeholder={t('ccEmailPlaceholder')}
                   value={field.value ?? ''}
                   onChange={(e) => field.onChange(e.target.value || null)}
                 />
                 <FieldDescription>
-                  Optionally send a copy of all alert emails to this address.
+                  {t('ccEmailHelp')}
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -200,15 +195,15 @@ export function NotificationsCard() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Default fallback URL</FieldLabel>
+                <FieldLabel>{t('defaultFallbackUrl')}</FieldLabel>
                 <Input
                   type="url"
-                  placeholder="https://yourbrand.com/backup-page"
+                  placeholder={t('defaultFallbackUrlPlaceholder')}
                   value={field.value ?? ''}
                   onChange={(e) => field.onChange(e.target.value || null)}
                 />
                 <FieldDescription>
-                  Used when a short link is disabled or broken and that specific link does not have its own fallback URL.
+                  {t('defaultFallbackUrlHelp')}
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -218,7 +213,7 @@ export function NotificationsCard() {
         <CardFooter className="flex justify-end">
           <Button type="submit" size="sm" disabled={isSaving}>
             {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
-            Save notifications
+            {t('save')}
           </Button>
         </CardFooter>
       </Card>

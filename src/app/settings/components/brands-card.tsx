@@ -15,6 +15,7 @@ import {
   Star,
   Trash2,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { BrandLogo } from '@/components/brand-logo';
 import { Button } from '@/components/ui/button';
@@ -97,6 +98,7 @@ function BrandFormSheet({
   opened: boolean;
   onOpened: (opened: boolean) => void;
 }) {
+  const t = useTranslations('settings.brands.form');
   const isEditing = Boolean(brand);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const form = useForm<FormInputValues, undefined, FormValues>({
@@ -136,13 +138,13 @@ function BrandFormSheet({
   const handleLogoUpload = React.useCallback(
     async (file: File) => {
       if (!BRAND_LOGO_ALLOWED_TYPES.includes(file.type as (typeof BRAND_LOGO_ALLOWED_TYPES)[number])) {
-        toast.error('Only JPG, PNG, and WEBP images are allowed');
+        toast.error(t('toastInvalidFormat'));
         return;
       }
 
       if (file.size > BRAND_LOGO_MAX_BYTES) {
-        toast.error('Logo is too large', {
-          description: 'Please choose an image smaller than 4 MB.',
+        toast.error(t('toastLogoTooLarge'), {
+          description: t('toastLogoSizeLimit'),
         });
         return;
       }
@@ -174,9 +176,9 @@ function BrandFormSheet({
           shouldDirty: true,
           shouldValidate: true,
         });
-        toast.success('Brand logo uploaded');
+        toast.success(t('toastUploaded'));
       } catch {
-        toast.error('Could not upload brand logo');
+        toast.error(t('toastUploadError'));
       } finally {
         setIsUploadingLogo(false);
         if (fileInputRef.current) {
@@ -184,7 +186,7 @@ function BrandFormSheet({
         }
       }
     },
-    [form, presignLogoUpload],
+    [form, presignLogoUpload, t],
   );
 
   const onSubmit = async (values: FormValues) => {
@@ -213,21 +215,19 @@ function BrandFormSheet({
     <Sheet open={opened} onOpenChange={onOpened}>
       <SheetContent className="overflow-y-auto sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle>{isEditing ? 'Edit brand' : 'Create brand'}</SheetTitle>
-          <SheetDescription>
-            Save reusable logos and QR colors so links can generate branded codes without duplicated uploads.
-          </SheetDescription>
+          <SheetTitle>{isEditing ? t('editTitle') : t('createTitle')}</SheetTitle>
+          <SheetDescription>{t('description')}</SheetDescription>
         </SheetHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1 flex-col gap-6 px-6 pb-2">
           <div className="rounded-2xl border bg-muted/20 p-4">
             <div className="flex items-center gap-4">
-              <BrandLogo name={brandName || 'Brand'} logoUrl={logoUrl} className="size-16 rounded-2xl" />
+              <BrandLogo name={brandName || t('brandFallback')} logoUrl={logoUrl} className="size-16 rounded-2xl" />
               <div className="min-w-0 flex-1 space-y-2">
                 <div>
-                  <div className="font-medium">{brandName || 'Brand preview'}</div>
+                  <div className="font-medium">{brandName || t('brandPreview')}</div>
                   <div className="text-sm text-muted-foreground">
-                    This style will appear in QR previews and downloads.
+                    {t('brandPreviewHelp')}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -251,27 +251,27 @@ function BrandFormSheet({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Name</FieldLabel>
+                <FieldLabel>{t('name')}</FieldLabel>
                 <Input
-                  placeholder="e.g. AffProf, Carlos Media, Q4 Promo"
+                  placeholder={t('namePlaceholder')}
                   value={field.value ?? ''}
                   onChange={field.onChange}
                   autoFocus
                 />
-                <FieldDescription>Use a short label that will be easy to recognize in the QR modal.</FieldDescription>
+                <FieldDescription>{t('nameHelp')}</FieldDescription>
                 {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
               </Field>
             )}
           />
 
           <Field>
-            <FieldLabel>Logo</FieldLabel>
+            <FieldLabel>{t('logo')}</FieldLabel>
             <div className="flex flex-col gap-4 rounded-xl border bg-muted/20 p-4">
               <div className="flex items-start gap-4">
-                <BrandLogo name={brandName || 'Brand'} logoUrl={logoUrl} className="size-20 rounded-2xl" />
+                <BrandLogo name={brandName || t('brandFallback')} logoUrl={logoUrl} className="size-20 rounded-2xl" />
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
-                  <p className="text-sm font-medium">{logoUrl ? 'Current logo' : 'No logo selected'}</p>
-                  <p className="break-all text-xs text-muted-foreground">{logoUrl || 'QR will render without a center logo.'}</p>
+                  <p className="text-sm font-medium">{logoUrl ? t('currentLogo') : t('noLogo')}</p>
+                  <p className="break-all text-xs text-muted-foreground">{logoUrl || t('noLogoHelp')}</p>
                   <div className="flex flex-wrap gap-2">
                     <Button
                       type="button"
@@ -284,7 +284,7 @@ function BrandFormSheet({
                       ) : (
                         <ImagePlus />
                       )}
-                      {logoUrl ? 'Replace logo' : 'Upload logo'}
+                      {logoUrl ? t('replaceLogo') : t('uploadLogo')}
                     </Button>
                     <Button
                       type="button"
@@ -298,11 +298,11 @@ function BrandFormSheet({
                       disabled={!logoUrl}
                     >
                       <Trash2 />
-                      Remove
+                      {t('remove')}
                     </Button>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Upload a JPG, PNG, or WEBP image up to 4 MB to DigitalOcean Spaces.
+                    {t('logoUploadHelp')}
                   </p>
                 </div>
               </div>
@@ -321,7 +321,7 @@ function BrandFormSheet({
               />
             </div>
             <FieldDescription>
-              The same uploaded asset can be reused across as many QR codes as needed.
+              {t('logoReuse')}
             </FieldDescription>
           </Field>
 
@@ -330,8 +330,8 @@ function BrandFormSheet({
             control={form.control}
             render={({ field, fieldState }) => (
               <BrandColorField
-                label="QR foreground"
-                description="Main QR color. Darker colors scan more reliably."
+                label={t('qrForeground')}
+                description={t('qrForegroundHelp')}
                 value={field.value ?? '#111111'}
                 onChange={field.onChange}
                 invalid={fieldState.invalid}
@@ -345,8 +345,8 @@ function BrandFormSheet({
             control={form.control}
             render={({ field, fieldState }) => (
               <BrandColorField
-                label="QR background"
-                description="Keep enough contrast against the foreground for reliable scans."
+                label={t('qrBackground')}
+                description={t('qrBackgroundHelp')}
                 value={field.value ?? '#FFFFFF'}
                 onChange={field.onChange}
                 invalid={fieldState.invalid}
@@ -362,9 +362,9 @@ function BrandFormSheet({
               <Field orientation="horizontal">
                 <Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
                 <div className="flex flex-col gap-0.5">
-                  <FieldLabel>Default brand</FieldLabel>
+                  <FieldLabel>{t('defaultBrand')}</FieldLabel>
                   <FieldDescription>
-                    Preselect this brand when opening the QR dialog for new downloads.
+                    {t('defaultBrandHelp')}
                   </FieldDescription>
                 </div>
               </Field>
@@ -374,7 +374,7 @@ function BrandFormSheet({
 
         <SheetFooter>
           <Button variant="outline" className="min-w-32" onClick={() => onOpened(false)}>
-            Cancel
+            {t('cancel')}
           </Button>
           <Button
             type="submit"
@@ -383,7 +383,7 @@ function BrandFormSheet({
             onClick={form.handleSubmit(onSubmit)}
           >
             {isPending ? <Loader2 className="animate-spin" /> : <Save />}
-            {isEditing ? 'Save changes' : 'Create brand'}
+            {isEditing ? t('saveChanges') : t('createBrand')}
           </Button>
         </SheetFooter>
       </SheetContent>
@@ -406,6 +406,7 @@ function BrandListItem({
   deleting: boolean;
   settingDefault: boolean;
 }) {
+  const t = useTranslations('settings.brands');
   return (
     <div className="rounded-2xl border bg-muted/15 p-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -417,7 +418,7 @@ function BrandListItem({
               {brand.isDefault ? (
                 <div className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-200">
                   <Star className="size-3" />
-                  Default
+                  {t('default')}
                 </div>
               ) : null}
             </div>
@@ -443,16 +444,16 @@ function BrandListItem({
           {!brand.isDefault ? (
             <Button type="button" size="sm" variant="outline" onClick={() => onSetDefault(brand)} disabled={settingDefault}>
               {settingDefault ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
-              Set default
+              {t('setDefault')}
             </Button>
           ) : null}
           <Button type="button" size="sm" variant="outline" onClick={() => onEdit(brand)}>
             <Pencil />
-            Edit
+            {t('edit')}
           </Button>
           <Button type="button" size="sm" variant="outline" onClick={() => onDelete(brand)} disabled={deleting}>
             {deleting ? <Loader2 className="animate-spin" /> : <Trash2 />}
-            Delete
+            {t('delete')}
           </Button>
         </div>
       </div>
@@ -461,6 +462,7 @@ function BrandListItem({
 }
 
 export function BrandsCard() {
+  const t = useTranslations('settings.brands');
   const { data, isLoading } = useBrands();
   const { mutateAsync: deleteBrand, isPending: isDeleting } = useDeleteBrand();
   const { mutateAsync: setDefaultBrand, isPending: isSettingDefault } = useSetDefaultBrand();
@@ -508,8 +510,8 @@ export function BrandsCard() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Brands</CardTitle>
-          <CardDescription>Reusable logos and QR styling presets.</CardDescription>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('loadingDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <Skeleton className="h-24 w-full rounded-2xl" />
@@ -523,9 +525,9 @@ export function BrandsCard() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Brands</CardTitle>
+          <CardTitle>{t('title')}</CardTitle>
           <CardDescription>
-            Save reusable logos and QR colors. The QR modal can then switch between brands without uploading assets again.
+            {t('description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -536,9 +538,9 @@ export function BrandsCard() {
                   <Palette className="size-5 text-muted-foreground" />
                 </div>
                 <div className="space-y-1.5">
-                  <div className="font-medium">No brands yet</div>
+                  <div className="font-medium">{t('empty')}</div>
                   <p className="text-sm text-muted-foreground">
-                    Add a brand once, upload its logo, and reuse that style across QR downloads.
+                    {t('emptyDescription')}
                   </p>
                 </div>
               </div>
@@ -560,7 +562,7 @@ export function BrandsCard() {
         <CardFooter className="border-t bg-muted/10">
           <Button type="button" onClick={handleCreate}>
             <Plus />
-            Add brand
+            {t('addBrand')}
           </Button>
         </CardFooter>
       </Card>

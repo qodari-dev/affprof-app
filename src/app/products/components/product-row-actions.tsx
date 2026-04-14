@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import type { Row, Table } from '@tanstack/react-table';
 import { Activity, ArrowRight, Edit, Eye, Loader2, MoreHorizontal, Trash } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { Products } from '@/server/db';
 
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,8 @@ interface ProductRowActionsProps {
 
 export function ProductRowActions({ row, table }: ProductRowActionsProps) {
   const router = useRouter();
+  const t = useTranslations('products.rowActions');
+  const tc = useTranslations('common');
   const { onRowView, onRowEdit, onRowDelete } = (table.options.meta ?? {}) as {
     onRowView?: (product: Products) => void;
     onRowEdit?: (product: Products) => void;
@@ -41,20 +44,20 @@ export function ProductRowActions({ row, table }: ProductRowActionsProps) {
         render={
           <Button variant="ghost" size="icon" className="rounded-lg">
             <MoreHorizontal className="h-4 w-4" />
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">{tc('actions')}</span>
           </Button>
         }
       />
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuLabel>{tc('actions')}</DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           {onRowView && (
             <DropdownMenuItem onClick={() => onRowView(row.original)}>
               <Eye className="mr-2 h-4 w-4" />
-              View details
+              {tc('viewDetails')}
             </DropdownMenuItem>
           )}
           {hasLinks && (
@@ -67,17 +70,17 @@ export function ProductRowActions({ row, table }: ProductRowActionsProps) {
               ) : (
                 <Activity className="mr-2 h-4 w-4" />
               )}
-              Check all links ({linkIds.length})
+              {t('checkLinks', { count: linkIds.length })}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={() => router.push(`/links?productId=${row.original.id}`)}>
             <ArrowRight className="mr-2 h-4 w-4" />
-            Go to links
+            {t('goToLinks')}
           </DropdownMenuItem>
           {onRowEdit && (
             <DropdownMenuItem onClick={() => onRowEdit(row.original)}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit
+              {tc('edit')}
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
@@ -90,7 +93,7 @@ export function ProductRowActions({ row, table }: ProductRowActionsProps) {
                 className="text-destructive focus:text-destructive"
               >
                 <Trash className="mr-2 h-4 w-4" />
-                Delete
+                {tc('delete')}
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </>

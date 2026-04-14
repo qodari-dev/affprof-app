@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowDownRight, ArrowUpRight, Link2, MousePointerClick, Smartphone, Globe2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { DashboardKpis } from '@/schemas/analytics';
@@ -17,9 +18,9 @@ function formatPercent(n: number) {
   return `${n.toFixed(0)}%`;
 }
 
-function TrendBadge({ diffPercent }: { diffPercent: number | null }) {
+function TrendBadge({ diffPercent, newLabel }: { diffPercent: number | null; newLabel: string }) {
   if (diffPercent === null) {
-    return <span className="text-xs text-muted-foreground">new</span>;
+    return <span className="text-xs text-muted-foreground">{newLabel}</span>;
   }
   const up = diffPercent >= 0;
   const Icon = up ? ArrowUpRight : ArrowDownRight;
@@ -69,23 +70,25 @@ function KpiCard({
 }
 
 export function DashboardKpisCards({ kpis }: DashboardKpisProps) {
+  const t = useTranslations('dashboard.kpis');
+  const tc = useTranslations('common');
   const { clicks, links, topCountry, mobileShare, qrShare } = kpis;
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <KpiCard
-        label="Clicks"
+        label={t('clicks')}
         value={formatNumber(clicks.value)}
         icon={MousePointerClick}
-        trend={<TrendBadge diffPercent={clicks.diffPercent} />}
+        trend={<TrendBadge diffPercent={clicks.diffPercent} newLabel={tc('new')} />}
         sublabel={
           clicks.diffPercent === null
-            ? 'First period with data'
-            : `vs ${formatNumber(clicks.previousValue)} previous period`
+            ? t('firstPeriod')
+            : t('vsPrevious', { value: formatNumber(clicks.previousValue) })
         }
       />
       <KpiCard
-        label="Links"
+        label={t('links')}
         value={
           <>
             {formatNumber(links.active)}
@@ -98,31 +101,31 @@ export function DashboardKpisCards({ kpis }: DashboardKpisProps) {
         sublabel={
           links.broken > 0 ? (
             <span className="text-red-600 dark:text-red-500">
-              {links.broken} broken
+              {t('brokenCount', { count: links.broken })}
             </span>
           ) : (
-            'All healthy'
+            t('allHealthy')
           )
         }
       />
       <KpiCard
-        label="Top country"
+        label={t('topCountry')}
         value={topCountry?.code ?? '—'}
         icon={Globe2}
         sublabel={
           topCountry
             ? `${formatPercent(topCountry.percentage)} of clicks`
-            : 'No data yet'
+            : t('noData')
         }
       />
       <KpiCard
-        label="Mobile share"
+        label={t('mobileShare')}
         value={formatPercent(mobileShare)}
         icon={Smartphone}
         sublabel={
           qrShare > 0
-            ? `${formatPercent(qrShare)} from QR scans`
-            : `${formatPercent(100 - mobileShare)} desktop/tablet`
+            ? t('qrFromScans', { pct: qrShare.toFixed(0) })
+            : t('desktopTablet', { pct: (100 - mobileShare).toFixed(0) })
         }
       />
     </div>

@@ -6,6 +6,7 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Check, ChevronsUpDown, Loader2, Save, Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { BrandLogo } from '@/components/brand-logo';
 import { Button } from '@/components/ui/button';
@@ -148,6 +149,8 @@ export function LinkForm({
 }) {
   const isEditing = !!link;
   const [productPickerOpen, setProductPickerOpen] = React.useState(false);
+  const t = useTranslations('links.form');
+  const tc = useTranslations('common');
 
   // Fetch data for selectors
   const { data: productsData } = useProducts({ page: 1, limit: 100 });
@@ -382,11 +385,9 @@ export function LinkForm({
     <Sheet open={opened} onOpenChange={onOpened}>
       <SheetContent className="overflow-y-auto sm:max-w-2xl">
         <SheetHeader>
-          <SheetTitle>{isEditing ? 'Edit link' : 'Create link'}</SheetTitle>
+          <SheetTitle>{isEditing ? t('editTitle') : t('createTitle')}</SheetTitle>
           <SheetDescription>
-            {isEditing
-              ? 'Update the affiliate link details.'
-              : 'Add a new affiliate link to track clicks and monitor status.'}
+            {isEditing ? t('editDescription') : t('createDescription')}
           </SheetDescription>
         </SheetHeader>
 
@@ -397,7 +398,7 @@ export function LinkForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Product</FieldLabel>
+                <FieldLabel>{t('product')}</FieldLabel>
                 {isEditing ? (
                   <div className="flex min-h-12 items-center rounded-lg border border-input bg-muted/20 px-3 py-2">
                     {selectedProduct ? (
@@ -407,7 +408,7 @@ export function LinkForm({
                         imageUrl={selectedProduct.imageUrl}
                       />
                     ) : (
-                      <span className="text-sm text-muted-foreground">Product locked for this link</span>
+                      <span className="text-sm text-muted-foreground">{t('productLocked')}</span>
                     )}
                   </div>
                 ) : (
@@ -432,7 +433,7 @@ export function LinkForm({
                               compact
                             />
                           ) : (
-                            <span className="text-sm">Select a product...</span>
+                            <span className="text-sm">{t('selectProduct')}</span>
                           )}
                           <ChevronsUpDown className="ml-3 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
@@ -440,9 +441,9 @@ export function LinkForm({
                     />
                     <PopoverContent className="w-[420px] max-w-[calc(100vw-2rem)] p-0" align="start">
                       <Command>
-                        <CommandInput placeholder="Search products..." />
+                        <CommandInput placeholder={t('searchProducts')} />
                         <CommandList>
-                          <CommandEmpty>No products found.</CommandEmpty>
+                          <CommandEmpty>{t('noProducts')}</CommandEmpty>
                           <CommandGroup>
                             {products.map((product) => {
                               const isSelected = field.value === product.id;
@@ -473,7 +474,7 @@ export function LinkForm({
                   </Popover>
                 )}
                 <FieldDescription>
-                  The product this affiliate link belongs to.
+                  {t('productHelp')}
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -486,15 +487,15 @@ export function LinkForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Base URL</FieldLabel>
+                <FieldLabel>{t('baseUrl')}</FieldLabel>
                 <Input
-                  placeholder="https://www.amazon.com/dp/B08N5..."
+                  placeholder={t('baseUrlPlaceholder')}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={handleNormalizeBaseUrl}
                 />
                 <FieldDescription>
-                  Paste the destination URL. If it already includes UTM parameters, AffProf will extract them automatically.
+                  {t('baseUrlHelp')}
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -504,9 +505,9 @@ export function LinkForm({
           {/* UTM Builder */}
           <div className="rounded-xl border bg-muted/15 p-4">
             <div className="mb-4 space-y-1">
-              <p className="text-sm font-medium">UTM tracking</p>
+              <p className="text-sm font-medium">{t('utmTracking')}</p>
               <p className="text-xs text-muted-foreground">
-                Build a consistent tracked destination URL for campaigns, channels, and placements.
+                {t('utmTrackingHelp')}
               </p>
             </div>
 
@@ -516,8 +517,8 @@ export function LinkForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid || undefined}>
-                    <FieldLabel>UTM Source</FieldLabel>
-                    <Input placeholder="instagram" value={field.value ?? ''} onChange={field.onChange} />
+                    <FieldLabel>{t('utmSource')}</FieldLabel>
+                    <Input placeholder={t('utmSourcePlaceholder')} value={field.value ?? ''} onChange={field.onChange} />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
@@ -528,8 +529,8 @@ export function LinkForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid || undefined}>
-                    <FieldLabel>UTM Medium</FieldLabel>
-                    <Input placeholder="bio" value={field.value ?? ''} onChange={field.onChange} />
+                    <FieldLabel>{t('utmMedium')}</FieldLabel>
+                    <Input placeholder={t('utmMediumPlaceholder')} value={field.value ?? ''} onChange={field.onChange} />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
@@ -540,8 +541,8 @@ export function LinkForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid || undefined}>
-                    <FieldLabel>UTM Campaign</FieldLabel>
-                    <Input placeholder="spring-launch" value={field.value ?? ''} onChange={field.onChange} />
+                    <FieldLabel>{t('utmCampaign')}</FieldLabel>
+                    <Input placeholder={t('utmCampaignPlaceholder')} value={field.value ?? ''} onChange={field.onChange} />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
@@ -552,8 +553,8 @@ export function LinkForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid || undefined}>
-                    <FieldLabel>UTM Content</FieldLabel>
-                    <Input placeholder="hero-button" value={field.value ?? ''} onChange={field.onChange} />
+                    <FieldLabel>{t('utmContent')}</FieldLabel>
+                    <Input placeholder={t('utmContentPlaceholder')} value={field.value ?? ''} onChange={field.onChange} />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
@@ -564,8 +565,8 @@ export function LinkForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field className="md:col-span-2" data-invalid={fieldState.invalid || undefined}>
-                    <FieldLabel>UTM Term</FieldLabel>
-                    <Input placeholder="creator-tools" value={field.value ?? ''} onChange={field.onChange} />
+                    <FieldLabel>{t('utmTerm')}</FieldLabel>
+                    <Input placeholder={t('utmTermPlaceholder')} value={field.value ?? ''} onChange={field.onChange} />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
@@ -574,7 +575,7 @@ export function LinkForm({
 
             <div className="mt-4 rounded-lg border bg-background p-3">
               <div className="mb-1 text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
-                Final destination URL
+                {t('finalUrl')}
               </div>
               <Textarea
                 value={finalDestinationUrl}
@@ -582,7 +583,7 @@ export function LinkForm({
                 className="min-h-[92px] resize-none bg-muted/20"
               />
               <p className="mt-2 text-xs text-muted-foreground">
-                AffProf rebuilds and saves this final URL on the backend to keep the destination and UTM fields in sync.
+                {t('finalUrlHelp')}
               </p>
             </div>
           </div>
@@ -593,13 +594,13 @@ export function LinkForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>QR brand</FieldLabel>
+                <FieldLabel>{t('qrBrand')}</FieldLabel>
                 <select
                   className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
                   value={field.value ?? ''}
                   onChange={field.onChange}
                 >
-                  <option value="">Standard AffProf QR</option>
+                  <option value="">{t('standardQr')}</option>
                   {brands.map((brand) => (
                     <option key={brand.id} value={brand.id}>
                       {brand.name}
@@ -608,7 +609,7 @@ export function LinkForm({
                   ))}
                 </select>
                 <FieldDescription>
-                  Pick a saved brand to prefill this link&apos;s QR logo and color style.
+                  {t('qrBrandHelp')}
                 </FieldDescription>
                 {selectedBrand ? (
                   <div className="mt-3 flex items-center gap-3 rounded-xl border bg-muted/15 p-3">
@@ -644,14 +645,14 @@ export function LinkForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Fallback URL</FieldLabel>
+                <FieldLabel>{t('fallbackUrl')}</FieldLabel>
                 <Input
-                  placeholder="https://yourbrand.com/backup-page"
+                  placeholder={t('fallbackUrlPlaceholder')}
                   value={field.value ?? ''}
                   onChange={field.onChange}
                 />
                 <FieldDescription>
-                  If this link is disabled or currently marked broken, visitors will be redirected here instead.
+                  {t('fallbackUrlHelp')}
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -664,14 +665,14 @@ export function LinkForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Platform</FieldLabel>
+                <FieldLabel>{t('platform')}</FieldLabel>
                 <Input
-                  placeholder="e.g. amazon, shareasale, impact, rakuten..."
+                  placeholder={t('platformPlaceholder')}
                   value={field.value}
                   onChange={field.onChange}
                 />
                 <FieldDescription>
-                  The affiliate network or marketplace for this link.
+                  {t('platformHelp')}
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -684,10 +685,10 @@ export function LinkForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Slug</FieldLabel>
+                <FieldLabel>{t('slug')}</FieldLabel>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="blue-yeti-amazon"
+                    placeholder={t('slugPlaceholder')}
                     value={field.value}
                     onChange={(e) => {
                       field.onChange(e);
@@ -705,7 +706,7 @@ export function LinkForm({
                       disabled={!selectedProductId}
                     >
                       <Sparkles className="mr-1 h-3 w-3" />
-                      Suggest
+                      {t('suggest')}
                     </Button>
                   )}
                 </div>
@@ -725,17 +726,15 @@ export function LinkForm({
               <Field>
                 <div className="flex items-start justify-between gap-4 rounded-lg border bg-muted/20 px-4 py-3">
                   <div className="space-y-1">
-                    <FieldLabel>Link availability</FieldLabel>
+                    <FieldLabel>{t('linkAvailability')}</FieldLabel>
                     <FieldDescription>
-                      {field.value
-                        ? 'This short link is active and can redirect visitors.'
-                        : 'This short link is disabled and will return not found.'}
+                      {field.value ? t('enabledHelp') : t('disabledHelp')}
                     </FieldDescription>
                   </div>
                   <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}
-                    aria-label="Toggle link availability"
+                    aria-label={t('linkAvailability')}
                   />
                 </div>
               </Field>
@@ -744,12 +743,12 @@ export function LinkForm({
 
           {/* Tags */}
           <Field>
-            <FieldLabel>Tags</FieldLabel>
+            <FieldLabel>{t('tags')}</FieldLabel>
             {allTags.length > 0 ? (
               <div className="space-y-4">
                 <div className="space-y-2">
                   <p className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
-                    Selected tags
+                    {t('selectedTags')}
                   </p>
                   {selectedTags.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
@@ -771,14 +770,14 @@ export function LinkForm({
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      No tags selected yet.
+                      {t('noTagsSelected')}
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-2">
                   <p className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
-                    Available tags
+                    {t('availableTags')}
                   </p>
                   {availableTags.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
@@ -799,18 +798,18 @@ export function LinkForm({
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      All tags are already selected.
+                      {t('allTagsSelected')}
                     </p>
                   )}
                 </div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                No tags created yet. Create tags first to organize your links.
+                {t('noTagsCreated')}
               </p>
             )}
             <FieldDescription>
-              Select tags to categorize this link.
+              {t('tagsHelp')}
             </FieldDescription>
           </Field>
 
@@ -820,15 +819,15 @@ export function LinkForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Notes</FieldLabel>
+                <FieldLabel>{t('notes')}</FieldLabel>
                 <Textarea
-                  placeholder="Optional notes..."
+                  placeholder={t('notesPlaceholder')}
                   rows={2}
                   value={field.value ?? ''}
                   onChange={field.onChange}
                 />
                 <FieldDescription>
-                  Internal notes (only visible to you).
+                  {t('notesHelp')}
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -838,7 +837,7 @@ export function LinkForm({
 
         <SheetFooter>
           <Button variant="outline" className="min-w-32" onClick={() => onOpened(false)}>
-            Cancel
+            {tc('cancel')}
           </Button>
           <Button
             type="submit"
@@ -847,7 +846,7 @@ export function LinkForm({
             onClick={form.handleSubmit(onSubmit)}
           >
             {isPending ? <Loader2 className="animate-spin" /> : <Save />}
-            {isEditing ? 'Save changes' : 'Create link'}
+            {isEditing ? tc('saveChanges') : t('createLink')}
           </Button>
         </SheetFooter>
       </SheetContent>

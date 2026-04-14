@@ -2,6 +2,7 @@
 
 import type { Row, Table } from '@tanstack/react-table';
 import { Edit, Eye, MoreHorizontal, Trash } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { Tags } from '@/server/db';
 
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ interface TagRowActionsProps {
 }
 
 export function TagRowActions({ row, table }: TagRowActionsProps) {
+  const tc = useTranslations('common');
   const { onRowView, onRowEdit, onRowDelete } = (table.options.meta ?? {}) as {
     onRowView?: (tag: Tags) => void;
     onRowEdit?: (tag: Tags) => void;
@@ -33,26 +35,26 @@ export function TagRowActions({ row, table }: TagRowActionsProps) {
         render={
           <Button variant="ghost" size="icon" className="rounded-lg">
             <MoreHorizontal className="h-4 w-4" />
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">{tc('actions')}</span>
           </Button>
         }
       />
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuLabel>{tc('actions')}</DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           {onRowView && (
             <DropdownMenuItem onClick={() => onRowView(row.original)}>
               <Eye className="mr-2 h-4 w-4" />
-              View details
+              {tc('viewDetails')}
             </DropdownMenuItem>
           )}
           {onRowEdit && (
             <DropdownMenuItem onClick={() => onRowEdit(row.original)}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit
+              {tc('edit')}
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
@@ -65,7 +67,7 @@ export function TagRowActions({ row, table }: TagRowActionsProps) {
                 className="text-destructive focus:text-destructive"
               >
                 <Trash className="mr-2 h-4 w-4" />
-                Delete
+                {tc('delete')}
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </>

@@ -3,6 +3,7 @@
 import * as React from 'react';
 import type { TableMeta } from '@tanstack/react-table';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { PageHeader, PageContent } from '@/components/layout';
 import { DataTable, useDataTable } from '@/components/data-table';
@@ -20,13 +21,16 @@ import { useProducts, useDeleteProduct } from '@/hooks/queries/use-product-queri
 import type { Products as ProductType } from '@/server/db';
 import type { ProductSortField, ProductInclude } from '@/schemas/product';
 
-import { productColumns } from './product-columns';
+import { useProductColumns } from './product-columns';
 import { ProductToolbar } from './product-toolbar';
 import { ProductForm } from './product-form';
 import { ProductInfo } from './product-info';
 import { ProductImportDialog } from './product-import-dialog';
 
 export function Products() {
+  const t = useTranslations('products');
+  const tc = useTranslations('common');
+  const productColumns = useProductColumns();
   const [product, setProduct] = React.useState<ProductType>();
 
   // ---- Data table state ----
@@ -101,8 +105,8 @@ export function Products() {
   return (
     <>
       <PageHeader
-        title="Products"
-        description="Manage the products you promote with affiliate links."
+        title={t('title')}
+        description={t('description')}
       />
       <PageContent>
         <DataTable
@@ -142,19 +146,18 @@ export function Products() {
       <AlertDialog open={openedDeleteDialog} onOpenChange={setOpenedDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>{tc('areYouSure')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the product &ldquo;{product?.name}&rdquo; and all its
-              associated links. This action cannot be undone.
+              {t('deleteConfirm', { name: product?.name ?? '' })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <Button variant="outline" onClick={() => setOpenedDeleteDialog(false)}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button variant="destructive" disabled={isDeleting} onClick={handleDelete}>
               {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Delete
+              {tc('delete')}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

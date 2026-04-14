@@ -5,6 +5,7 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +44,8 @@ export function TagForm({
   onOpened: (opened: boolean) => void;
 }) {
   const isEditing = !!tag;
+  const t = useTranslations('tags.form');
+  const tc = useTranslations('common');
 
   const form = useForm<FormValues>({
     resolver: zodResolver(CreateTagBodySchema),
@@ -87,11 +90,9 @@ export function TagForm({
     <Sheet open={opened} onOpenChange={onOpened}>
       <SheetContent className="overflow-y-auto sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>{isEditing ? 'Edit tag' : 'Create tag'}</SheetTitle>
+          <SheetTitle>{isEditing ? t('editTitle') : t('createTitle')}</SheetTitle>
           <SheetDescription>
-            {isEditing
-              ? 'Update the tag name and color.'
-              : 'Create a new tag to organize your links and products.'}
+            {isEditing ? t('editDescription') : t('createDescription')}
           </SheetDescription>
         </SheetHeader>
 
@@ -102,9 +103,9 @@ export function TagForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Name</FieldLabel>
+                <FieldLabel>{t('name')}</FieldLabel>
                 <Input
-                  placeholder="e.g. Tech, Fitness, Amazon"
+                  placeholder={t('namePlaceholder')}
                   value={field.value ?? ''}
                   onChange={field.onChange}
                   autoFocus
@@ -120,9 +121,9 @@ export function TagForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Color</FieldLabel>
+                <FieldLabel>{t('color')}</FieldLabel>
                 <div className="mb-3">
-                  <TagBadge name={tagName || 'Preview'} color={field.value || '#3B82F6'} />
+                  <TagBadge name={tagName || t('preview')} color={field.value || '#3B82F6'} />
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {TAG_COLOR_PALETTE.map((c) => (
@@ -149,7 +150,7 @@ export function TagForm({
                   ))}
                 </div>
                 <FieldDescription>
-                  Pick a color with automatic contrast for badges and filters.
+                  {t('colorHelp')}
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -159,7 +160,7 @@ export function TagForm({
 
         <SheetFooter>
           <Button variant="outline" className="min-w-32" onClick={() => onOpened(false)}>
-            Cancel
+            {tc('cancel')}
           </Button>
           <Button
             type="submit"
@@ -168,7 +169,7 @@ export function TagForm({
             onClick={form.handleSubmit(onSubmit)}
           >
             {isPending ? <Loader2 className="animate-spin" /> : <Save />}
-            {isEditing ? 'Save changes' : 'Create tag'}
+            {isEditing ? tc('saveChanges') : t('createTag')}
           </Button>
         </SheetFooter>
       </SheetContent>

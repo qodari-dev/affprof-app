@@ -5,6 +5,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,9 @@ import {
   useCustomDomains,
 } from '@/hooks/queries/use-custom-domain-queries';
 import { useProfile, useUpdateProfile } from '@/hooks/queries/use-profile-queries';
+import { useLocale } from '@/hooks/use-locale';
 import { buildShortLinkPattern } from '@/utils/short-link';
+import type { Locale } from '@/i18n/config';
 
 type FormValues = z.infer<typeof UpdateProfileBodySchema>;
 
@@ -45,9 +48,12 @@ const COMMON_TIMEZONES = [
 ];
 
 export function ProfileCard() {
+  const t = useTranslations('profile.form');
+  const tLang = useTranslations('settings.language');
   const { data: profileData, isLoading } = useProfile();
   const { data: customDomainsData } = useCustomDomains();
   const { mutateAsync: updateProfile, isPending: isSaving } = useUpdateProfile();
+  const { setLocale } = useLocale();
   const [isFormReady, setIsFormReady] = React.useState(false);
   const primaryCustomDomain = customDomainsData?.status === 200
     ? getPrimaryVerifiedCustomDomainHostname(customDomainsData.body)
@@ -59,6 +65,7 @@ export function ProfileCard() {
       name: '',
       slug: '',
       timezone: 'UTC',
+      language: 'en',
     },
   });
 
@@ -69,6 +76,7 @@ export function ProfileCard() {
         name: u.name ?? '',
         slug: u.slug ?? '',
         timezone: u.timezone ?? 'UTC',
+        language: (u.language as 'en' | 'es') ?? 'en',
       });
       setIsFormReady(true);
     }
@@ -79,21 +87,26 @@ export function ProfileCard() {
       try {
         const result = await updateProfile({ body: values });
         if (result.status === 200) {
-          toast.success('Profile updated successfully');
+          toast.success(t('success'));
+
+          // If language changed, update the cookie and refresh
+          if (values.language) {
+            setLocale(values.language as Locale);
+          }
         }
       } catch {
         // Error handled by mutation onError
       }
     },
-    [updateProfile]
+    [updateProfile, setLocale, t]
   );
 
   if (isLoading || !isFormReady) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Profile</CardTitle>
-          <CardDescription>Your personal information and short link slug.</CardDescription>
+          <CardTitle>{t('cardTitle')}</CardTitle>
+          <CardDescription>{t('cardDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           {Array(3)
@@ -113,8 +126,8 @@ export function ProfileCard() {
     <form onSubmit={form.handleSubmit(onSubmit)}>
       <Card>
         <CardHeader>
-          <CardTitle>Profile</CardTitle>
-          <CardDescription>Your personal information and short link slug.</CardDescription>
+          <CardTitle>{t('cardTitle')}</CardTitle>
+          <CardDescription>{t('cardDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           {/* Name */}
@@ -123,9 +136,9 @@ export function ProfileCard() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Name</FieldLabel>
+                <FieldLabel>{t('name')}</FieldLabel>
                 <Input
-                  placeholder="Your name"
+                  placeholder={t('namePlaceholder')}
                   value={field.value ?? ''}
                   onChange={field.onChange}
                 />
@@ -140,14 +153,14 @@ export function ProfileCard() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Short link slug</FieldLabel>
+                <FieldLabel>{t('slug')}</FieldLabel>
                 <Input
-                  placeholder="my-brand"
+                  placeholder={t('slugPlaceholder')}
                   value={field.value ?? ''}
                   onChange={field.onChange}
                 />
                 <FieldDescription>
-                  Your short links will be: <strong>{buildShortLinkPattern(field.value || 'my-brand', 'link-slug', primaryCustomDomain)}</strong>
+                  {t('slugHelp')} <strong>{buildShortLinkPattern(field.value || 'my-brand', 'link-slug', primaryCustomDomain)}</strong>
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -160,7 +173,7 @@ export function ProfileCard() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>Timezone</FieldLabel>
+                <FieldLabel>{t('timezone')}</FieldLabel>
                 <select
                   className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
                   value={field.value ?? 'UTC'}
@@ -173,7 +186,30 @@ export function ProfileCard() {
                   ))}
                 </select>
                 <FieldDescription>
-                  Used for analytics and digest email scheduling.
+                  {t('timezoneHelp')}
+                </FieldDescription>
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+
+          {/* Language */}
+          <Controller
+            name="language"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid || undefined}>
+                <FieldLabel>{tLang('title')}</FieldLabel>
+                <select
+                  className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+                  value={field.value ?? 'en'}
+                  onChange={field.onChange}
+                >
+                  <option value="en">{tLang('en')}</option>
+                  <option value="es">{tLang('es')}</option>
+                </select>
+                <FieldDescription>
+                  {tLang('description')}
                 </FieldDescription>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -183,7 +219,7 @@ export function ProfileCard() {
         <CardFooter className="flex justify-end">
           <Button type="submit" size="sm" disabled={isSaving}>
             {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
-            Save profile
+            {t('save')}
           </Button>
         </CardFooter>
       </Card>

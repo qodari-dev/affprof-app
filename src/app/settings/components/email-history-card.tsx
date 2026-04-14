@@ -3,6 +3,8 @@
 import * as React from 'react';
 import { BellRing, MailWarning } from 'lucide-react';
 import { format } from 'date-fns';
+import { enUS, es as esLocale } from 'date-fns/locale';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { useNotificationHistory } from '@/hooks/queries/use-notification-history-queries';
 import { Badge } from '@/components/ui/badge';
@@ -16,29 +18,6 @@ import { cn } from '@/lib/utils';
 type TypeFilter = 'all' | 'broken_links' | 'weekly_digest';
 type StatusFilter = 'all' | 'processing' | 'sent' | 'failed';
 
-const TYPE_OPTIONS: Array<{ value: TypeFilter; label: string }> = [
-  { value: 'all', label: 'All types' },
-  { value: 'broken_links', label: 'Broken links' },
-  { value: 'weekly_digest', label: 'Weekly digest' },
-];
-
-const STATUS_OPTIONS: Array<{ value: StatusFilter; label: string }> = [
-  { value: 'all', label: 'All status' },
-  { value: 'sent', label: 'Sent' },
-  { value: 'processing', label: 'Processing' },
-  { value: 'failed', label: 'Failed' },
-];
-
-function formatDispatchType(value: string) {
-  return value === 'broken_links' ? 'Broken links' : 'Weekly digest';
-}
-
-function formatDispatchStatus(value: string) {
-  if (value === 'sent') return 'Sent';
-  if (value === 'failed') return 'Failed';
-  return 'Processing';
-}
-
 function getStatusVariant(value: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   if (value === 'sent') return 'secondary';
   if (value === 'failed') return 'destructive';
@@ -50,9 +29,44 @@ function getTypeVariant(value: string): 'default' | 'outline' {
 }
 
 export function EmailHistoryCard() {
+  const t = useTranslations('settings.emailHistory');
+  const tTypes = useTranslations('settings.emailHistory.types');
+  const tStatuses = useTranslations('settings.emailHistory.statuses');
+  const locale = useLocale();
+  const dateFnsLocale = locale === 'es' ? esLocale : enUS;
+
   const { data, isLoading } = useNotificationHistory();
   const [typeFilter, setTypeFilter] = React.useState<TypeFilter>('all');
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>('all');
+
+  const typeOptions: Array<{ value: TypeFilter; label: string }> = React.useMemo(
+    () => [
+      { value: 'all', label: t('allTypes') },
+      { value: 'broken_links', label: tTypes('broken_links') },
+      { value: 'weekly_digest', label: tTypes('weekly_digest') },
+    ],
+    [t, tTypes],
+  );
+
+  const statusOptions: Array<{ value: StatusFilter; label: string }> = React.useMemo(
+    () => [
+      { value: 'all', label: t('allStatus') },
+      { value: 'sent', label: tStatuses('sent') },
+      { value: 'processing', label: tStatuses('processing') },
+      { value: 'failed', label: tStatuses('failed') },
+    ],
+    [t, tStatuses],
+  );
+
+  function formatDispatchType(value: string) {
+    return value === 'broken_links' ? tTypes('broken_links') : tTypes('weekly_digest');
+  }
+
+  function formatDispatchStatus(value: string) {
+    if (value === 'sent') return tStatuses('sent');
+    if (value === 'failed') return tStatuses('failed');
+    return tStatuses('processing');
+  }
 
   const history = React.useMemo(() => {
     if (data?.status === 200) {
@@ -75,15 +89,15 @@ export function EmailHistoryCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Email history</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
         <CardDescription>
-          Review sent, failed, and pending notification emails. This history is also used to prevent duplicate deliveries.
+          {t('cardDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap gap-2">
-            {TYPE_OPTIONS.map((option) => (
+            {typeOptions.map((option) => (
               <Button
                 key={option.value}
                 type="button"
@@ -97,7 +111,7 @@ export function EmailHistoryCard() {
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
-            {STATUS_OPTIONS.map((option) => (
+            {statusOptions.map((option) => (
               <Button
                 key={option.value}
                 type="button"
@@ -124,9 +138,9 @@ export function EmailHistoryCard() {
               <EmptyMedia variant="icon">
                 <MailWarning />
               </EmptyMedia>
-              <EmptyTitle>No email history yet</EmptyTitle>
+              <EmptyTitle>{t('empty')}</EmptyTitle>
               <EmptyDescription>
-                Sent alerts and weekly digests will appear here once the scheduler starts delivering them.
+                {t('emptyDescription')}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -135,11 +149,11 @@ export function EmailHistoryCard() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className="px-4">Type</TableHead>
-                  <TableHead>Subject</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="pr-4">Sent</TableHead>
+                  <TableHead className="px-4">{t('type')}</TableHead>
+                  <TableHead>{t('subject')}</TableHead>
+                  <TableHead>{t('status')}</TableHead>
+                  <TableHead>{t('created')}</TableHead>
+                  <TableHead className="pr-4">{t('sent')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -164,8 +178,8 @@ export function EmailHistoryCard() {
                       <div className="space-y-1">
                         <div className="font-medium leading-snug whitespace-normal">{item.subject}</div>
                         <div className="text-xs text-muted-foreground">
-                          To: {item.toEmail}
-                          {item.ccEmail ? ` · CC: ${item.ccEmail}` : ''}
+                          {t('to')}: {item.toEmail}
+                          {item.ccEmail ? ` · ${t('cc')}: ${item.ccEmail}` : ''}
                         </div>
                       </div>
                     </TableCell>
@@ -173,10 +187,10 @@ export function EmailHistoryCard() {
                       <Badge variant={getStatusVariant(item.status)}>{formatDispatchStatus(item.status)}</Badge>
                     </TableCell>
                     <TableCell className="py-3 align-top text-sm text-muted-foreground">
-                      {format(new Date(item.createdAt), 'MMM d, yyyy · h:mm a')}
+                      {format(new Date(item.createdAt), 'PPp', { locale: dateFnsLocale })}
                     </TableCell>
                     <TableCell className="pr-4 py-3 align-top text-sm text-muted-foreground">
-                      {item.sentAt ? format(new Date(item.sentAt), 'MMM d, yyyy · h:mm a') : '—'}
+                      {item.sentAt ? format(new Date(item.sentAt), 'PPp', { locale: dateFnsLocale }) : '—'}
                     </TableCell>
                   </TableRow>
                 ))}
