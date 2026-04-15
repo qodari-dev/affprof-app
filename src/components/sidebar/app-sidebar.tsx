@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   CreditCard,
@@ -7,26 +7,32 @@ import {
   Package,
   Settings,
   Tags,
+  User,
   type LucideIcon,
-} from 'lucide-react';
-import { usePathname } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import * as React from 'react';
+} from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import * as React from "react";
 
-import { NavHeader } from '@/components/sidebar/nav-header';
-import { NavMain } from '@/components/sidebar/nav-main';
-import { NavUser } from '@/components/sidebar/nav-user';
+import { NavHeader } from "@/components/sidebar/nav-header";
+import { NavMain } from "@/components/sidebar/nav-main";
+import { NavUser } from "@/components/sidebar/nav-user";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from '@/components/ui/sidebar';
-import { useAuthUser } from '@/stores/auth-store-provider';
+} from "@/components/ui/sidebar";
+import { useAuthUser } from "@/stores/auth-store-provider";
 
 function withAutoActive<
-  T extends { items?: { url: string }[]; url?: string; icon?: LucideIcon; title?: string },
+  T extends {
+    items?: { url: string }[];
+    url?: string;
+    icon?: LucideIcon;
+    title?: string;
+  },
 >(menuItems: T[], pathname: string): (T & { isActive: boolean })[] {
   return menuItems.map((item) => ({
     ...item,
@@ -39,37 +45,37 @@ function withAutoActive<
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useAuthUser();
   const pathname = usePathname();
-  const t = useTranslations('nav');
+  const t = useTranslations("nav");
 
   const data = React.useMemo(() => {
     return {
       user: {
-        name: user ? `${user.firstName} ${user.lastName}` : '',
-        email: user?.email ?? '',
-        avatar: user ? `${user.firstName[0]}${user.lastName[0]}` : 'AP',
+        name: user ? `${user.firstName} ${user.lastName}` : "",
+        email: user?.email ?? "",
+        avatar: user ? `${user.firstName[0]}${user.lastName[0]}` : "AP",
       },
       navMain: [
         {
           items: withAutoActive(
             [
               {
-                title: t('dashboard'),
-                url: '/dashboard',
+                title: t("dashboard"),
+                url: "/dashboard",
                 icon: LayoutDashboard,
               },
               {
-                title: t('products'),
-                url: '/products',
+                title: t("products"),
+                url: "/products",
                 icon: Package,
               },
               {
-                title: t('links'),
-                url: '/links',
+                title: t("links"),
+                url: "/links",
                 icon: Link2,
               },
               {
-                title: t('tags'),
-                url: '/tags',
+                title: t("tags"),
+                url: "/tags",
                 icon: Tags,
               },
             ],
@@ -77,17 +83,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ),
         },
         {
-          title: t('account'),
+          title: t("account"),
           items: withAutoActive(
             [
               {
-                title: t('settings'),
-                url: '/settings',
+                title: t("profile"),
+                url: "/profile",
+                icon: User,
+              },
+              {
+                title: t("settings"),
+                url: "/settings",
                 icon: Settings,
               },
               {
-                title: t('billing'),
-                url: '/billing',
+                title: t("billing"),
+                url: "/billing",
                 icon: CreditCard,
               },
             ],

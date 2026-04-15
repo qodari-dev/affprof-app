@@ -31,10 +31,13 @@ export const env = createEnv({
     STRIPE_WEBHOOK_SECRET: z.string().min(1),
     STRIPE_PRO_MONTHLY_PRICE_ID: z.string().min(1),
     STRIPE_PRO_ANNUAL_PRICE_ID: z.string().min(1),
+
+    // Custom domain
     CUSTOM_DOMAIN_CNAME_TARGET: z.string().min(1).optional(),
 
     // DigitalOcean Spaces
     DO_SPACES_ENDPOINT: z.url().optional(),
+    DO_SPACES_CDN_ENDPOINT: z.url().optional(),
     DO_SPACES_REGION: z.string().min(1).optional(),
     DO_SPACES_BUCKET: z.string().min(1).optional(),
     DO_SPACES_KEY: z.string().min(1).optional(),
@@ -65,7 +68,7 @@ export const env = createEnv({
       .max(23)
       .optional()
       .default(9),
-    SCHEDULER_TIMEZONE: z.string().optional().default("America/Bogota"),
+    SCHEDULER_TIMEZONE: z.string().optional().default("America/Toronto"),
 
     // Email alerts
     RESEND_API_KEY: z.string().min(1).optional(),
@@ -107,6 +110,7 @@ export const env = createEnv({
 
     // DigitalOcean Spaces
     DO_SPACES_ENDPOINT: process.env.DO_SPACES_ENDPOINT,
+    DO_SPACES_CDN_ENDPOINT: process.env.DO_SPACES_CDN_ENDPOINT,
     DO_SPACES_REGION: process.env.DO_SPACES_REGION,
     DO_SPACES_BUCKET: process.env.DO_SPACES_BUCKET,
     DO_SPACES_KEY: process.env.DO_SPACES_KEY,

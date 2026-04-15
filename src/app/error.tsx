@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
-import { RefreshCw, ArrowLeft, Zap } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import { ArrowLeft, RefreshCw, Zap } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useEffect } from 'react';
 
 export default function ErrorPage({
   error,

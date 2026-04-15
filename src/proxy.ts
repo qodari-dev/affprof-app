@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { createIamProxy } from '@/iam/libs/proxy';
 import { env } from '@/env';
 import { LOCALE_COOKIE, defaultLocale, locales } from '@/i18n/config';

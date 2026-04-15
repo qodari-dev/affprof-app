@@ -1,9 +1,9 @@
-import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { Metadata } from "next";
+import { cn } from "@/lib/utils";
 import { ArrowLeft, ShieldOff } from "lucide-react";
+import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('errorPages.unauthorized');
