@@ -211,8 +211,10 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
 // SUB-COMPONENTS
 // ============================================
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TFunc = (key: string, params?: Record<string, any>) => string;
+function useAnalyticsT() {
+  return useTranslations("links.analytics");
+}
+type TFunc = ReturnType<typeof useAnalyticsT>;
 
 function MiniKpi({
   icon: Icon,
