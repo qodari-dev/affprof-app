@@ -2,6 +2,7 @@
 
 import type { Column } from '@tanstack/react-table';
 import { ArrowDown, ArrowUp, ArrowUpDown, EyeOff } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -33,6 +34,8 @@ export function DataTableColumnHeader<TData, TValue>({
   className,
   enableHiding = true,
 }: DataTableColumnHeaderProps<TData, TValue>) {
+  const t = useTranslations('dataTable');
+
   if (!column.getCanSort()) {
     return <div className={cn(className)}>{title}</div>;
   }
@@ -58,11 +61,11 @@ export function DataTableColumnHeader<TData, TValue>({
           <DropdownMenuGroup>
             <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
               <ArrowUp className="text-muted-foreground/70 mr-2 h-3.5 w-3.5" />
-              Asc
+              {t('sortAsc')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
               <ArrowDown className="text-muted-foreground/70 mr-2 h-3.5 w-3.5" />
-              Desc
+              {t('sortDesc')}
             </DropdownMenuItem>
           </DropdownMenuGroup>
           {enableHiding && (
@@ -71,7 +74,7 @@ export function DataTableColumnHeader<TData, TValue>({
               <DropdownMenuGroup>
                 <DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
                   <EyeOff className="text-muted-foreground/70 mr-2 h-3.5 w-3.5" />
-                  Hide
+                  {t('hide')}
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </>

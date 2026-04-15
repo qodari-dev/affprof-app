@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DataTablePagination } from './data-table-pagination';
 
@@ -90,12 +91,15 @@ export function DataTable<TData, TValue>({
   onSortingChange,
   isLoading = false,
   toolbar,
-  emptyMessage = 'No results found.',
+  emptyMessage,
   enableRowSelection = false,
   onRowSelectionChange,
   pageSizeOptions = [10, 20, 30, 50],
   meta,
 }: DataTableProps<TData, TValue>) {
+  const tCommon = useTranslations('common');
+  const resolvedEmptyMessage = emptyMessage ?? tCommon('noResults');
+
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -176,7 +180,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  {emptyMessage}
+                  {resolvedEmptyMessage}
                 </TableCell>
               </TableRow>
             )}
