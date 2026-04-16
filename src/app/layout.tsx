@@ -1,6 +1,5 @@
 import { Providers } from '@/components/providers';
-import { AppSidebar } from '@/components/sidebar/app-sidebar';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarShell } from '@/components/sidebar/sidebar-shell';
 import { getIamAuthContext } from '@/iam/utils/get-auth-context';
 import { AuthStoreProvider } from '@/stores/auth-store-provider';
 import type { Metadata } from 'next';
@@ -36,10 +35,7 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
             <AuthStoreProvider initialAuth={auth}>
-              <SidebarProvider>
-                <AppSidebar />
-                {children}
-              </SidebarProvider>
+              <SidebarShell>{children}</SidebarShell>
             </AuthStoreProvider>
           </Providers>
         </NextIntlClientProvider>

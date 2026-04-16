@@ -737,6 +737,45 @@
     "SUBSCRIPTION_REQUIRED": "Se requiere una suscripción para esta función"
   },
 
+  "auth": {
+    "register": {
+      "metadataTitle": "Crear cuenta — AffProf",
+      "metadataDescription": "Crea tu cuenta de AffProf para administrar enlaces de afiliado, códigos QR y analítica de clics.",
+      "title": "Crea tu cuenta",
+      "subtitle": "Empieza a manejar tus enlaces de afiliado, códigos QR y analítica de clics en un solo lugar.",
+      "firstName": "Nombre",
+      "firstNamePlaceholder": "Carlos",
+      "lastName": "Apellido",
+      "lastNamePlaceholder": "Pérez",
+      "email": "Correo electrónico",
+      "emailPlaceholder": "tu@correo.com",
+      "password": "Contraseña",
+      "passwordPlaceholder": "Mínimo 8 caracteres",
+      "passwordHelp": "Usa al menos 8 caracteres. Combina letras, números y símbolos para mayor seguridad.",
+      "showPassword": "Mostrar contraseña",
+      "hidePassword": "Ocultar contraseña",
+      "plan": "Plan",
+      "planHelpFree": "Empieza gratis. Puedes mejorar a Pro en cualquier momento desde Facturación.",
+      "planHelpPaid": "Te llevaremos al checkout seguro de Stripe para confirmar tu suscripción.",
+      "submit": "Crear cuenta",
+      "terms": "Al crear una cuenta aceptas los <termsLink>Términos</termsLink> y la <privacyLink>Política de privacidad</privacyLink>.",
+      "hasAccount": "¿Ya tienes una cuenta? <loginLink>Inicia sesión</loginLink>",
+      "toastSuccessFree": "Cuenta creada. Te llevamos a iniciar sesión...",
+      "plans": {
+        "recommended": "Recomendado",
+        "free": {
+          "name": "Gratis",
+          "price": "$0/mes",
+          "description": "Ideal para empezar y validar tu flujo con productos y enlaces básicos."
+        }
+      },
+      "errors": {
+        "generic": "No pudimos crear tu cuenta. Intenta de nuevo.",
+        "emailExists": "Ya existe una cuenta con este correo. Inicia sesión en su lugar."
+      }
+    }
+  },
+
   "errorPages": {
     "notFound": {
       "metadataTitle": "No encontrado — AffProf",

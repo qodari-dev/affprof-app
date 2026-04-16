@@ -737,6 +737,45 @@
     "SUBSCRIPTION_REQUIRED": "A subscription is required for this feature"
   },
 
+  "auth": {
+    "register": {
+      "metadataTitle": "Create account — AffProf",
+      "metadataDescription": "Create your AffProf account to manage affiliate links, QR codes, and click analytics.",
+      "title": "Create your account",
+      "subtitle": "Manage your affiliate links, QR codes, and click analytics — all in one place.",
+      "firstName": "First name",
+      "firstNamePlaceholder": "Jane",
+      "lastName": "Last name",
+      "lastNamePlaceholder": "Doe",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "passwordHelp": "Use at least 8 characters. Mix letters, numbers, and symbols for better security.",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "plan": "Plan",
+      "planHelpFree": "Start free. You can upgrade to Pro anytime from Billing.",
+      "planHelpPaid": "We'll take you to Stripe's secure checkout to confirm your subscription.",
+      "submit": "Create account",
+      "terms": "By creating an account you agree to the <termsLink>Terms</termsLink> and <privacyLink>Privacy Policy</privacyLink>.",
+      "hasAccount": "Already have an account? <loginLink>Sign in</loginLink>",
+      "toastSuccessFree": "Account created. Taking you to sign in...",
+      "plans": {
+        "recommended": "Recommended",
+        "free": {
+          "name": "Free",
+          "price": "$0/mo",
+          "description": "Great to get started and validate your flow with basic products and links."
+        }
+      },
+      "errors": {
+        "generic": "We couldn't create your account. Please try again.",
+        "emailExists": "An account with this email already exists. Sign in instead."
+      }
+    }
+  },
+
   "errorPages": {
     "notFound": {
       "metadataTitle": "Not Found — AffProf",
