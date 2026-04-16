@@ -22,6 +22,8 @@ const remotePatterns = [
 ].filter((pattern): pattern is NonNullable<ReturnType<typeof buildRemotePattern>> => pattern !== null);
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
+  reactStrictMode: true,
   images: {
     remotePatterns,
   },
