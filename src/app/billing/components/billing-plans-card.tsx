@@ -99,7 +99,7 @@ export function BillingPlansCard() {
               key={plan.id}
               className={cn(
                 'rounded-2xl border p-5',
-                plan.highlight ? 'border-emerald-300 bg-emerald-50/50' : 'bg-card',
+                plan.highlight ? 'border-emerald-300 dark:bg-emerald-900/50 bg-emerald-50/50' : 'bg-card',
               )}
             >
               <div className="mb-4 flex items-start justify-between gap-3">
