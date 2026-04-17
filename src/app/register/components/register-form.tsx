@@ -59,6 +59,7 @@ export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId })
   });
 
   const { mutateAsync: register, isPending } = useRegister();
+  const selectedPlan = form.watch('plan');
 
   const plans = React.useMemo(
     () => [
@@ -74,6 +75,7 @@ export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId })
         name: tPro('name'),
         price: tPro('price'),
         description: tPro('description'),
+        trial: tPro('trial'),
         highlight: false,
       },
       {
@@ -81,6 +83,7 @@ export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId })
         name: tProAnnual('name'),
         price: tProAnnual('price'),
         description: tProAnnual('description'),
+        trial: tProAnnual('trial'),
         highlight: true,
       },
     ],
@@ -124,7 +127,7 @@ export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId })
     <div className="relative flex min-h-svh w-full flex-col bg-gradient-to-br from-background via-background to-muted/40">
       {/* Top bar */}
       <header className="flex items-center justify-between px-6 py-5 sm:px-10">
-        <Link href="/" className="flex items-center" aria-label="AffProf">
+        <Link href="https://affprof.com" className="flex items-center" aria-label="AffProf">
           <Image
             src={logoLight}
             alt="AffProf"
@@ -295,19 +298,26 @@ export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId })
                             >
                               <div className="flex items-start justify-between gap-2">
                                 <span className="text-sm font-semibold">{plan.name}</span>
-                                {plan.highlight && (
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase text-emerald-700 dark:text-emerald-400">
-                                    <Sparkles className="size-3" />
-                                    {t('plans.recommended')}
-                                  </span>
-                                )}
-                                {isSelected && (
-                                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                                    <Check className="h-3 w-3" />
-                                  </span>
-                                )}
+                                <div className="flex shrink-0 items-center gap-1.5">
+                                  {plan.highlight && (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase text-emerald-700 dark:text-emerald-400">
+                                      <Sparkles className="size-3" />
+                                      {t('plans.recommended')}
+                                    </span>
+                                  )}
+                                  {isSelected && (
+                                    <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                                      <Check className="h-3 w-3" />
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                               <span className="text-base font-medium">{plan.price}</span>
+                              {'trial' in plan && (
+                                <span className="inline-flex w-fit items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                                  {plan.trial}
+                                </span>
+                              )}
                               <span className="text-xs leading-relaxed text-muted-foreground">
                                 {plan.description}
                               </span>
@@ -331,7 +341,7 @@ export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId })
                 disabled={isPending}
               >
                 {isPending && <Loader2 className="animate-spin" />}
-                {t('submit')}
+                {selectedPlan === 'free' ? t('submitFree') : t('submitPaid')}
               </Button>
 
               {/* Terms */}

@@ -25,7 +25,7 @@ export default async function BillingSuccessPage() {
             <BadgeCheck className="h-8 w-8 text-emerald-600" />
           </div>
 
-          <span className="mb-2 text-[5.5rem] font-black leading-none tracking-tighter text-foreground/10">
+          <span className="mb-2 text-[5.5rem] font-black leading-none tracking-tighter text-emerald-500/20 dark:text-emerald-400/30">
             {t('badge')}
           </span>
 

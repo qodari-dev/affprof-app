@@ -25,7 +25,7 @@ export default async function BillingCanceledPage() {
             <CircleSlash className="h-8 w-8 text-amber-500" />
           </div>
 
-          <span className="mb-2 text-[5.5rem] font-black leading-none tracking-tighter text-foreground/10">
+          <span className="mb-2 text-[5.5rem] font-black leading-none tracking-tighter text-amber-500/20 dark:text-amber-400/30">
             {t('badge')}
           </span>
 
