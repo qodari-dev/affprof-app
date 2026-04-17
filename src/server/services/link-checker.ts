@@ -1,8 +1,8 @@
 import { env } from '@/env';
-import { db, links, linkChecks } from '@/server/db';
+import { db, links, linkChecks, subscriptions } from '@/server/db';
 import { BrokenLinkEmailItem, sendBrokenLinksAlert } from '@/server/services/link-alerts';
 import { buildShortLinkUrl } from '@/utils/short-link';
-import { and, asc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, isNull, ne, sql } from 'drizzle-orm';
 
 // ============================================================================
 // Types
@@ -383,30 +383,52 @@ export async function checkLinks(linkIds: string[]): Promise<LinkCheckResult[]> 
   return results;
 }
 
-export async function getLinkIdsForScheduledCheck(limit = env.LINK_CHECKER_BATCH_SIZE): Promise<string[]> {
+export async function getLinkIdsForScheduledCheck(
+  limit = env.LINK_CHECKER_BATCH_SIZE,
+  proOnly = false,
+): Promise<string[]> {
+  const baseWhere = and(eq(links.isEnabled, true), isNull(links.deletedAt));
+  const order = [
+    sql`case when ${links.lastCheckedAt} is null then 0 else 1 end`,
+    asc(links.lastCheckedAt),
+    asc(links.createdAt),
+  ];
+
+  if (proOnly) {
+    const candidates = await db
+      .select({ id: links.id })
+      .from(links)
+      .innerJoin(subscriptions, eq(links.userId, subscriptions.userId))
+      .where(and(baseWhere, ne(subscriptions.plan, 'free')))
+      .orderBy(...order)
+      .limit(limit);
+    return candidates.map((link) => link.id);
+  }
+
   const candidates = await db
     .select({ id: links.id })
     .from(links)
-    .where(
-      and(
-        eq(links.isEnabled, true),
-        isNull(links.deletedAt),
-      ),
-    )
-    .orderBy(
-      sql`case when ${links.lastCheckedAt} is null then 0 else 1 end`,
-      asc(links.lastCheckedAt),
-      asc(links.createdAt),
-    )
+    .where(baseWhere)
+    .orderBy(...order)
     .limit(limit);
 
   return candidates.map((link) => link.id);
 }
 
+function getCurrentHourInTimezone(tz: string): number {
+  return parseInt(
+    new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: 'numeric', hourCycle: 'h23' }).format(new Date()),
+    10,
+  );
+}
+
 export async function runScheduledLinkChecks(
   limit = env.LINK_CHECKER_BATCH_SIZE,
 ): Promise<ScheduledLinkCheckResult> {
-  const linkIds = await getLinkIdsForScheduledCheck(limit);
+  // At 12pm (SCHEDULER_TIMEZONE) all plans are checked; other runs are Pro-only
+  const currentHour = getCurrentHourInTimezone(env.SCHEDULER_TIMEZONE);
+  const proOnly = currentHour !== 12;
+  const linkIds = await getLinkIdsForScheduledCheck(limit, proOnly);
 
   if (linkIds.length === 0) {
     return {

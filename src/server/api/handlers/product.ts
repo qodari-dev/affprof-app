@@ -3,6 +3,7 @@ import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/gener
 import { getAuthContext } from '@/server/utils/auth-context';
 import { tsr } from '@ts-rest/serverless/next';
 import { and, eq, isNull, sql } from 'drizzle-orm';
+import { enforceProductLimit, requireProPlan } from '@/server/services/plan-limits';
 import { PRODUCT_IMAGE_ALLOWED_TYPES, PRODUCT_IMAGE_MAX_BYTES } from '@/schemas/product';
 import { contract } from '../contracts';
 import {
@@ -138,6 +139,8 @@ export const product = tsr.router(contract.product, {
     try {
       const auth = await getAuthContext(request);
 
+      await enforceProductLimit(auth.userId);
+
       const [newProduct] = await db
         .insert(products)
         .values({ ...body, userId: auth.userId })
@@ -157,6 +160,8 @@ export const product = tsr.router(contract.product, {
   importCsv: async ({ body }, { request }) => {
     try {
       const auth = await getAuthContext(request);
+
+      await requireProPlan(auth.userId, 'Bulk product import');
 
       const existingProducts = await db.query.products.findMany({
         where: and(eq(products.userId, auth.userId), isNull(products.deletedAt)),

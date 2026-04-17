@@ -72,6 +72,7 @@ function buildSubscriptionPatch(subscription: RawSubscription) {
     canceledAt: subscription.canceled_at
       ? new Date(subscription.canceled_at * 1000)
       : null,
+    trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
     ...(periodEnd ? { currentPeriodEnd: periodEnd } : {}),
   };
 }

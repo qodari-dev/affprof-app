@@ -56,6 +56,10 @@ export async function createStripeCheckoutSession(input: {
         quantity: 1,
       },
     ],
+    subscription_data: {
+      trial_period_days: 14,
+      metadata: { userId: input.userId },
+    },
     metadata: { userId: input.userId },
     success_url: `${env.NEXT_PUBLIC_APP_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${env.NEXT_PUBLIC_APP_URL}/billing/canceled`,

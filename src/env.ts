@@ -53,7 +53,7 @@ export const env = createEnv({
         z.literal("0"),
       ])
       .optional(),
-    LINK_CHECKER_CRON: z.string().optional().default("0 * * * *"),
+    LINK_CHECKER_CRON: z.string().optional().default("0 0,6,12,18 * * *"),
     LINK_CHECKER_BATCH_SIZE: z.coerce
       .number()
       .int()

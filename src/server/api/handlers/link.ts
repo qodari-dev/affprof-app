@@ -6,6 +6,7 @@ import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { contract } from '../contracts';
 import { checkLink, checkLinks } from '@/server/services/link-checker';
 import { normalizeTrackedDestinationInput } from '@/utils/tracked-destination-url';
+import { enforceLinkLimit, requireProPlan } from '@/server/services/plan-limits';
 
 import { buildTypedIncludes, createIncludeMap } from '@/server/utils/query/include-builder';
 import {
@@ -203,6 +204,9 @@ export const link = tsr.router(contract.link, {
     try {
       const auth = await getAuthContext(request);
 
+      await enforceLinkLimit(auth.userId);
+      if (body.fallbackUrl) await requireProPlan(auth.userId, 'Fallback URL');
+
       const { tagIds, ...linkData } = body;
       const destination = normalizeTrackedDestinationInput(linkData);
 
@@ -241,6 +245,8 @@ export const link = tsr.router(contract.link, {
   importCsv: async ({ body }, { request }) => {
     try {
       const auth = await getAuthContext(request);
+
+      await requireProPlan(auth.userId, 'Bulk link import');
 
       const [existingProducts, existingLinks] = await Promise.all([
         db.query.products.findMany({
@@ -517,6 +523,8 @@ export const link = tsr.router(contract.link, {
   checkBulk: async ({ body }, { request }) => {
     try {
       const auth = await getAuthContext(request);
+
+      await requireProPlan(auth.userId, 'Bulk link check');
 
       // Verify all links belong to the user
       const userLinks = await db.query.links.findMany({

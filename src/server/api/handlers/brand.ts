@@ -2,6 +2,7 @@ import { db, brands } from '@/server/db';
 import { BRAND_LOGO_ALLOWED_TYPES, BRAND_LOGO_MAX_BYTES } from '@/schemas/brand';
 import { getAuthContext } from '@/server/utils/auth-context';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
+import { requireProPlan } from '@/server/services/plan-limits';
 import {
   buildDatedFileKey,
   createSpacesPresignedPutUrl,
@@ -55,6 +56,9 @@ export const brandHandler = tsr.router(contract.brand, {
   create: async ({ body }, { request }) => {
     try {
       const auth = await getAuthContext(request);
+
+      await requireProPlan(auth.userId, 'Branding');
+
       const existingBrands = await db.query.brands.findMany({
         where: eq(brands.userId, auth.userId),
         columns: { id: true },
@@ -146,7 +150,9 @@ export const brandHandler = tsr.router(contract.brand, {
 
   presignLogoUpload: async ({ body }, { request }) => {
     try {
-      await getAuthContext(request);
+      const auth = await getAuthContext(request);
+
+      await requireProPlan(auth.userId, 'Branding');
 
       if (!BRAND_LOGO_ALLOWED_TYPES.includes(body.contentType)) {
         throwHttpError({
