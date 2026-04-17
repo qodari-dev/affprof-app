@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { Check, Eye, EyeOff, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { PRICING } from '@/config/pricing';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,7 +74,7 @@ export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId })
       {
         id: 'pro' as const,
         name: tPro('name'),
-        price: tPro('price'),
+        price: PRICING.pro.label,
         description: tPro('description'),
         trial: tPro('trial'),
         highlight: false,
@@ -81,7 +82,8 @@ export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId })
       {
         id: 'pro_annual' as const,
         name: tProAnnual('name'),
-        price: tProAnnual('price'),
+        price: PRICING.proAnnual.label,
+        subPrice: PRICING.proAnnual.subLabel,
         description: tProAnnual('description'),
         trial: tProAnnual('trial'),
         highlight: true,
@@ -312,7 +314,12 @@ export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId })
                                   )}
                                 </div>
                               </div>
-                              <span className="text-base font-medium">{plan.price}</span>
+                              <div className="flex items-baseline gap-1.5">
+                                <span className="text-base font-medium">{plan.price}</span>
+                                {'subPrice' in plan && (
+                                  <span className="text-xs text-muted-foreground">{plan.subPrice}</span>
+                                )}
+                              </div>
                               {'trial' in plan && (
                                 <span className="inline-flex w-fit items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
                                   {plan.trial}

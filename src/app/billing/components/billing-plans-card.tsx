@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { PRICING } from '@/config/pricing';
 
 const PLAN_IDS = ['pro', 'pro_annual'] as const;
 type PlanId = (typeof PLAN_IDS)[number];
@@ -35,7 +36,7 @@ export function BillingPlansCard() {
       {
         id: 'pro' as PlanId,
         name: tPro('name'),
-        price: tPro('price'),
+        price: PRICING.pro.label,
         description: tPro('description'),
         highlight: false,
         features: [tPro('feature1'), tPro('feature2'), tPro('feature3')],
@@ -43,7 +44,8 @@ export function BillingPlansCard() {
       {
         id: 'pro_annual' as PlanId,
         name: tProAnnual('name'),
-        price: tProAnnual('price'),
+        price: PRICING.proAnnual.label,
+        subPrice: PRICING.proAnnual.subLabel,
         description: tProAnnual('description'),
         highlight: true,
         features: [tProAnnual('feature1'), tProAnnual('feature2'), tProAnnual('feature3')],
@@ -118,7 +120,12 @@ export function BillingPlansCard() {
                 </div>
               </div>
 
-              <div className="mb-4 text-sm font-medium text-foreground">{plan.price}</div>
+              <div className="mb-4 flex items-baseline gap-1.5">
+                <span className="text-sm font-medium text-foreground">{plan.price}</span>
+                {'subPrice' in plan && (
+                  <span className="text-xs text-muted-foreground">{plan.subPrice}</span>
+                )}
+              </div>
 
               <ul className="mb-5 space-y-2">
                 {plan.features.map((feature) => (

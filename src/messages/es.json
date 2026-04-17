@@ -646,7 +646,6 @@
       "manage": "Administrar",
       "pro": {
         "name": "Pro mensual",
-        "price": "$12/mes",
         "trial": "14 días gratis",
         "description": "Ideal si quieres flexibilidad mientras validas tu flujo de trabajo de creador.",
         "feature1": "Administra productos, enlaces, códigos QR y etiquetas",
@@ -655,7 +654,6 @@
       },
       "pro_annual": {
         "name": "Pro anual",
-        "price": "$120/año",
         "trial": "14 días gratis",
         "description": "Ideal si AffProf ya es parte de tu stack operativo.",
         "feature1": "Todo lo de Pro mensual",
