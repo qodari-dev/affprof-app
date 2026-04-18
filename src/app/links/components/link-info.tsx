@@ -79,7 +79,7 @@ function QrPreview({
   const handleCopy = React.useCallback(() => {
     navigator.clipboard.writeText(shortUrl);
     toast.success(tToasts('urlCopied'));
-  }, [shortUrl]);
+  }, [shortUrl, tToasts]);
 
   return (
     <div className="flex flex-col items-center gap-2 rounded-lg border p-4">

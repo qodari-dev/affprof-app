@@ -1,6 +1,8 @@
 'use client';
 
 import { AlertTriangle, BarChart2, Link2, Plus } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { PageContent, PageHeader } from '@/components/layout';
@@ -62,9 +64,9 @@ function HomeStats({ analytics }: { analytics: NonNullable<ReturnType<typeof use
         sub={broken > 0 ? t('needsAttention') : t('allHealthy')}
         action={
           broken > 0 ? (
-            <a href="/links?status=broken" className="text-xs font-medium text-destructive underline underline-offset-2">
+            <Link href="/links?status=broken" className="text-xs font-medium text-destructive underline underline-offset-2">
               {t('reviewBroken')}
-            </a>
+            </Link>
           ) : undefined
         }
       />
@@ -74,9 +76,9 @@ function HomeStats({ analytics }: { analytics: NonNullable<ReturnType<typeof use
         value={clicks.toLocaleString()}
         sub={t('viewAnalytics')}
         action={
-          <a href="/dashboard" className="text-xs font-medium text-primary underline underline-offset-2">
+          <Link href="/dashboard" className="text-xs font-medium text-primary underline underline-offset-2">
             {t('openDashboard')}
-          </a>
+          </Link>
         }
       />
     </div>
@@ -115,6 +117,7 @@ function StatCard({
 
 function HomeEmpty() {
   const t = useTranslations('home.empty');
+  const router = useRouter();
 
   return (
     <div className="flex flex-col items-center justify-center gap-5 rounded-xl border border-dashed py-24 text-center">
@@ -125,11 +128,9 @@ function HomeEmpty() {
         <p className="text-base font-semibold">{t('title')}</p>
         <p className="max-w-sm text-sm text-muted-foreground">{t('description')}</p>
       </div>
-      <Button asChild>
-        <a href="/links">
-          <Plus className="mr-1.5 size-4" />
-          {t('cta')}
-        </a>
+      <Button onClick={() => router.push('/links')}>
+        <Plus className="mr-1.5 size-4" />
+        {t('cta')}
       </Button>
     </div>
   );

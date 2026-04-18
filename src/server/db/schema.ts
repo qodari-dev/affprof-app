@@ -136,7 +136,7 @@ export const brands = pgTable("brands", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  logoUrl: text("logo_url"),
+  logoKey: text("logo_key"),
   qrForeground: text("qr_foreground").notNull().default("#111111"),
   qrBackground: text("qr_background").notNull().default("#FFFFFF"),
   isDefault: boolean("is_default").notNull().default(false),
@@ -152,7 +152,7 @@ export const products = pgTable("products", {
     .references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   description: text("description"),
-  imageUrl: text("image_url"),
+  imageKey: text("image_key"),
   ...softDelete,
   ...timestamps,
 });

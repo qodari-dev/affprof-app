@@ -30,6 +30,7 @@ import {
   usePresignProductImageUpload,
   useUpdateProduct,
 } from '@/hooks/queries/use-product-queries';
+import { useDeleteStorageFile } from '@/hooks/queries/use-storage-queries';
 import type { Products } from '@/server/db';
 import { ProductImage } from './product-image';
 
@@ -63,17 +64,24 @@ export function ProductForm({
     defaultValues: {
       name: '',
       description: '',
-      imageUrl: '',
+      imageKey: '',
     },
   });
+
+  // previewUrl is only used for display — the form submits imageKey (the Spaces file key)
+  const [previewUrl, setPreviewUrl] = React.useState('');
+  // pendingKey tracks files uploaded in this session but not yet saved — so we can delete them if replaced/cancelled
+  const pendingKeyRef = React.useRef<string | null>(null);
 
   React.useEffect(() => {
     if (opened) {
       form.reset({
         name: product?.name ?? '',
         description: product?.description ?? '',
-        imageUrl: product?.imageUrl ?? '',
+        imageKey: product?.imageKey ?? '',
       });
+      setPreviewUrl(product?.imageUrl ?? '');
+      pendingKeyRef.current = null;
     }
   }, [opened, product, form]);
 
@@ -81,16 +89,16 @@ export function ProductForm({
   const { mutateAsync: update, isPending: isUpdating } = useUpdateProduct();
   const { mutateAsync: presignImageUpload, isPending: isPreparingImageUpload } =
     usePresignProductImageUpload();
+  const { mutateAsync: deleteStorageFile } = useDeleteStorageFile();
   const [isUploadingImage, setIsUploadingImage] = React.useState(false);
   const isPending = isCreating || isUpdating;
-  const imageUrl = form.watch('imageUrl') ?? '';
 
   const onSubmit = async (values: FormValues) => {
     // Clean empty strings to undefined
     const body = {
       ...values,
       description: values.description || undefined,
-      imageUrl: values.imageUrl || undefined,
+      imageKey: values.imageKey || undefined,
     };
 
     try {
@@ -99,10 +107,21 @@ export function ProductForm({
       } else {
         await create({ body });
       }
+      // Saved successfully — the pending key is now in DB, don't delete it
+      pendingKeyRef.current = null;
       onOpened(false);
     } catch {
       // Error handled by mutation onError
     }
+  };
+
+  const handleClose = (open: boolean) => {
+    // If closing without saving and there's a pending unsaved upload, delete it
+    if (!open && pendingKeyRef.current) {
+      void deleteStorageFile({ body: { fileKey: pendingKeyRef.current } });
+      pendingKeyRef.current = null;
+    }
+    onOpened(open);
   };
 
   const handleImageUpload = React.useCallback(
@@ -124,7 +143,6 @@ export function ProductForm({
       try {
         const response = await presignImageUpload({
           body: {
-            fileName: file.name,
             contentType: file.type as (typeof PRODUCT_IMAGE_ALLOWED_TYPES)[number],
             fileSize: file.size,
           },
@@ -132,9 +150,7 @@ export function ProductForm({
 
         const upload = await fetch(response.body.uploadUrl, {
           method: response.body.method,
-          headers: {
-            'Content-Type': file.type || 'application/octet-stream',
-          },
+          headers: response.body.uploadHeaders as Record<string, string>,
           body: file,
         });
 
@@ -142,10 +158,17 @@ export function ProductForm({
           throw new Error('Upload failed');
         }
 
-        form.setValue('imageUrl', response.body.publicUrl, {
+        // If there was a previous unsaved upload, delete it from Spaces
+        if (pendingKeyRef.current) {
+          void deleteStorageFile({ body: { fileKey: pendingKeyRef.current } });
+        }
+
+        form.setValue('imageKey', response.body.fileKey, {
           shouldDirty: true,
           shouldValidate: true,
         });
+        setPreviewUrl(response.body.publicUrl);
+        pendingKeyRef.current = response.body.fileKey;
         toast.success(t('imageUploaded'));
       } catch {
         toast.error(t('imageUploadError'));
@@ -156,11 +179,11 @@ export function ProductForm({
         }
       }
     },
-    [form, presignImageUpload, t],
+    [form, presignImageUpload, t, deleteStorageFile],
   );
 
   return (
-    <Sheet open={opened} onOpenChange={onOpened}>
+    <Sheet open={opened} onOpenChange={handleClose}>
       <SheetContent className="overflow-y-auto sm:max-w-xl lg:max-w-2xl">
         <SheetHeader>
           <SheetTitle>{isEditing ? t('editTitle') : t('createTitle')}</SheetTitle>
@@ -217,16 +240,16 @@ export function ProductForm({
             <div className="flex flex-col gap-4 rounded-xl border bg-muted/20 p-4">
               <div className="flex items-start gap-4">
                 <ProductImage
-                  src={imageUrl}
+                  src={previewUrl}
                   alt="Product preview"
                   className="h-24 w-24 rounded-lg border bg-muted/30 object-cover"
                 />
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <p className="text-sm font-medium">
-                    {imageUrl ? t('currentImage') : t('noImage')}
+                    {previewUrl ? t('currentImage') : t('noImage')}
                   </p>
                   <p className="break-all text-xs text-muted-foreground">
-                    {imageUrl || 'Fallback: /no-imagen.png'}
+                    {previewUrl || 'Fallback: /no-imagen.png'}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -240,18 +263,21 @@ export function ProductForm({
                       ) : (
                         <ImagePlus />
                       )}
-                      {imageUrl ? t('replaceImage') : t('uploadImage')}
+                      {previewUrl ? t('replaceImage') : t('uploadImage')}
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() =>
-                        form.setValue('imageUrl', '', {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        })
-                      }
-                      disabled={!imageUrl}
+                      onClick={() => {
+                        // Delete from Spaces if it's an unsaved upload
+                        if (pendingKeyRef.current) {
+                          void deleteStorageFile({ body: { fileKey: pendingKeyRef.current } });
+                          pendingKeyRef.current = null;
+                        }
+                        form.setValue('imageKey', '', { shouldDirty: true, shouldValidate: true });
+                        setPreviewUrl('');
+                      }}
+                      disabled={!previewUrl}
                     >
                       <Trash2 />
                       {t('removeImage')}
@@ -279,7 +305,7 @@ export function ProductForm({
         </form>
 
         <SheetFooter>
-          <Button variant="outline" className="min-w-32" onClick={() => onOpened(false)}>
+          <Button variant="outline" className="min-w-32" onClick={() => handleClose(false)}>
             {tc('cancel')}
           </Button>
           <Button

@@ -1,4 +1,5 @@
 import { db, products } from '@/server/db';
+import type { Products } from '@/server/db';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { getAuthContext } from '@/server/utils/auth-context';
 import { tsr } from '@ts-rest/serverless/next';
@@ -7,9 +8,10 @@ import { enforceProductLimit, requireProPlan } from '@/server/services/plan-limi
 import { PRODUCT_IMAGE_ALLOWED_TYPES, PRODUCT_IMAGE_MAX_BYTES } from '@/schemas/product';
 import { contract } from '../contracts';
 import {
-  buildDatedFileKey,
+  buildFileKey,
   createSpacesPresignedPutUrl,
   createSpacesPublicUrl,
+  deleteSpacesObject,
 } from '@/server/utils/storage/spaces-presign';
 
 import { buildTypedIncludes, createIncludeMap } from '@/server/utils/query/include-builder';
@@ -19,6 +21,18 @@ import {
   FieldMap,
   QueryConfig,
 } from '@/server/utils/query/query-builder';
+
+// ============================================
+// HELPERS
+// ============================================
+
+/** Adds the computed imageUrl field to a product DB row. */
+function withImageUrl(product: typeof products.$inferSelect): Products {
+  return {
+    ...product,
+    imageUrl: product.imageKey ? createSpacesPublicUrl(product.imageKey) : null,
+  };
+}
 
 // ============================================
 // CONFIG
@@ -93,7 +107,7 @@ export const product = tsr.router(contract.product, {
       return {
         status: 200 as const,
         body: {
-          data,
+          data: data.map(withImageUrl),
           meta: buildPaginationMeta(totalCount, page, limit),
         },
       };
@@ -124,7 +138,7 @@ export const product = tsr.router(contract.product, {
         throwHttpError({ status: 404, message: 'Product not found', code: 'NOT_FOUND' });
       }
 
-      return { status: 200, body: product };
+      return { status: 200, body: withImageUrl(product) };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: `Error fetching product ${id}`,
@@ -146,7 +160,7 @@ export const product = tsr.router(contract.product, {
         .values({ ...body, userId: auth.userId })
         .returning();
 
-      return { status: 201, body: newProduct };
+      return { status: 201, body: withImageUrl(newProduct) };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: 'Error creating product',
@@ -240,13 +254,21 @@ export const product = tsr.router(contract.product, {
         throwHttpError({ status: 404, message: 'Product not found', code: 'NOT_FOUND' });
       }
 
+      const incomingKey = body.imageKey !== undefined ? (body.imageKey ?? null) : existing.imageKey;
+      const oldKey = existing.imageKey;
+
       const [updated] = await db
         .update(products)
         .set(body)
         .where(eq(products.id, id))
         .returning();
 
-      return { status: 200, body: updated };
+      // Delete old image from Spaces if it was replaced or removed
+      if (oldKey && oldKey !== incomingKey) {
+        void deleteSpacesObject(oldKey);
+      }
+
+      return { status: 200, body: withImageUrl(updated) };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: `Error updating product ${id}`,
@@ -259,7 +281,7 @@ export const product = tsr.router(contract.product, {
   // ==========================================
   presignImageUpload: async ({ body }, { request }) => {
     try {
-      await getAuthContext(request);
+      const auth = await getAuthContext(request);
 
       if (!PRODUCT_IMAGE_ALLOWED_TYPES.includes(body.contentType)) {
         throwHttpError({
@@ -277,8 +299,8 @@ export const product = tsr.router(contract.product, {
         });
       }
 
-      const fileKey = buildDatedFileKey('products', body.fileName);
-      const uploadUrl = createSpacesPresignedPutUrl(fileKey, body.contentType);
+      const fileKey = buildFileKey(auth.userId, 'products', body.contentType);
+      const { url: uploadUrl, headers: uploadHeaders } = await createSpacesPresignedPutUrl(fileKey, body.contentType);
       const publicUrl = createSpacesPublicUrl(fileKey);
 
       return {
@@ -286,6 +308,7 @@ export const product = tsr.router(contract.product, {
         body: {
           fileKey,
           uploadUrl,
+          uploadHeaders,
           publicUrl,
           method: 'PUT' as const,
         },
@@ -322,7 +345,12 @@ export const product = tsr.router(contract.product, {
         .where(eq(products.id, id))
         .returning();
 
-      return { status: 200, body: deleted };
+      // Delete image from Spaces if it exists
+      if (existing.imageKey) {
+        void deleteSpacesObject(existing.imageKey);
+      }
+
+      return { status: 200, body: withImageUrl(deleted) };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: `Error deleting product ${id}`,

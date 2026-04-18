@@ -12,8 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 import { PRICING } from '@/config/pricing';
 
-const PLAN_IDS = ['pro', 'pro_annual'] as const;
-type PlanId = (typeof PLAN_IDS)[number];
+type PlanId = 'pro' | 'pro_annual';
 
 export function BillingPlansCard() {
   const t = useTranslations('billing.plans');

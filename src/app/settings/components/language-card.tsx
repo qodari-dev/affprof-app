@@ -2,14 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProfile, useUpdateProfile } from '@/hooks/queries/use-profile-queries';
 import { useLocale } from '@/hooks/use-locale';
-import { LOCALE_COOKIE, type Locale } from '@/i18n/config';
+import { type Locale } from '@/i18n/config';
 
 export function LanguageCard() {
   const t = useTranslations('settings.language');

@@ -49,6 +49,8 @@ export type NewCustomDomains = typeof customDomains.$inferInsert;
 
 export type Brands = typeof brands.$inferSelect & {
   user?: Users;
+  /** Computed from logoKey at the API layer — not stored in DB */
+  logoUrl: string | null;
 };
 export type NewBrands = typeof brands.$inferInsert;
 
@@ -57,6 +59,8 @@ export type NewBrands = typeof brands.$inferInsert;
 export type Products = typeof products.$inferSelect & {
   user?: Users;
   links?: Links[];
+  /** Computed from imageKey at the API layer — not stored in DB */
+  imageUrl: string | null;
 };
 export type NewProducts = typeof products.$inferInsert;
 

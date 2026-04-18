@@ -1,6 +1,7 @@
 import type { TsRestApiError } from './get-ts-rest-error-message';
 
-type TranslateFunction = (key: string, params?: Record<string, unknown>) => string;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TranslateFunction = (...args: any[]) => string;
 
 /**
  * Translate an API error code to the user's language.

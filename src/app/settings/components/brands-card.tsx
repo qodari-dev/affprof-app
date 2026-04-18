@@ -45,6 +45,7 @@ import {
   useSetDefaultBrand,
   useUpdateBrand,
 } from '@/hooks/queries/use-brand-queries';
+import { useDeleteStorageFile } from '@/hooks/queries/use-storage-queries';
 import type { Brands } from '@/server/db';
 import { toast } from 'sonner';
 
@@ -105,33 +106,40 @@ function BrandFormSheet({
     resolver: zodResolver(CreateBrandBodySchema),
     defaultValues: {
       name: '',
-      logoUrl: '',
+      logoKey: '',
       qrForeground: '#111111',
       qrBackground: '#FFFFFF',
       isDefault: false,
     },
   });
 
+  // previewUrl is only used for display — the form submits logoKey (the Spaces file key)
+  const [previewUrl, setPreviewUrl] = React.useState('');
+  // pendingKey tracks files uploaded in this session but not yet saved — so we can delete them if replaced/cancelled
+  const pendingKeyRef = React.useRef<string | null>(null);
+
   React.useEffect(() => {
     if (opened) {
       form.reset({
         name: brand?.name ?? '',
-        logoUrl: brand?.logoUrl ?? '',
+        logoKey: brand?.logoKey ?? '',
         qrForeground: brand?.qrForeground ?? '#111111',
         qrBackground: brand?.qrBackground ?? '#FFFFFF',
         isDefault: brand?.isDefault ?? false,
       });
+      setPreviewUrl(brand?.logoUrl ?? '');
+      pendingKeyRef.current = null;
     }
   }, [brand, form, opened]);
 
   const brandName = useWatch({ control: form.control, name: 'name' }) ?? '';
-  const logoUrl = useWatch({ control: form.control, name: 'logoUrl' }) ?? '';
   const qrForeground = useWatch({ control: form.control, name: 'qrForeground' }) ?? '#111111';
   const qrBackground = useWatch({ control: form.control, name: 'qrBackground' }) ?? '#FFFFFF';
 
   const { mutateAsync: createBrand, isPending: isCreating } = useCreateBrand();
   const { mutateAsync: updateBrand, isPending: isUpdating } = useUpdateBrand();
   const { mutateAsync: presignLogoUpload, isPending: isPreparingUpload } = usePresignBrandLogoUpload();
+  const { mutateAsync: deleteStorageFile } = useDeleteStorageFile();
   const [isUploadingLogo, setIsUploadingLogo] = React.useState(false);
   const isPending = isCreating || isUpdating;
 
@@ -154,7 +162,6 @@ function BrandFormSheet({
       try {
         const response = await presignLogoUpload({
           body: {
-            fileName: file.name,
             contentType: file.type as (typeof BRAND_LOGO_ALLOWED_TYPES)[number],
             fileSize: file.size,
           },
@@ -162,9 +169,7 @@ function BrandFormSheet({
 
         const upload = await fetch(response.body.uploadUrl, {
           method: response.body.method,
-          headers: {
-            'Content-Type': file.type || 'application/octet-stream',
-          },
+          headers: response.body.uploadHeaders as Record<string, string>,
           body: file,
         });
 
@@ -172,10 +177,17 @@ function BrandFormSheet({
           throw new Error('Upload failed');
         }
 
-        form.setValue('logoUrl', response.body.publicUrl, {
+        // If there was a previous unsaved upload, delete it from Spaces
+        if (pendingKeyRef.current) {
+          void deleteStorageFile({ body: { fileKey: pendingKeyRef.current } });
+        }
+
+        form.setValue('logoKey', response.body.fileKey, {
           shouldDirty: true,
           shouldValidate: true,
         });
+        setPreviewUrl(response.body.publicUrl);
+        pendingKeyRef.current = response.body.fileKey;
         toast.success(t('toastUploaded'));
       } catch {
         toast.error(t('toastUploadError'));
@@ -186,33 +198,41 @@ function BrandFormSheet({
         }
       }
     },
-    [form, presignLogoUpload, t],
+    [form, presignLogoUpload, t, deleteStorageFile],
   );
 
   const onSubmit = async (values: FormValues) => {
     const body = {
       ...values,
-      logoUrl: values.logoUrl || undefined,
+      logoKey: values.logoKey || undefined,
     };
 
     try {
       if (brand) {
-        await updateBrand({
-          params: { id: brand.id },
-          body,
-        });
+        await updateBrand({ params: { id: brand.id }, body });
       } else {
         await createBrand({ body });
       }
 
+      // Saved successfully — the pending key is now in DB, don't delete it
+      pendingKeyRef.current = null;
       onOpened(false);
     } catch {
       // handled by mutation
     }
   };
 
+  const handleClose = (open: boolean) => {
+    // If closing without saving and there's a pending unsaved upload, delete it
+    if (!open && pendingKeyRef.current) {
+      void deleteStorageFile({ body: { fileKey: pendingKeyRef.current } });
+      pendingKeyRef.current = null;
+    }
+    onOpened(open);
+  };
+
   return (
-    <Sheet open={opened} onOpenChange={onOpened}>
+    <Sheet open={opened} onOpenChange={handleClose}>
       <SheetContent className="overflow-y-auto sm:max-w-xl">
         <SheetHeader>
           <SheetTitle>{isEditing ? t('editTitle') : t('createTitle')}</SheetTitle>
@@ -222,7 +242,7 @@ function BrandFormSheet({
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1 flex-col gap-6 px-6 pb-2">
           <div className="rounded-2xl border bg-muted/20 p-4">
             <div className="flex items-center gap-4">
-              <BrandLogo name={brandName || t('brandFallback')} logoUrl={logoUrl} className="size-16 rounded-2xl" />
+              <BrandLogo name={brandName || t('brandFallback')} logoUrl={previewUrl} className="size-16 rounded-2xl" />
               <div className="min-w-0 flex-1 space-y-2">
                 <div>
                   <div className="font-medium">{brandName || t('brandPreview')}</div>
@@ -268,10 +288,10 @@ function BrandFormSheet({
             <FieldLabel>{t('logo')}</FieldLabel>
             <div className="flex flex-col gap-4 rounded-xl border bg-muted/20 p-4">
               <div className="flex items-start gap-4">
-                <BrandLogo name={brandName || t('brandFallback')} logoUrl={logoUrl} className="size-20 rounded-2xl" />
+                <BrandLogo name={brandName || t('brandFallback')} logoUrl={previewUrl} className="size-20 rounded-2xl" />
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
-                  <p className="text-sm font-medium">{logoUrl ? t('currentLogo') : t('noLogo')}</p>
-                  <p className="break-all text-xs text-muted-foreground">{logoUrl || t('noLogoHelp')}</p>
+                  <p className="text-sm font-medium">{previewUrl ? t('currentLogo') : t('noLogo')}</p>
+                  <p className="break-all text-xs text-muted-foreground">{previewUrl || t('noLogoHelp')}</p>
                   <div className="flex flex-wrap gap-2">
                     <Button
                       type="button"
@@ -284,18 +304,21 @@ function BrandFormSheet({
                       ) : (
                         <ImagePlus />
                       )}
-                      {logoUrl ? t('replaceLogo') : t('uploadLogo')}
+                      {previewUrl ? t('replaceLogo') : t('uploadLogo')}
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() =>
-                        form.setValue('logoUrl', '', {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        })
-                      }
-                      disabled={!logoUrl}
+                      onClick={() => {
+                        // Delete from Spaces if it's an unsaved upload
+                        if (pendingKeyRef.current) {
+                          void deleteStorageFile({ body: { fileKey: pendingKeyRef.current } });
+                          pendingKeyRef.current = null;
+                        }
+                        form.setValue('logoKey', '', { shouldDirty: true, shouldValidate: true });
+                        setPreviewUrl('');
+                      }}
+                      disabled={!previewUrl}
                     >
                       <Trash2 />
                       {t('remove')}
@@ -373,7 +396,7 @@ function BrandFormSheet({
         </form>
 
         <SheetFooter>
-          <Button variant="outline" className="min-w-32" onClick={() => onOpened(false)}>
+          <Button variant="outline" className="min-w-32" onClick={() => handleClose(false)}>
             {t('cancel')}
           </Button>
           <Button

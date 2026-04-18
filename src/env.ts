@@ -12,9 +12,9 @@ export const env = createEnv({
     IAM_APP_SLUG: z.string().min(1),
     IAM_BASE_URL: z.url(),
     IAM_TOKEN_URL: z.url(),
+    IAM_REDIRECT_URI: z.url(),
     IAM_CLIENT_ID: z.string().min(1),
     IAM_CLIENT_SECRET: z.string().min(1),
-    IAM_REDIRECT_URI: z.url(),
     IAM_JWT_SECRET: z.string().min(1),
 
     // IAM M2M (for creating users from AffProf)
@@ -37,7 +37,6 @@ export const env = createEnv({
 
     // DigitalOcean Spaces
     DO_SPACES_ENDPOINT: z.url().optional(),
-    DO_SPACES_CDN_ENDPOINT: z.url().optional(),
     DO_SPACES_REGION: z.string().min(1).optional(),
     DO_SPACES_BUCKET: z.string().min(1).optional(),
     DO_SPACES_KEY: z.string().min(1).optional(),
@@ -110,12 +109,11 @@ export const env = createEnv({
 
     // DigitalOcean Spaces
     DO_SPACES_ENDPOINT: process.env.DO_SPACES_ENDPOINT,
-    DO_SPACES_CDN_ENDPOINT: process.env.DO_SPACES_CDN_ENDPOINT,
+    DO_SPACES_CDN_URL: process.env.DO_SPACES_CDN_URL,
     DO_SPACES_REGION: process.env.DO_SPACES_REGION,
     DO_SPACES_BUCKET: process.env.DO_SPACES_BUCKET,
     DO_SPACES_KEY: process.env.DO_SPACES_KEY,
     DO_SPACES_SECRET: process.env.DO_SPACES_SECRET,
-    DO_SPACES_CDN_URL: process.env.DO_SPACES_CDN_URL,
 
     // Scheduler
     PAUSE_SCHEDULER: process.env.PAUSE_SCHEDULER,

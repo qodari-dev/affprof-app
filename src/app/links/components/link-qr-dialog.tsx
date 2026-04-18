@@ -76,7 +76,7 @@ export function LinkQrDialog({
     } catch {
       toast.error(tToasts('qrGenerateError'));
     }
-  }, [qrUrl, selectedBrand]);
+  }, [qrUrl, selectedBrand, tToasts]);
 
   const handleCanvasRef = React.useCallback((node: HTMLCanvasElement | null) => {
     canvasRef.current = node;
@@ -129,6 +129,7 @@ export function LinkQrDialog({
     selectedBrand,
     slug,
     t,
+    tToasts,
   ]);
 
   const handleCopyUrl = React.useCallback(() => {

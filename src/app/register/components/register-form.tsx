@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Check, Eye, EyeOff, Loader2, Sparkles } from 'lucide-react';
@@ -60,7 +60,7 @@ export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId })
   });
 
   const { mutateAsync: register, isPending } = useRegister();
-  const selectedPlan = form.watch('plan');
+  const selectedPlan = useWatch({ control: form.control, name: 'plan' });
 
   const plans = React.useMemo(
     () => [

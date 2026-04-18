@@ -29,7 +29,6 @@ export function SubscriptionActivatedEmail({
   const planLabel = plan === 'pro_annual' ? 'Pro Annual' : 'Pro';
   const billingLabel = plan === 'pro_annual' ? t.billingAnnual : t.billingMonthly;
 
-  const subject = isTrial ? t.subjectTrial(planLabel) : t.subjectPaid(planLabel);
   const badge = isTrial ? t.badgeTrial : t.badgePaid;
   const heading = isTrial ? t.headingTrial(userName) : t.headingPaid(userName);
   const body = isTrial && trialEndDate ? t.bodyTrial(trialEndDate) : t.bodyPaid;

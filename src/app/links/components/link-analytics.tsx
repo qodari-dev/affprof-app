@@ -211,6 +211,7 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
 // SUB-COMPONENTS
 // ============================================
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function useAnalyticsT() {
   return useTranslations("links.analytics");
 }

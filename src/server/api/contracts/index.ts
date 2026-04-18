@@ -7,6 +7,7 @@ import { customDomain } from './custom-domain';
 import { profile } from './profile';
 import { product } from './product';
 import { link } from './link';
+import { storage } from './storage';
 import { tag } from './tag';
 import { userSettings } from './user-settings';
 
@@ -22,6 +23,7 @@ export const contract = c.router(
     profile,
     product,
     link,
+    storage,
     tag,
     userSettings,
   },

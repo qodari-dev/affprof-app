@@ -8,6 +8,7 @@ import { customDomainHandler } from './custom-domain';
 import { profileHandler } from './profile';
 import { product } from './product';
 import { link } from './link';
+import { storageHandler } from './storage';
 import { tag } from './tag';
 import { userSettingsHandler } from './user-settings';
 
@@ -22,6 +23,7 @@ export const handler = createNextHandler(
     profile: profileHandler,
     product,
     link,
+    storage: storageHandler,
     tag,
     userSettings: userSettingsHandler,
   },

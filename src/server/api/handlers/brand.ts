@@ -1,17 +1,29 @@
 import { db, brands } from '@/server/db';
+import type { Brands } from '@/server/db';
 import { BRAND_LOGO_ALLOWED_TYPES, BRAND_LOGO_MAX_BYTES } from '@/schemas/brand';
 import { getAuthContext } from '@/server/utils/auth-context';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { requireProPlan } from '@/server/services/plan-limits';
 import {
-  buildDatedFileKey,
+  buildFileKey,
   createSpacesPresignedPutUrl,
   createSpacesPublicUrl,
+  deleteSpacesObject,
 } from '@/server/utils/storage/spaces-presign';
 import { tsr } from '@ts-rest/serverless/next';
 import { and, asc, desc, eq } from 'drizzle-orm';
 
 import { contract } from '../contracts';
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Adds the computed logoUrl field to a brand DB row. */
+function withLogoUrl(brand: typeof brands.$inferSelect): Brands {
+  return {
+    ...brand,
+    logoUrl: brand.logoKey ? createSpacesPublicUrl(brand.logoKey) : null,
+  };
+}
 
 async function getBrandOrThrow(userId: string, id: string) {
   const existing = await db.query.brands.findFirst({
@@ -44,7 +56,7 @@ export const brandHandler = tsr.router(contract.brand, {
 
       return {
         status: 200 as const,
-        body: data,
+        body: data.map(withLogoUrl),
       };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
@@ -74,7 +86,7 @@ export const brandHandler = tsr.router(contract.brand, {
         .values({
           userId: auth.userId,
           name: body.name,
-          logoUrl: body.logoUrl,
+          logoKey: body.logoKey,
           qrForeground: body.qrForeground,
           qrBackground: body.qrBackground,
           isDefault: shouldBeDefault,
@@ -83,7 +95,7 @@ export const brandHandler = tsr.router(contract.brand, {
 
       return {
         status: 201 as const,
-        body: created,
+        body: withLogoUrl(created),
       };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
@@ -101,11 +113,14 @@ export const brandHandler = tsr.router(contract.brand, {
         await clearDefaultBrands(auth.userId);
       }
 
+      const incomingKey = body.logoKey !== undefined ? (body.logoKey ?? null) : existing.logoKey;
+      const oldKey = existing.logoKey;
+
       const [updated] = await db
         .update(brands)
         .set({
           name: body.name ?? existing.name,
-          logoUrl: body.logoUrl ?? existing.logoUrl,
+          logoKey: incomingKey,
           qrForeground: body.qrForeground ?? existing.qrForeground,
           qrBackground: body.qrBackground ?? existing.qrBackground,
           isDefault: body.isDefault ?? existing.isDefault,
@@ -113,9 +128,14 @@ export const brandHandler = tsr.router(contract.brand, {
         .where(eq(brands.id, id))
         .returning();
 
+      // Delete old logo from Spaces if it was replaced or removed
+      if (oldKey && oldKey !== incomingKey) {
+        void deleteSpacesObject(oldKey);
+      }
+
       return {
         status: 200 as const,
-        body: updated,
+        body: withLogoUrl(updated),
       };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
@@ -139,7 +159,7 @@ export const brandHandler = tsr.router(contract.brand, {
 
       return {
         status: 200 as const,
-        body: updated,
+        body: withLogoUrl(updated),
       };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
@@ -170,8 +190,8 @@ export const brandHandler = tsr.router(contract.brand, {
         });
       }
 
-      const fileKey = buildDatedFileKey('brands', body.fileName);
-      const uploadUrl = createSpacesPresignedPutUrl(fileKey, body.contentType);
+      const fileKey = buildFileKey(auth.userId, 'brands', body.contentType);
+      const { url: uploadUrl, headers: uploadHeaders } = await createSpacesPresignedPutUrl(fileKey, body.contentType);
       const publicUrl = createSpacesPublicUrl(fileKey);
 
       return {
@@ -179,6 +199,7 @@ export const brandHandler = tsr.router(contract.brand, {
         body: {
           fileKey,
           uploadUrl,
+          uploadHeaders,
           publicUrl,
           method: 'PUT' as const,
         },
@@ -197,9 +218,14 @@ export const brandHandler = tsr.router(contract.brand, {
 
       await db.delete(brands).where(eq(brands.id, id));
 
+      // Delete logo from Spaces if it exists
+      if (existing.logoKey) {
+        void deleteSpacesObject(existing.logoKey);
+      }
+
       return {
         status: 200 as const,
-        body: existing,
+        body: withLogoUrl(existing),
       };
     } catch (e) {
       return genericTsRestErrorResponse(e, {

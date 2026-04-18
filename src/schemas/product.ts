@@ -55,8 +55,9 @@ export const GetProductQuerySchema = z.object({
 // MUTATIONS
 // ============================================
 
-const OptionalImageUrlSchema = z
-  .union([z.url(), z.literal('')])
+// Accepts a Spaces file key (e.g. "dev/affprof/user_abc/products/uuid.png") or empty string
+const OptionalImageKeySchema = z
+  .string()
   .optional()
   .transform((value) => (value ? value : undefined));
 
@@ -66,13 +67,12 @@ export const PRODUCT_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
 export const CreateProductBodySchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().max(1000).optional(),
-  imageUrl: OptionalImageUrlSchema,
+  imageKey: OptionalImageKeySchema,
 });
 
 export const UpdateProductBodySchema = CreateProductBodySchema.partial();
 
 export const PresignProductImageUploadBodySchema = z.object({
-  fileName: z.string().min(1).max(255),
   contentType: z.enum(PRODUCT_IMAGE_ALLOWED_TYPES),
   fileSize: z.number().int().positive().max(PRODUCT_IMAGE_MAX_BYTES),
 });
@@ -80,6 +80,7 @@ export const PresignProductImageUploadBodySchema = z.object({
 export const PresignProductImageUploadResponseSchema = z.object({
   fileKey: z.string().min(1),
   uploadUrl: z.url(),
+  uploadHeaders: z.record(z.string(), z.string()),
   publicUrl: z.url(),
   method: z.literal('PUT'),
 });
