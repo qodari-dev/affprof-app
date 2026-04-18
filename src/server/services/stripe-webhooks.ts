@@ -2,7 +2,8 @@ import type Stripe from 'stripe';
 import { eq } from 'drizzle-orm';
 
 import { env } from '@/env';
-import { db, subscriptions } from '@/server/db';
+import { db, subscriptions, users } from '@/server/db';
+import { sendSubscriptionActivatedEmail } from '@/server/services/transactional-emails';
 import { stripe } from '@/server/utils/stripe';
 
 type InternalPlan = 'free' | 'pro' | 'pro_annual';
@@ -98,6 +99,8 @@ async function syncCheckoutCompleted(session: Stripe.Checkout.Session) {
     stripeSubscriptionId,
   )) as unknown as RawSubscription;
 
+  const patch = buildSubscriptionPatch(stripeSubscription);
+
   await db
     .update(subscriptions)
     .set({
@@ -106,9 +109,40 @@ async function syncCheckoutCompleted(session: Stripe.Checkout.Session) {
         typeof session.customer === 'string'
           ? session.customer
           : session.customer?.id,
-      ...buildSubscriptionPatch(stripeSubscription),
+      ...patch,
     })
     .where(eq(subscriptions.userId, userId));
+
+  // Send subscription activated email (fire and forget)
+  void (async () => {
+    try {
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, userId),
+        columns: { email: true, name: true, language: true },
+      });
+
+      if (!user) return;
+
+      const isTrial = stripeSubscription.status === 'trialing';
+      const trialEndDate = stripeSubscription.trial_end
+        ? new Date(stripeSubscription.trial_end * 1000).toLocaleDateString(
+            user.language === 'es' ? 'es-ES' : 'en-US',
+            { month: 'long', day: 'numeric', year: 'numeric' },
+          )
+        : undefined;
+
+      await sendSubscriptionActivatedEmail({
+        userEmail: user.email,
+        userName: user.name,
+        plan: patch.plan === 'pro_annual' ? 'pro_annual' : 'pro',
+        isTrial,
+        trialEndDate,
+        locale: user.language === 'es' ? 'es' : 'en',
+      });
+    } catch (err) {
+      console.error('[stripe-webhook] subscription activated email failed:', err);
+    }
+  })();
 }
 
 async function syncInvoicePaid(invoice: RawInvoice) {

@@ -28,6 +28,7 @@ type ScheduledEmailBucket = {
   userEmail: string;
   userName: string;
   ccEmail: string | null;
+  language: string;
   items: BrokenLinkEmailItem[];
 };
 
@@ -45,6 +46,7 @@ type LinkCheckCandidate = {
     email: string;
     name: string;
     slug: string;
+    language: string;
     customDomains?: Array<{
       hostname: string;
       isPrimary: boolean;
@@ -250,6 +252,7 @@ async function sendScheduledBrokenLinkEmails(candidates: LinkCheckCandidate[], e
       userEmail: candidate.user.email,
       userName: candidate.user.name,
       ccEmail: candidate.user.settings?.ccEmail ?? null,
+      language: candidate.user.language,
       items: [emailItem],
     });
   }
@@ -263,6 +266,7 @@ async function sendScheduledBrokenLinkEmails(candidates: LinkCheckCandidate[], e
         ccEmail: bucket.ccEmail,
         dedupeKey,
         items: bucket.items,
+        locale: (bucket.language === 'es' ? 'es' : 'en'),
       }),
     ),
   );
@@ -294,6 +298,7 @@ export async function checkLink(linkId: string): Promise<LinkCheckResult> {
           email: true,
           name: true,
           slug: true,
+          language: true,
         },
         with: {
           customDomains: {
@@ -348,6 +353,7 @@ export async function checkLinks(linkIds: string[]): Promise<LinkCheckResult[]> 
           email: true,
           name: true,
           slug: true,
+          language: true,
         },
         with: {
           customDomains: {
@@ -425,9 +431,9 @@ function getCurrentHourInTimezone(tz: string): number {
 export async function runScheduledLinkChecks(
   limit = env.LINK_CHECKER_BATCH_SIZE,
 ): Promise<ScheduledLinkCheckResult> {
-  // At 12pm (SCHEDULER_TIMEZONE) all plans are checked; other runs are Pro-only
+  // At 12am (SCHEDULER_TIMEZONE) all plans are checked; other runs are Pro-only
   const currentHour = getCurrentHourInTimezone(env.SCHEDULER_TIMEZONE);
-  const proOnly = currentHour !== 12;
+  const proOnly = currentHour !== 0;
   const linkIds = await getLinkIdsForScheduledCheck(limit, proOnly);
 
   if (linkIds.length === 0) {
@@ -460,6 +466,7 @@ export async function runScheduledLinkChecks(
           email: true,
           name: true,
           slug: true,
+          language: true,
         },
         with: {
           customDomains: {

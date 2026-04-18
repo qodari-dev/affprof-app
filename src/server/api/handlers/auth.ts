@@ -1,6 +1,7 @@
 import { db, users, subscriptions, userSettings } from '@/server/db';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { iamClient, IamClientError } from '@/iam/clients/iam-m2m-client';
+import { sendWelcomeEmail } from '@/server/services/transactional-emails';
 import { stripe } from '@/server/utils/stripe';
 import { env } from '@/env';
 import { tsr } from '@ts-rest/serverless/next';
@@ -98,7 +99,14 @@ export const auth = tsr.router(contract.auth, {
         });
       });
 
-      // 4) If paid plan, create Stripe customer + Checkout Session
+      // 4) Send welcome email (fire and forget — don't block registration)
+      void sendWelcomeEmail({
+        userEmail: email.toLowerCase(),
+        userName: `${firstName} ${lastName}`,
+        locale: 'en',
+      });
+
+      // 5) If paid plan, create Stripe customer + Checkout Session
       let checkoutUrl: string | null = null;
 
       if (plan !== 'free') {

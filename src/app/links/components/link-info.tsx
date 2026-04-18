@@ -43,6 +43,7 @@ function QrPreview({
   brand?: Links['brand'];
 }) {
   const tc = useTranslations('common');
+  const tToasts = useTranslations('toasts');
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const qrUrl = `${shortUrl}?qr=1`;
 
@@ -122,7 +123,6 @@ export function LinkInfo({
   onOpened: (opened: boolean) => void;
 }) {
   const t = useTranslations('links.info');
-  const tToasts = useTranslations('toasts');
   const locale = useLocale();
   const { data: profileData } = useProfile();
   const { data: customDomainsData } = useCustomDomains();

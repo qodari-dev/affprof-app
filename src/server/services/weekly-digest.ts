@@ -1,6 +1,10 @@
+import * as React from 'react';
+
 import { env } from '@/env';
 import { db, linkClicks, links, products, userSettings } from '@/server/db';
 import { canSendResendEmail, sendResendEmail } from '@/server/clients/resend';
+import { WeeklyDigestEmail } from '@/server/emails/weekly-digest-email';
+import { type EmailLocale, getEmailTranslations } from '@/server/emails/translations';
 import { sendTrackedEmailNotification } from '@/server/services/notification-dispatches';
 import { buildShortLinkUrl } from '@/utils/short-link';
 import { and, asc, count, desc, eq, gte, isNull, sql } from 'drizzle-orm';
@@ -23,6 +27,7 @@ type WeeklyDigestTarget = {
   ccEmail: string | null;
   digestDay: Weekday;
   primaryCustomDomain: string | null;
+  locale: EmailLocale;
 };
 
 type WeeklyTopLink = {
@@ -113,15 +118,6 @@ function formatLocalDateKey(date: Date, timezone: string) {
   return `${year}-${month}-${day}`;
 }
 
-function escapeHtml(value: string) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
 async function getWeeklyDigestTargets(now: Date) {
   const settings = await db.query.userSettings.findMany({
     where: eq(userSettings.weeklyDigest, true),
@@ -133,6 +129,7 @@ async function getWeeklyDigestTargets(now: Date) {
           name: true,
           slug: true,
           timezone: true,
+          language: true,
         },
         with: {
           customDomains: {
@@ -171,6 +168,7 @@ async function getWeeklyDigestTargets(now: Date) {
           setting.user.customDomains?.find(
             (domain) => domain.status === 'verified' && domain.isPrimary,
           )?.hostname ?? null,
+        locale: (setting.user.language === 'es' ? 'es' : 'en') satisfies EmailLocale,
       } satisfies WeeklyDigestTarget;
     })
     .filter((target): target is WeeklyDigestTarget => Boolean(target));
@@ -271,16 +269,15 @@ async function getWeeklyDigestData(target: WeeklyDigestTarget, now: Date): Promi
 }
 
 function buildWeeklyDigestEmail(target: WeeklyDigestTarget, data: WeeklyDigestData) {
-  const dashboardUrl = `${env.NEXT_PUBLIC_APP_URL}/links`;
-  const subject = `Your weekly AffProf summary`;
+  const dashboardUrl = `${env.NEXT_PUBLIC_APP_URL}/dashboard`;
+  const settingsUrl = `${env.NEXT_PUBLIC_APP_URL}/settings`;
+  const t = getEmailTranslations(target.locale);
+  const subject = t.weeklySubject(data.periodLabel);
 
   const topLinksText =
     data.topLinks.length > 0
       ? data.topLinks
-          .map(
-            (link, index) =>
-              `${index + 1}. /${link.slug} (${link.productName}) - ${link.clicks} clicks`,
-          )
+          .map((link, i) => `${i + 1}. /${link.slug} (${link.productName}) — ${link.clicks} clicks`)
           .join('\n')
       : 'No clicks recorded this week.';
 
@@ -288,108 +285,43 @@ function buildWeeklyDigestEmail(target: WeeklyDigestTarget, data: WeeklyDigestDa
     data.brokenLinks.length > 0
       ? data.brokenLinks
           .map((link) => {
-            const status = link.statusCode ? `status ${link.statusCode}` : 'status unavailable';
-            return `- /${link.slug} (${link.productName}) - ${status}`;
+            const status = link.statusCode ? `HTTP ${link.statusCode}` : 'no response';
+            return `- /${link.slug} (${link.productName}) — ${status}`;
           })
           .join('\n')
-      : 'No broken links right now.';
+      : 'No broken links.';
 
   const text = [
     `Hi ${target.name},`,
     '',
     `Here is your AffProf weekly summary for ${data.periodLabel}.`,
     '',
-    `Total clicks: ${data.totalClicks}`,
+    `Total clicks: ${data.totalClicks.toLocaleString()}`,
     `Active links: ${data.activeLinksCount}`,
     `Broken links: ${data.brokenLinksCount}`,
     '',
     'Top links:',
     topLinksText,
     '',
-    'Broken links:',
-    brokenLinksText,
-    '',
+    ...(data.brokenLinksCount > 0 ? ['Broken links:', brokenLinksText, ''] : []),
     `Open dashboard: ${dashboardUrl}`,
   ].join('\n');
 
-  const topLinksRows =
-    data.topLinks.length > 0
-      ? data.topLinks
-          .map(
-            (link) => `
-              <tr>
-                <td style="padding:8px 12px 8px 0"><strong>/${escapeHtml(link.slug)}</strong></td>
-                <td style="padding:8px 12px 8px 0">${escapeHtml(link.productName)}</td>
-                <td style="padding:8px 0 8px 0">${link.clicks}</td>
-              </tr>
-            `,
-          )
-          .join('')
-      : `
-          <tr>
-            <td colspan="3" style="padding:8px 0;color:#6b7280">No clicks recorded this week.</td>
-          </tr>
-        `;
+  const react = React.createElement(WeeklyDigestEmail, {
+    userName: target.name,
+    periodLabel: data.periodLabel,
+    totalClicks: data.totalClicks,
+    activeLinksCount: data.activeLinksCount,
+    brokenLinksCount: data.brokenLinksCount,
+    topLinks: data.topLinks,
+    brokenLinks: data.brokenLinks,
+    dashboardUrl,
+    settingsUrl,
+    appUrl: env.NEXT_PUBLIC_APP_URL,
+    locale: target.locale,
+  });
 
-  const brokenLinksRows =
-    data.brokenLinks.length > 0
-      ? data.brokenLinks
-          .map(
-            (link) => `
-              <tr>
-                <td style="padding:8px 12px 8px 0"><strong>/${escapeHtml(link.slug)}</strong></td>
-                <td style="padding:8px 12px 8px 0">${escapeHtml(link.productName)}</td>
-                <td style="padding:8px 0 8px 0">${escapeHtml(link.statusCode ? `${link.statusCode}` : 'Unavailable')}</td>
-              </tr>
-            `,
-          )
-          .join('')
-      : `
-          <tr>
-            <td colspan="3" style="padding:8px 0;color:#6b7280">No broken links right now.</td>
-          </tr>
-        `;
-
-  const html = `
-    <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#111827">
-      <p>Hi ${escapeHtml(target.name)},</p>
-      <p>Here is your AffProf weekly summary for <strong>${escapeHtml(data.periodLabel)}</strong>.</p>
-
-      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0">
-        <div style="padding:14px;border:1px solid #e5e7eb;border-radius:12px"><div style="color:#6b7280;font-size:12px">Total clicks</div><div style="font-size:24px;font-weight:700">${data.totalClicks}</div></div>
-        <div style="padding:14px;border:1px solid #e5e7eb;border-radius:12px"><div style="color:#6b7280;font-size:12px">Active links</div><div style="font-size:24px;font-weight:700">${data.activeLinksCount}</div></div>
-        <div style="padding:14px;border:1px solid #e5e7eb;border-radius:12px"><div style="color:#6b7280;font-size:12px">Broken links</div><div style="font-size:24px;font-weight:700">${data.brokenLinksCount}</div></div>
-      </div>
-
-      <h3 style="margin:24px 0 8px">Top links</h3>
-      <table style="border-collapse:collapse;width:100%">
-        <thead>
-          <tr>
-            <th align="left" style="padding:8px 12px 8px 0;color:#6b7280;font-weight:600">Link</th>
-            <th align="left" style="padding:8px 12px 8px 0;color:#6b7280;font-weight:600">Product</th>
-            <th align="left" style="padding:8px 0 8px 0;color:#6b7280;font-weight:600">Clicks</th>
-          </tr>
-        </thead>
-        <tbody>${topLinksRows}</tbody>
-      </table>
-
-      <h3 style="margin:24px 0 8px">Broken links</h3>
-      <table style="border-collapse:collapse;width:100%">
-        <thead>
-          <tr>
-            <th align="left" style="padding:8px 12px 8px 0;color:#6b7280;font-weight:600">Link</th>
-            <th align="left" style="padding:8px 12px 8px 0;color:#6b7280;font-weight:600">Product</th>
-            <th align="left" style="padding:8px 0 8px 0;color:#6b7280;font-weight:600">Status</th>
-          </tr>
-        </thead>
-        <tbody>${brokenLinksRows}</tbody>
-      </table>
-
-      <p style="margin-top:24px"><a href="${dashboardUrl}" style="display:inline-block;padding:10px 14px;border-radius:10px;background:#22c55e;color:#ffffff;text-decoration:none">Open dashboard</a></p>
-    </div>
-  `;
-
-  return { subject, text, html };
+  return { subject, react, text };
 }
 
 async function sendWeeklyDigest(target: WeeklyDigestTarget, data: WeeklyDigestData, now: Date) {
@@ -418,8 +350,8 @@ async function sendWeeklyDigest(target: WeeklyDigestTarget, data: WeeklyDigestDa
         to: [target.email],
         cc: target.ccEmail ? [target.ccEmail] : undefined,
         subject: message.subject,
+        react: message.react,
         text: message.text,
-        html: message.html,
       }),
   });
 }

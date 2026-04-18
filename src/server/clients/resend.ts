@@ -1,4 +1,5 @@
 import { env } from '@/env';
+import * as React from 'react';
 import { Resend } from 'resend';
 
 type SendResendEmailInput = {
@@ -6,7 +7,7 @@ type SendResendEmailInput = {
   to: string[];
   cc?: string[];
   subject: string;
-  html: string;
+  react: React.ReactElement;
   text: string;
 };
 
@@ -35,7 +36,7 @@ export async function sendResendEmail(input: SendResendEmailInput) {
     to: input.to,
     cc: input.cc,
     subject: input.subject,
-    html: input.html,
+    react: input.react,
     text: input.text,
   });
 
