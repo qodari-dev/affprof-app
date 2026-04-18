@@ -1,8 +1,9 @@
 'use client';
 
 import { api } from '@/clients/api';
-import { getTsRestErrorMessage } from '@/utils/get-ts-rest-error-message';
+import { useApiError } from '@/hooks/use-api-error';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import type { ListLinksQuery } from '@/schemas/link';
 
 // ============================================================================
@@ -46,16 +47,16 @@ export function useLink(id: string, options?: { enabled?: boolean }) {
 
 export function useCreateLink() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.link.create.useMutation({
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
-      toast.success('Link created successfully');
+      toast.success(t('linkCreated'));
     },
     onError(error) {
-      toast.error('Error creating link', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('linkCreateError'), { description: getErrorMessage(error) });
     },
   });
 }
@@ -66,25 +67,29 @@ export function useCreateLink() {
 
 export function useUpdateLink() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.link.update.useMutation({
     onSuccess(_data, variables) {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: linksKeys.detail(variables.params.id),
-      });
-      toast.success('Link updated successfully');
+      queryClient.invalidateQueries({ queryKey: linksKeys.detail(variables.params.id) });
+      toast.success(t('linkUpdated'));
     },
     onError(error) {
-      toast.error('Error updating link', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('linkUpdateError'), { description: getErrorMessage(error) });
     },
   });
 }
 
+// ============================================================================
+// IMPORT
+// ============================================================================
+
 export function useImportLinksCsv() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.link.importCsv.useMutation({
     onSuccess(data) {
@@ -92,17 +97,16 @@ export function useImportLinksCsv() {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       const { importedCount, skippedCount, createdProductsCount } = data.body;
       const productNote = createdProductsCount > 0
-        ? ` ${createdProductsCount} product${createdProductsCount === 1 ? '' : 's'} created automatically.`
+        ? ` ${t('linksImportProductsCreated', { count: createdProductsCount })}`
         : '';
-
-      toast.success(`Imported ${importedCount} link${importedCount === 1 ? '' : 's'}`, {
-        description: `${skippedCount} row${skippedCount === 1 ? '' : 's'} skipped.${productNote}`.trim(),
+      toast.success(t('linksImported', { count: importedCount }), {
+        description: skippedCount > 0
+          ? `${t('linksImportSkipped', { count: skippedCount })}${productNote}`.trim()
+          : productNote.trim() || undefined,
       });
     },
     onError(error) {
-      toast.error('Error importing links', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('linksImportError'), { description: getErrorMessage(error) });
     },
   });
 }
@@ -113,19 +117,17 @@ export function useImportLinksCsv() {
 
 export function useDeleteLink() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.link.delete.useMutation({
     onSuccess(_data, variables) {
-      queryClient.removeQueries({
-        queryKey: linksKeys.detail(variables.params.id),
-      });
+      queryClient.removeQueries({ queryKey: linksKeys.detail(variables.params.id) });
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
-      toast.success('Link deleted successfully');
+      toast.success(t('linkDeleted'));
     },
     onError(error) {
-      toast.error('Error deleting link', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('linkDeleteError'), { description: getErrorMessage(error) });
     },
   });
 }
@@ -136,38 +138,38 @@ export function useDeleteLink() {
 
 export function useCheckLink() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.link.check.useMutation({
     onSuccess(data, variables) {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: linksKeys.detail(variables.params.id),
-      });
+      queryClient.invalidateQueries({ queryKey: linksKeys.detail(variables.params.id) });
       const result = data.body;
       if (result.isBroken) {
-        toast.warning('Link is broken', {
+        toast.warning(t('linkCheckedBroken'), {
           description: result.error ?? `Status ${result.statusCode}`,
         });
       } else {
-        toast.success('Link is healthy', {
+        toast.success(t('linkCheckedHealthy'), {
           description: `Status ${result.statusCode} — ${result.responseMs}ms`,
         });
       }
     },
     onError(error) {
-      toast.error('Error checking link', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('linkCheckError'), { description: getErrorMessage(error) });
     },
   });
 }
 
 // ============================================================================
-// CHECK BULK (multiple links)
+// CHECK BULK
 // ============================================================================
 
 export function useCheckLinks() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.link.checkBulk.useMutation({
     onSuccess(data) {
@@ -176,17 +178,13 @@ export function useCheckLinks() {
       const broken = results.filter((r) => r.isBroken).length;
       const healthy = results.length - broken;
       if (broken > 0) {
-        toast.warning(`Checked ${results.length} links`, {
-          description: `${healthy} healthy, ${broken} broken`,
-        });
+        toast.warning(t('linksCheckedWithBroken', { healthy, broken }));
       } else {
-        toast.success(`All ${results.length} links are healthy`);
+        toast.success(t('linksCheckedAllHealthy', { count: results.length }));
       }
     },
     onError(error) {
-      toast.error('Error checking links', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('linksCheckError'), { description: getErrorMessage(error) });
     },
   });
 }

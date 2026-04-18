@@ -1,13 +1,10 @@
 'use client';
 
 import { api } from '@/clients/api';
-import { getTsRestErrorMessage } from '@/utils/get-ts-rest-error-message';
+import { useApiError } from '@/hooks/use-api-error';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import type { ListTagsQuery } from '@/schemas/tag';
-
-// ============================================================================
-// Query Keys
-// ============================================================================
 
 export const tagsKeys = {
   all: ['tags'] as const,
@@ -17,20 +14,12 @@ export const tagsKeys = {
   detail: (id: string) => [...tagsKeys.details(), id] as const,
 };
 
-// ============================================================================
-// LIST
-// ============================================================================
-
 export function useTags(filters: Partial<ListTagsQuery> = {}) {
   return api.tag.list.useQuery({
     queryKey: tagsKeys.list(filters),
     queryData: { query: filters as ListTagsQuery },
   });
 }
-
-// ============================================================================
-// GET BY ID
-// ============================================================================
 
 export function useTag(id: string, options?: { enabled?: boolean }) {
   return api.tag.getById.useQuery({
@@ -40,68 +29,52 @@ export function useTag(id: string, options?: { enabled?: boolean }) {
   });
 }
 
-// ============================================================================
-// CREATE
-// ============================================================================
-
 export function useCreateTag() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.tag.create.useMutation({
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: tagsKeys.lists() });
-      toast.success('Tag created successfully');
+      toast.success(t('tagCreated'));
     },
     onError(error) {
-      toast.error('Error creating tag', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('tagCreateError'), { description: getErrorMessage(error) });
     },
   });
 }
 
-// ============================================================================
-// UPDATE
-// ============================================================================
-
 export function useUpdateTag() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.tag.update.useMutation({
     onSuccess(_data, variables) {
       queryClient.invalidateQueries({ queryKey: tagsKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: tagsKeys.detail(variables.params.id),
-      });
-      toast.success('Tag updated successfully');
+      queryClient.invalidateQueries({ queryKey: tagsKeys.detail(variables.params.id) });
+      toast.success(t('tagUpdated'));
     },
     onError(error) {
-      toast.error('Error updating tag', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('tagUpdateError'), { description: getErrorMessage(error) });
     },
   });
 }
 
-// ============================================================================
-// DELETE
-// ============================================================================
-
 export function useDeleteTag() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.tag.delete.useMutation({
     onSuccess(_data, variables) {
-      queryClient.removeQueries({
-        queryKey: tagsKeys.detail(variables.params.id),
-      });
+      queryClient.removeQueries({ queryKey: tagsKeys.detail(variables.params.id) });
       queryClient.invalidateQueries({ queryKey: tagsKeys.lists() });
-      toast.success('Tag deleted successfully');
+      toast.success(t('tagDeleted'));
     },
     onError(error) {
-      toast.error('Error deleting tag', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('tagDeleteError'), { description: getErrorMessage(error) });
     },
   });
 }

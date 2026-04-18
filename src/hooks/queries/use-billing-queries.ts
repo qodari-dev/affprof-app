@@ -1,6 +1,9 @@
+'use client';
+
 import { api } from '@/clients/api';
-import { getTsRestErrorMessage } from '@/utils/get-ts-rest-error-message';
+import { useApiError } from '@/hooks/use-api-error';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 export const billingKeys = {
   all: ['billing'] as const,
@@ -25,21 +28,23 @@ export function useBillingHistory(options?: { enabled?: boolean }) {
 }
 
 export function useCreateCheckout() {
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
+
   return api.billing.createCheckout.useMutation({
     onError: (error) => {
-      toast.error('Error creating checkout session', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('checkoutError'), { description: getErrorMessage(error) });
     },
   });
 }
 
 export function useCreatePortal() {
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
+
   return api.billing.createPortal.useMutation({
     onError: (error) => {
-      toast.error('Error opening billing portal', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('portalError'), { description: getErrorMessage(error) });
     },
   });
 }

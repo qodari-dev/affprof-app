@@ -1,13 +1,10 @@
 'use client';
 
 import { api } from '@/clients/api';
-import { getTsRestErrorMessage } from '@/utils/get-ts-rest-error-message';
+import { useApiError } from '@/hooks/use-api-error';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import type { ListProductsQuery } from '@/schemas/product';
-
-// ============================================================================
-// Query Keys
-// ============================================================================
 
 export const productsKeys = {
   all: ['products'] as const,
@@ -17,20 +14,12 @@ export const productsKeys = {
   detail: (id: string) => [...productsKeys.details(), id] as const,
 };
 
-// ============================================================================
-// LIST
-// ============================================================================
-
 export function useProducts(filters: Partial<ListProductsQuery> = {}) {
   return api.product.list.useQuery({
     queryKey: productsKeys.list(filters),
     queryData: { query: filters as ListProductsQuery },
   });
 }
-
-// ============================================================================
-// GET BY ID
-// ============================================================================
 
 export function useProduct(id: string, options?: { enabled?: boolean }) {
   return api.product.getById.useQuery({
@@ -40,97 +29,84 @@ export function useProduct(id: string, options?: { enabled?: boolean }) {
   });
 }
 
-// ============================================================================
-// CREATE
-// ============================================================================
-
 export function useCreateProduct() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.product.create.useMutation({
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: productsKeys.lists() });
-      toast.success('Product created successfully');
+      toast.success(t('productCreated'));
     },
     onError(error) {
-      toast.error('Error creating product', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('productCreateError'), { description: getErrorMessage(error) });
     },
   });
 }
 
-// ============================================================================
-// UPDATE
-// ============================================================================
-
 export function useUpdateProduct() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.product.update.useMutation({
     onSuccess(_data, variables) {
       queryClient.invalidateQueries({ queryKey: productsKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: productsKeys.detail(variables.params.id),
-      });
-      toast.success('Product updated successfully');
+      queryClient.invalidateQueries({ queryKey: productsKeys.detail(variables.params.id) });
+      toast.success(t('productUpdated'));
     },
     onError(error) {
-      toast.error('Error updating product', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('productUpdateError'), { description: getErrorMessage(error) });
     },
   });
 }
 
 export function usePresignProductImageUpload() {
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
+
   return api.product.presignImageUpload.useMutation({
     onError(error) {
-      toast.error('Error preparing image upload', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('productImageUploadError'), { description: getErrorMessage(error) });
     },
   });
 }
 
 export function useImportProductsCsv() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.product.importCsv.useMutation({
     onSuccess(data) {
       queryClient.invalidateQueries({ queryKey: productsKeys.lists() });
       const { importedCount, skippedCount } = data.body;
-      toast.success(`Imported ${importedCount} product${importedCount === 1 ? '' : 's'}`, {
-        description: skippedCount > 0 ? `${skippedCount} row${skippedCount === 1 ? '' : 's'} skipped.` : undefined,
+      toast.success(t('productsImported', { count: importedCount }), {
+        description: skippedCount > 0
+          ? t('productsImportSkipped', { count: skippedCount })
+          : undefined,
       });
     },
     onError(error) {
-      toast.error('Error importing products', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('productsImportError'), { description: getErrorMessage(error) });
     },
   });
 }
 
-// ============================================================================
-// DELETE
-// ============================================================================
-
 export function useDeleteProduct() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.product.delete.useMutation({
     onSuccess(_data, variables) {
-      queryClient.removeQueries({
-        queryKey: productsKeys.detail(variables.params.id),
-      });
+      queryClient.removeQueries({ queryKey: productsKeys.detail(variables.params.id) });
       queryClient.invalidateQueries({ queryKey: productsKeys.lists() });
-      toast.success('Product deleted successfully');
+      toast.success(t('productDeleted'));
     },
     onError(error) {
-      toast.error('Error deleting product', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('productDeleteError'), { description: getErrorMessage(error) });
     },
   });
 }

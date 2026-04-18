@@ -1,8 +1,9 @@
 'use client';
 
 import { api } from '@/clients/api';
-import { getTsRestErrorMessage } from '@/utils/get-ts-rest-error-message';
+import { useApiError } from '@/hooks/use-api-error';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 export const brandKeys = {
   all: ['brands'] as const,
@@ -19,74 +20,75 @@ export function useBrands(options?: { enabled?: boolean }) {
 
 export function useCreateBrand() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.brand.create.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: brandKeys.all });
-      toast.success('Brand created');
+      toast.success(t('brandCreated'));
     },
     onError: (error) => {
-      toast.error('Error creating brand', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('brandCreateError'), { description: getErrorMessage(error) });
     },
   });
 }
 
 export function useUpdateBrand() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.brand.update.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: brandKeys.all });
-      toast.success('Brand updated');
+      toast.success(t('brandUpdated'));
     },
     onError: (error) => {
-      toast.error('Error updating brand', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('brandUpdateError'), { description: getErrorMessage(error) });
     },
   });
 }
 
 export function useSetDefaultBrand() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.brand.setDefault.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: brandKeys.all });
-      toast.success('Default brand updated');
+      toast.success(t('brandDefaultUpdated'));
     },
     onError: (error) => {
-      toast.error('Error updating default brand', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('brandDefaultUpdateError'), { description: getErrorMessage(error) });
     },
   });
 }
 
 export function useDeleteBrand() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.brand.delete.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: brandKeys.all });
-      toast.success('Brand deleted');
+      toast.success(t('brandDeleted'));
     },
     onError: (error) => {
-      toast.error('Error deleting brand', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('brandDeleteError'), { description: getErrorMessage(error) });
     },
   });
 }
 
 export function usePresignBrandLogoUpload() {
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
+
   return api.brand.presignLogoUpload.useMutation({
     onError: (error) => {
-      toast.error('Error preparing brand logo upload', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('brandLogoUploadError'), { description: getErrorMessage(error) });
     },
   });
 }

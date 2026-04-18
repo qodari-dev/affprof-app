@@ -1,19 +1,14 @@
-import { api } from '@/clients/api';
-import { getTsRestErrorMessage } from '@/utils/get-ts-rest-error-message';
-import { toast } from 'sonner';
+'use client';
 
-// ============================================
-// QUERY KEYS
-// ============================================
+import { api } from '@/clients/api';
+import { useApiError } from '@/hooks/use-api-error';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 export const userSettingsKeys = {
   all: ['user-settings'] as const,
   detail: () => [...userSettingsKeys.all, 'detail'] as const,
 };
-
-// ============================================
-// QUERIES
-// ============================================
 
 export function useUserSettings(options?: { enabled?: boolean }) {
   return api.userSettings.get.useQuery({
@@ -23,21 +18,17 @@ export function useUserSettings(options?: { enabled?: boolean }) {
   });
 }
 
-// ============================================
-// MUTATIONS
-// ============================================
-
 export function useUpdateUserSettings() {
   const queryClient = api.useQueryClient();
+  const getErrorMessage = useApiError();
+  const t = useTranslations('toasts');
 
   return api.userSettings.update.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userSettingsKeys.all });
     },
     onError: (error) => {
-      toast.error('Error updating settings', {
-        description: getTsRestErrorMessage(error),
-      });
+      toast.error(t('settingsUpdateError'), { description: getErrorMessage(error) });
     },
   });
 }

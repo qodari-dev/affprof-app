@@ -36,6 +36,7 @@ export function LinkQrDialog({
 }: LinkQrDialogProps) {
   const t = useTranslations('links.qrDialog');
   const tc = useTranslations('common');
+  const tToasts = useTranslations('toasts');
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const qrUrl = shortUrl ? `${shortUrl}?qr=1` : '';
   const { data: brandsData } = useBrands({ enabled: opened });
@@ -73,7 +74,7 @@ export function LinkQrDialog({
         logoUrl: selectedBrand?.logoUrl,
       });
     } catch {
-      toast.error('Could not generate QR code');
+      toast.error(tToasts('qrGenerateError'));
     }
   }, [qrUrl, selectedBrand]);
 
@@ -121,7 +122,7 @@ export function LinkQrDialog({
         link.click();
       })
       .catch(() => {
-        toast.error('Could not download QR code');
+        toast.error(tToasts('qrDownloadError'));
       });
   }, [
     qrUrl,

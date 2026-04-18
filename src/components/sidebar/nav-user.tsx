@@ -20,7 +20,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { getTsRestErrorMessage } from '@/utils/get-ts-rest-error-message';
+import { useApiError } from '@/hooks/use-api-error';
 import { toast } from 'sonner';
 
 export function NavUser({
@@ -34,11 +34,13 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const t = useTranslations('nav');
+  const tToasts = useTranslations('toasts');
+  const getErrorMessage = useApiError();
 
   const { mutateAsync: logout, isPending } = api.auth.logout.useMutation({
     onError(error) {
-      toast.error('Error logging out', {
-        description: getTsRestErrorMessage(error),
+      toast.error(tToasts('logoutError'), {
+        description: getErrorMessage(error),
       });
     },
     onSuccess(data) {

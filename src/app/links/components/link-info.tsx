@@ -77,7 +77,7 @@ function QrPreview({
 
   const handleCopy = React.useCallback(() => {
     navigator.clipboard.writeText(shortUrl);
-    toast.success('Short URL copied');
+    toast.success(tToasts('urlCopied'));
   }, [shortUrl]);
 
   return (
@@ -122,6 +122,7 @@ export function LinkInfo({
   onOpened: (opened: boolean) => void;
 }) {
   const t = useTranslations('links.info');
+  const tToasts = useTranslations('toasts');
   const locale = useLocale();
   const { data: profileData } = useProfile();
   const { data: customDomainsData } = useCustomDomains();
