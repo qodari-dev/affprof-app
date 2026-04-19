@@ -105,7 +105,8 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SKIP_ENV_VALIDATION: true
-        run: npm run db:migrate
+          CI: true
+        run: npm run db:migrate 2>&1
 
   deploy:
     runs-on: ubuntu-latest
