@@ -53,16 +53,7 @@ export function ProductInfo({
                 alt={product.name}
                 className="h-12 w-12 rounded-md border object-cover"
               />
-              {product.imageUrl ? (
-                <a
-                  href={product.imageUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="truncate text-xs text-primary underline underline-offset-2"
-                >
-                  {product.imageUrl}
-                </a>
-              ) : (
+              {!product.imageUrl && (
                 <span className="text-xs text-muted-foreground">{t('noImage')}</span>
               )}
             </div>

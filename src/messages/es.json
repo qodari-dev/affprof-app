@@ -143,9 +143,10 @@
 
   "products": {
     "title": "Productos",
-    "description": "Administra los productos que promueves con enlaces de afiliado.",
+    "description": "Agrupa tus enlaces de afiliado por producto para mantenerlos organizados.",
     "searchPlaceholder": "Buscar productos...",
     "newProduct": "Nuevo producto",
+    "limitReached": "Límite del plan Free alcanzado (2 productos). Actualiza a Pro para ilimitados.",
     "deleteConfirm": "Esto eliminará permanentemente el producto \"{name}\" y todos sus enlaces asociados. Esta acción no se puede deshacer.",
     "form": {
       "createTitle": "Crear producto",
@@ -402,7 +403,7 @@
 
   "tags": {
     "title": "Etiquetas",
-    "description": "Organiza tus enlaces y productos con etiquetas.",
+    "description": "Etiqueta tus enlaces con tags para filtrarlos y encontrarlos más rápido.",
     "searchPlaceholder": "Buscar etiquetas...",
     "newTag": "Nueva etiqueta",
     "deleteConfirm": "Esta acción no se puede deshacer. Esto eliminará permanentemente la etiqueta \"{name}\".",

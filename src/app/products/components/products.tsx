@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 
 import { useProducts, useDeleteProduct } from '@/hooks/queries/use-product-queries';
+import { useBilling } from '@/hooks/queries/use-billing-queries';
 import type { Products as ProductType } from '@/server/db';
 import type { ProductSortField, ProductInclude } from '@/schemas/product';
 
@@ -51,6 +52,13 @@ export function Products() {
 
   // ---- Fetch data ----
   const { data, isLoading, isFetching, refetch } = useProducts(queryParams);
+  const { data: billingData } = useBilling();
+
+  // ---- Plan limits ----
+  const subscription = billingData?.status === 200 ? billingData.body : null;
+  const isPro = subscription ? subscription.plan !== 'free' : false;
+  const totalProducts = data?.body?.meta?.total ?? 0;
+  const atProductLimit = !isPro && totalProducts >= 2;
 
   // ---- Mutations ----
   const { mutateAsync: deleteProduct, isPending: isDeleting } = useDeleteProduct();
@@ -126,9 +134,10 @@ export function Products() {
               searchValue={searchValue}
               onSearchChange={handleSearchChange}
               onCreate={handleCreate}
-              onImport={() => setOpenedImportDialog(true)}
+              onImport={isPro ? () => setOpenedImportDialog(true) : undefined}
               onRefresh={() => refetch()}
               isRefreshing={isFetching && !isLoading}
+              atProductLimit={atProductLimit}
             />
           }
         />

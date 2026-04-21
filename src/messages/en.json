@@ -143,9 +143,10 @@
 
   "products": {
     "title": "Products",
-    "description": "Manage the products you promote with affiliate links.",
+    "description": "Group your affiliate links by product to keep them organized.",
     "searchPlaceholder": "Search products...",
     "newProduct": "New product",
+    "limitReached": "Free plan limit reached (2 products). Upgrade to Pro for unlimited.",
     "deleteConfirm": "This will permanently delete the product \"{name}\" and all its associated links. This action cannot be undone.",
     "form": {
       "createTitle": "Create product",
@@ -402,7 +403,7 @@
 
   "tags": {
     "title": "Tags",
-    "description": "Organize your links and products with tags.",
+    "description": "Label your links with tags to filter and find them faster.",
     "searchPlaceholder": "Search tags...",
     "newTag": "New tag",
     "deleteConfirm": "This action cannot be undone. This will permanently delete the tag \"{name}\".",
