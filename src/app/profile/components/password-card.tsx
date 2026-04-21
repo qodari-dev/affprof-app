@@ -55,7 +55,7 @@ export function PasswordCard() {
           toast.success(t('success'));
           form.reset();
         } else if (result.status === 400) {
-          const msg = (result.body as { message?: string })?.message;
+          const msg = (result.body as unknown as { message?: string })?.message;
           if (msg === 'Current password is incorrect') {
             form.setError('currentPassword', { message: t('currentPasswordIncorrect') });
           } else {
