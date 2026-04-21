@@ -35,6 +35,7 @@ import { useCreateLink, useUpdateLink } from '@/hooks/queries/use-link-queries';
 import { useProducts } from '@/hooks/queries/use-product-queries';
 import { useTags } from '@/hooks/queries/use-tag-queries';
 import { useProfile } from '@/hooks/queries/use-profile-queries';
+import { useBilling } from '@/hooks/queries/use-billing-queries';
 import {
   getPrimaryVerifiedCustomDomainHostname,
   useCustomDomains,
@@ -168,6 +169,8 @@ export function LinkForm({
 
   const { data: profileData } = useProfile();
   const { data: customDomainsData } = useCustomDomains();
+  const { data: billingData } = useBilling();
+  const isPro = billingData?.status === 200 ? billingData.body.plan !== 'free' : false;
   const userSlug = profileData?.status === 200 ? profileData.body.slug : 'your-account';
   const primaryCustomDomain = customDomainsData?.status === 200
     ? getPrimaryVerifiedCustomDomainHostname(customDomainsData.body)
@@ -383,7 +386,7 @@ export function LinkForm({
 
   return (
     <Sheet open={opened} onOpenChange={onOpened}>
-      <SheetContent className="overflow-y-auto sm:max-w-2xl">
+      <SheetContent className="overflow-y-auto sm:max-w-5xl">
         <SheetHeader>
           <SheetTitle>{isEditing ? t('editTitle') : t('createTitle')}</SheetTitle>
           <SheetDescription>
@@ -391,448 +394,383 @@ export function LinkForm({
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1 flex-col gap-6 px-6 pb-2">
-          {/* Product */}
-          <Controller
-            name="productId"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>{t('product')}</FieldLabel>
-                {isEditing ? (
-                  <div className="flex min-h-12 items-center rounded-lg border border-input bg-muted/20 px-3 py-2">
-                    {selectedProduct ? (
-                      <ProductOptionPreview
-                        name={selectedProduct.name}
-                        description={selectedProduct.description}
-                        imageUrl={selectedProduct.imageUrl}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1 flex-col gap-8 px-6 pb-2">
+
+          {/* ── Section 1: Basic info ── */}
+          <div className="space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t('sectionBasic')}</p>
+
+            {/* Product */}
+            <Controller
+              name="productId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid || undefined}>
+                  <FieldLabel>{t('product')}</FieldLabel>
+                  {isEditing ? (
+                    <div className="flex min-h-12 items-center rounded-lg border border-input bg-muted/20 px-3 py-2">
+                      {selectedProduct ? (
+                        <ProductOptionPreview
+                          name={selectedProduct.name}
+                          description={selectedProduct.description}
+                          imageUrl={selectedProduct.imageUrl}
+                        />
+                      ) : (
+                        <span className="text-sm text-muted-foreground">{t('productLocked')}</span>
+                      )}
+                    </div>
+                  ) : (
+                    <Popover open={productPickerOpen} onOpenChange={setProductPickerOpen}>
+                      <PopoverTrigger
+                        render={
+                          <Button
+                            type="button"
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={productPickerOpen}
+                            className={cn(
+                              'h-auto min-h-12 w-full justify-between rounded-lg px-3 py-2',
+                              !selectedProduct && 'text-muted-foreground',
+                            )}
+                          >
+                            {selectedProduct ? (
+                              <ProductOptionPreview
+                                name={selectedProduct.name}
+                                description={selectedProduct.description}
+                                imageUrl={selectedProduct.imageUrl}
+                                compact
+                              />
+                            ) : (
+                              <span className="text-sm">{t('selectProduct')}</span>
+                            )}
+                            <ChevronsUpDown className="ml-3 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        }
                       />
-                    ) : (
-                      <span className="text-sm text-muted-foreground">{t('productLocked')}</span>
-                    )}
-                  </div>
-                ) : (
-                  <Popover open={productPickerOpen} onOpenChange={setProductPickerOpen}>
-                    <PopoverTrigger
-                      render={
+                      <PopoverContent className="w-[420px] max-w-[calc(100vw-2rem)] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder={t('searchProducts')} />
+                          <CommandList>
+                            <CommandEmpty>{t('noProducts')}</CommandEmpty>
+                            <CommandGroup>
+                              {products.map((product) => {
+                                const isSelected = field.value === product.id;
+                                return (
+                                  <CommandItem
+                                    key={product.id}
+                                    value={`${product.name} ${product.description ?? ''}`}
+                                    onSelect={() => {
+                                      field.onChange(product.id);
+                                      setProductPickerOpen(false);
+                                    }}
+                                    className="gap-3 rounded-md px-3 py-2"
+                                  >
+                                    <ProductOptionPreview
+                                      name={product.name}
+                                      description={product.description}
+                                      imageUrl={product.imageUrl}
+                                    />
+                                    <Check className={cn('ml-2 h-4 w-4 shrink-0', isSelected ? 'opacity-100' : 'opacity-0')} />
+                                  </CommandItem>
+                                );
+                              })}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                  <FieldDescription>{t('productHelp')}</FieldDescription>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            {/* Base URL */}
+            <Controller
+              name="baseUrl"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid || undefined}>
+                  <FieldLabel>{t('baseUrl')}</FieldLabel>
+                  <Input
+                    placeholder={t('baseUrlPlaceholder')}
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={handleNormalizeBaseUrl}
+                  />
+                  <FieldDescription>{t('baseUrlHelp')}</FieldDescription>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            {/* Platform + Slug side by side */}
+            <div className="grid grid-cols-2 gap-4">
+              <Controller
+                name="platform"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid || undefined}>
+                    <FieldLabel>{t('platform')}</FieldLabel>
+                    <Input
+                      placeholder={t('platformPlaceholder')}
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                    <FieldDescription>{t('platformHelp')}</FieldDescription>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="slug"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid || undefined}>
+                    <FieldLabel>{t('slug')}</FieldLabel>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder={t('slugPlaceholder')}
+                        value={field.value}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          setSlugManuallyEdited(true);
+                        }}
+                        className="flex-1"
+                      />
+                      {!slugManuallyEdited && (
                         <Button
                           type="button"
                           variant="outline"
-                          role="combobox"
-                          aria-expanded={productPickerOpen}
-                          className={cn(
-                            'h-auto min-h-12 w-full justify-between rounded-lg px-3 py-2',
-                            !selectedProduct && 'text-muted-foreground',
-                          )}
+                          size="sm"
+                          className="shrink-0"
+                          onClick={handleSuggestSlug}
+                          disabled={!selectedProductId}
                         >
-                          {selectedProduct ? (
-                            <ProductOptionPreview
-                              name={selectedProduct.name}
-                              description={selectedProduct.description}
-                              imageUrl={selectedProduct.imageUrl}
-                              compact
-                            />
-                          ) : (
-                            <span className="text-sm">{t('selectProduct')}</span>
-                          )}
-                          <ChevronsUpDown className="ml-3 h-4 w-4 shrink-0 opacity-50" />
+                          <Sparkles className="mr-1 h-3 w-3" />
+                          {t('suggest')}
                         </Button>
-                      }
-                    />
-                    <PopoverContent className="w-[420px] max-w-[calc(100vw-2rem)] p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder={t('searchProducts')} />
-                        <CommandList>
-                          <CommandEmpty>{t('noProducts')}</CommandEmpty>
-                          <CommandGroup>
-                            {products.map((product) => {
-                              const isSelected = field.value === product.id;
-
-                              return (
-                                <CommandItem
-                                  key={product.id}
-                                  value={`${product.name} ${product.description ?? ''}`}
-                                  onSelect={() => {
-                                    field.onChange(product.id);
-                                    setProductPickerOpen(false);
-                                  }}
-                                  className="gap-3 rounded-md px-3 py-2"
-                                >
-                                  <ProductOptionPreview
-                                    name={product.name}
-                                    description={product.description}
-                                    imageUrl={product.imageUrl}
-                                  />
-                                  <Check className={cn('ml-2 h-4 w-4 shrink-0', isSelected ? 'opacity-100' : 'opacity-0')} />
-                                </CommandItem>
-                              );
-                            })}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                      )}
+                    </div>
+                    <FieldDescription>
+                      {buildShortLinkPattern(userSlug, field.value || 'slug', primaryCustomDomain)}
+                    </FieldDescription>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
                 )}
-                <FieldDescription>
-                  {t('productHelp')}
-                </FieldDescription>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-
-          {/* Base URL */}
-          <Controller
-            name="baseUrl"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>{t('baseUrl')}</FieldLabel>
-                <Input
-                  placeholder={t('baseUrlPlaceholder')}
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={handleNormalizeBaseUrl}
-                />
-                <FieldDescription>
-                  {t('baseUrlHelp')}
-                </FieldDescription>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-
-          {/* UTM Builder */}
-          <div className="rounded-xl border bg-muted/15 p-4">
-            <div className="mb-4 space-y-1">
-              <p className="text-sm font-medium">{t('utmTracking')}</p>
-              <p className="text-xs text-muted-foreground">
-                {t('utmTrackingHelp')}
-              </p>
+              />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <Controller
-                name="utmSource"
-                control={form.control}
-                render={({ field, fieldState }) => (
+            {/* Availability */}
+            <Controller
+              name="isEnabled"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <div className="flex items-start justify-between gap-4 rounded-lg border bg-muted/20 px-4 py-3">
+                    <div className="space-y-1">
+                      <FieldLabel>{t('linkAvailability')}</FieldLabel>
+                      <FieldDescription>
+                        {field.value ? t('enabledHelp') : t('disabledHelp')}
+                      </FieldDescription>
+                    </div>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      aria-label={t('linkAvailability')}
+                    />
+                  </div>
+                </Field>
+              )}
+            />
+          </div>
+
+          {/* ── Section 2: UTM Tracking ── */}
+          <div className="space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t('sectionUtm')}</p>
+            <div className="rounded-xl border bg-muted/15 p-4">
+              <p className="mb-4 text-xs text-muted-foreground">{t('utmTrackingHelp')}</p>
+              <div className="grid gap-4 grid-cols-2">
+                <Controller name="utmSource" control={form.control} render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid || undefined}>
                     <FieldLabel>{t('utmSource')}</FieldLabel>
                     <Input placeholder={t('utmSourcePlaceholder')} value={field.value ?? ''} onChange={field.onChange} />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
-                )}
-              />
+                )} />
 
-              <Controller
-                name="utmMedium"
-                control={form.control}
-                render={({ field, fieldState }) => (
+                <Controller name="utmMedium" control={form.control} render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid || undefined}>
                     <FieldLabel>{t('utmMedium')}</FieldLabel>
                     <Input placeholder={t('utmMediumPlaceholder')} value={field.value ?? ''} onChange={field.onChange} />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
-                )}
-              />
+                )} />
 
-              <Controller
-                name="utmCampaign"
-                control={form.control}
-                render={({ field, fieldState }) => (
+                <Controller name="utmCampaign" control={form.control} render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid || undefined}>
                     <FieldLabel>{t('utmCampaign')}</FieldLabel>
                     <Input placeholder={t('utmCampaignPlaceholder')} value={field.value ?? ''} onChange={field.onChange} />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
-                )}
-              />
+                )} />
 
-              <Controller
-                name="utmContent"
-                control={form.control}
-                render={({ field, fieldState }) => (
+                <Controller name="utmContent" control={form.control} render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid || undefined}>
                     <FieldLabel>{t('utmContent')}</FieldLabel>
                     <Input placeholder={t('utmContentPlaceholder')} value={field.value ?? ''} onChange={field.onChange} />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
-                )}
-              />
+                )} />
 
-              <Controller
-                name="utmTerm"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field className="md:col-span-2" data-invalid={fieldState.invalid || undefined}>
+                <Controller name="utmTerm" control={form.control} render={({ field, fieldState }) => (
+                  <Field className="col-span-2" data-invalid={fieldState.invalid || undefined}>
                     <FieldLabel>{t('utmTerm')}</FieldLabel>
                     <Input placeholder={t('utmTermPlaceholder')} value={field.value ?? ''} onChange={field.onChange} />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
-                )}
-              />
-            </div>
-
-            <div className="mt-4 rounded-lg border bg-background p-3">
-              <div className="mb-1 text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
-                {t('finalUrl')}
+                )} />
               </div>
-              <Textarea
-                value={finalDestinationUrl}
-                readOnly
-                className="min-h-[92px] resize-none bg-muted/20"
-              />
-              <p className="mt-2 text-xs text-muted-foreground">
-                {t('finalUrlHelp')}
-              </p>
+
+              <div className="mt-4 rounded-lg border bg-background p-3">
+                <div className="mb-1 text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
+                  {t('finalUrl')}
+                </div>
+                <Textarea value={finalDestinationUrl} readOnly className="min-h-[80px] resize-none bg-muted/20" />
+                <p className="mt-2 text-xs text-muted-foreground">{t('finalUrlHelp')}</p>
+              </div>
             </div>
           </div>
 
-          {/* QR Brand */}
-          <Controller
-            name="brandId"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>{t('qrBrand')}</FieldLabel>
-                <select
-                  className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
-                  value={field.value ?? ''}
-                  onChange={field.onChange}
-                >
-                  <option value="">{t('standardQr')}</option>
-                  {brands.map((brand) => (
-                    <option key={brand.id} value={brand.id}>
-                      {brand.name}
-                      {brand.isDefault ? ' (Default)' : ''}
-                    </option>
-                  ))}
-                </select>
-                <FieldDescription>
-                  {t('qrBrandHelp')}
-                </FieldDescription>
-                {selectedBrand ? (
-                  <div className="mt-3 flex items-center gap-3 rounded-xl border bg-muted/15 p-3">
-                    <BrandLogo name={selectedBrand.name} logoUrl={selectedBrand.logoUrl} className="size-10 rounded-xl" />
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium">{selectedBrand.name}</div>
-                      <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                        <div
-                          className="size-4 rounded-full border"
-                          style={{ backgroundColor: selectedBrand.qrForeground }}
-                          aria-hidden="true"
-                        />
-                        <div
-                          className="size-4 rounded-full border"
-                          style={{ backgroundColor: selectedBrand.qrBackground }}
-                          aria-hidden="true"
-                        />
-                        <span className="truncate">
-                          {selectedBrand.qrForeground} / {selectedBrand.qrBackground}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-
-          {/* Fallback URL */}
-          <Controller
-            name="fallbackUrl"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>{t('fallbackUrl')}</FieldLabel>
-                <Input
-                  placeholder={t('fallbackUrlPlaceholder')}
-                  value={field.value ?? ''}
-                  onChange={field.onChange}
-                />
-                <FieldDescription>
-                  {t('fallbackUrlHelp')}
-                </FieldDescription>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-
-          {/* Platform */}
-          <Controller
-            name="platform"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>{t('platform')}</FieldLabel>
-                <Input
-                  placeholder={t('platformPlaceholder')}
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-                <FieldDescription>
-                  {t('platformHelp')}
-                </FieldDescription>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-
-          {/* Slug */}
-          <Controller
-            name="slug"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>{t('slug')}</FieldLabel>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder={t('slugPlaceholder')}
-                    value={field.value}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setSlugManuallyEdited(true);
-                    }}
-                    className="flex-1"
-                  />
-                  {!slugManuallyEdited && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="shrink-0"
-                      onClick={handleSuggestSlug}
-                      disabled={!selectedProductId}
+          {/* ── Section 3: Options ── */}
+          <div className="space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t('sectionOptions')}</p>
+            <div className={cn('grid gap-4', isPro ? 'grid-cols-2' : 'grid-cols-1')}>
+              {/* QR Brand */}
+              <Controller
+                name="brandId"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid || undefined}>
+                    <FieldLabel>{t('qrBrand')}</FieldLabel>
+                    <select
+                      className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
                     >
-                      <Sparkles className="mr-1 h-3 w-3" />
-                      {t('suggest')}
-                    </Button>
-                  )}
-                </div>
-                <FieldDescription>
-                  Short link: <strong>{buildShortLinkPattern(userSlug, field.value || 'slug', primaryCustomDomain)}</strong>
-                </FieldDescription>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-
-          {/* Availability */}
-          <Controller
-            name="isEnabled"
-            control={form.control}
-            render={({ field }) => (
-              <Field>
-                <div className="flex items-start justify-between gap-4 rounded-lg border bg-muted/20 px-4 py-3">
-                  <div className="space-y-1">
-                    <FieldLabel>{t('linkAvailability')}</FieldLabel>
-                    <FieldDescription>
-                      {field.value ? t('enabledHelp') : t('disabledHelp')}
-                    </FieldDescription>
-                  </div>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    aria-label={t('linkAvailability')}
-                  />
-                </div>
-              </Field>
-            )}
-          />
-
-          {/* Tags */}
-          <Field>
-            <FieldLabel>{t('tags')}</FieldLabel>
-            {allTags.length > 0 ? (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <p className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
-                    {t('selectedTags')}
-                  </p>
-                  {selectedTags.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {selectedTags.map((tag) => (
-                        <button
-                          key={tag.id}
-                          type="button"
-                          onClick={() => toggleTag(tag.id)}
-                          className="rounded-full transition-all"
-                          aria-pressed
-                        >
-                          <TagBadge
-                            name={tag.name}
-                            color={tag.color}
-                            className="gap-1.5 px-2.5 py-1 text-xs ring-2 ring-primary/25 ring-offset-2 ring-offset-background"
-                          />
-                        </button>
+                      <option value="">{t('standardQr')}</option>
+                      {brands.map((brand) => (
+                        <option key={brand.id} value={brand.id}>
+                          {brand.name}{brand.isDefault ? ' (Default)' : ''}
+                        </option>
                       ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      {t('noTagsSelected')}
-                    </p>
-                  )}
-                </div>
+                    </select>
+                    <FieldDescription>{t('qrBrandHelp')}</FieldDescription>
+                    {selectedBrand ? (
+                      <div className="mt-2 flex items-center gap-3 rounded-xl border bg-muted/15 p-3">
+                        <BrandLogo name={selectedBrand.name} logoUrl={selectedBrand.logoUrl} className="size-9 rounded-xl" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium">{selectedBrand.name}</div>
+                          <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                            <div className="size-3.5 rounded-full border" style={{ backgroundColor: selectedBrand.qrForeground }} aria-hidden="true" />
+                            <div className="size-3.5 rounded-full border" style={{ backgroundColor: selectedBrand.qrBackground }} aria-hidden="true" />
+                            <span className="truncate">{selectedBrand.qrForeground} / {selectedBrand.qrBackground}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : null}
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
 
-                <div className="space-y-2">
-                  <p className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
-                    {t('availableTags')}
-                  </p>
-                  {availableTags.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {availableTags.map((tag) => (
-                        <button
-                          key={tag.id}
-                          type="button"
-                          onClick={() => toggleTag(tag.id)}
-                          className="rounded-full opacity-80 transition-all hover:opacity-100"
-                        >
-                          <TagBadge
-                            name={tag.name}
-                            color={tag.color}
-                            className="gap-1.5 px-2.5 py-1 text-xs border-border/60"
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      {t('allTagsSelected')}
-                    </p>
+              {/* Fallback URL — Pro only */}
+              {isPro && (
+                <Controller
+                  name="fallbackUrl"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid || undefined}>
+                      <FieldLabel>{t('fallbackUrl')}</FieldLabel>
+                      <Input
+                        placeholder={t('fallbackUrlPlaceholder')}
+                        value={field.value ?? ''}
+                        onChange={field.onChange}
+                      />
+                      <FieldDescription>{t('fallbackUrlHelp')}</FieldDescription>
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
                   )}
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                {t('noTagsCreated')}
-              </p>
-            )}
-            <FieldDescription>
-              {t('tagsHelp')}
-            </FieldDescription>
-          </Field>
-
-          {/* Notes */}
-          <Controller
-            name="notes"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>{t('notes')}</FieldLabel>
-                <Textarea
-                  placeholder={t('notesPlaceholder')}
-                  rows={2}
-                  value={field.value ?? ''}
-                  onChange={field.onChange}
                 />
-                <FieldDescription>
-                  {t('notesHelp')}
-                </FieldDescription>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
+              )}
+            </div>
+          </div>
+
+          {/* ── Section 4: Organization ── */}
+          <div className="space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t('sectionOrganization')}</p>
+
+            {/* Tags */}
+            <Field>
+              <FieldLabel>{t('tags')}</FieldLabel>
+              {allTags.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">{t('selectedTags')}</p>
+                    {selectedTags.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {selectedTags.map((tag) => (
+                          <button key={tag.id} type="button" onClick={() => toggleTag(tag.id)} className="rounded-full transition-all" aria-pressed>
+                            <TagBadge name={tag.name} color={tag.color} className="gap-1.5 px-2.5 py-1 text-xs ring-2 ring-primary/25 ring-offset-2 ring-offset-background" />
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">{t('noTagsSelected')}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">{t('availableTags')}</p>
+                    {availableTags.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {availableTags.map((tag) => (
+                          <button key={tag.id} type="button" onClick={() => toggleTag(tag.id)} className="rounded-full opacity-80 transition-all hover:opacity-100">
+                            <TagBadge name={tag.name} color={tag.color} className="gap-1.5 px-2.5 py-1 text-xs border-border/60" />
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">{t('allTagsSelected')}</p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">{t('noTagsCreated')}</p>
+              )}
+              <FieldDescription>{t('tagsHelp')}</FieldDescription>
+            </Field>
+
+            {/* Notes */}
+            <Controller
+              name="notes"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid || undefined}>
+                  <FieldLabel>{t('notes')}</FieldLabel>
+                  <Textarea
+                    placeholder={t('notesPlaceholder')}
+                    rows={2}
+                    value={field.value ?? ''}
+                    onChange={field.onChange}
+                  />
+                  <FieldDescription>{t('notesHelp')}</FieldDescription>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+          </div>
         </form>
 
         <SheetFooter>

@@ -3,6 +3,7 @@
 import type { Row, Table } from '@tanstack/react-table';
 import {
   Activity,
+  Copy,
   Edit,
   ExternalLink,
   Eye,
@@ -14,6 +15,7 @@ import {
   Trash,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import type { Links } from '@/server/db';
 
 import { Button } from '@/components/ui/button';
@@ -27,6 +29,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useCheckLink, useUpdateLink } from '@/hooks/queries/use-link-queries';
+import { useProfile } from '@/hooks/queries/use-profile-queries';
+import {
+  getPrimaryVerifiedCustomDomainHostname,
+  useCustomDomains,
+} from '@/hooks/queries/use-custom-domain-queries';
+import { buildShortLinkUrl } from '@/utils/short-link';
 
 interface LinkRowActionsProps {
   row: Row<Links>;
@@ -36,6 +44,16 @@ interface LinkRowActionsProps {
 export function LinkRowActions({ row, table }: LinkRowActionsProps) {
   const t = useTranslations('links.rowActions');
   const tc = useTranslations('common');
+  const tToasts = useTranslations('toasts');
+  const { data: profileData } = useProfile();
+  const { data: customDomainsData } = useCustomDomains();
+  const userSlug = profileData?.status === 200 ? profileData.body.slug : '';
+  const primaryCustomDomain = customDomainsData?.status === 200
+    ? getPrimaryVerifiedCustomDomainHostname(customDomainsData.body)
+    : null;
+  const shortUrl = userSlug
+    ? buildShortLinkUrl(userSlug, row.original.slug, primaryCustomDomain)
+    : '';
   const { onRowView, onRowEdit, onRowDelete, onRowQr } = (table.options.meta ?? {}) as {
     onRowView?: (link: Links) => void;
     onRowEdit?: (link: Links) => void;
@@ -66,6 +84,17 @@ export function LinkRowActions({ row, table }: LinkRowActionsProps) {
             <DropdownMenuItem onClick={() => onRowView(row.original)}>
               <Eye className="mr-2 h-4 w-4" />
               {tc('viewDetails')}
+            </DropdownMenuItem>
+          )}
+          {shortUrl && (
+            <DropdownMenuItem
+              onClick={() => {
+                navigator.clipboard.writeText(shortUrl);
+                toast.success(tToasts('urlCopied'));
+              }}
+            >
+              <Copy className="mr-2 h-4 w-4" />
+              {t('copyShortUrl')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem

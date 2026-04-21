@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Command,
   CommandEmpty,
@@ -139,6 +140,7 @@ interface LinkToolbarProps {
   onCreate?: () => void;
   onImport?: () => void;
   isRefreshing?: boolean;
+  atLinkLimit?: boolean;
 }
 
 export function LinkToolbar({
@@ -158,6 +160,7 @@ export function LinkToolbar({
   onCreate,
   onImport,
   isRefreshing,
+  atLinkLimit,
 }: LinkToolbarProps) {
   const t = useTranslations('links');
   const tf = useTranslations('links.filters');
@@ -221,10 +224,26 @@ export function LinkToolbar({
         )}
 
         {onCreate && (
-          <Button onClick={onCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('newLink')}
-          </Button>
+          atLinkLimit ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger render={<span className="inline-flex" />}>
+                  <Button disabled>
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t('newLink')}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t('limitReached')}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Button onClick={onCreate}>
+              <Plus className="mr-2 h-4 w-4" />
+              {t('newLink')}
+            </Button>
+          )
         )}
       </div>
     </div>

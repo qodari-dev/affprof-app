@@ -9,11 +9,15 @@ import {
   Monitor,
   MousePointerClick,
   QrCode,
+  ShieldCheck,
+  ShieldAlert,
   Smartphone,
   Tablet,
+  Laptop,
+  Timer,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
 import { cn } from "@/lib/utils";
 import {
@@ -36,6 +40,9 @@ import type {
   DashboardRange,
   BrowserBreakdown,
   DeviceBreakdown,
+  HealthCheckSummary,
+  HealthTimelinePoint,
+  OsBreakdown,
   RecentClick,
   TopCountry,
   TrafficSource,
@@ -51,6 +58,7 @@ const RANGE_OPTIONS: { value: DashboardRange; label: string }[] = [
   { value: "30d", label: "30d" },
   { value: "90d", label: "90d" },
   { value: "180d", label: "180d" },
+  { value: "360d", label: "360d" },
 ];
 
 const chartConfig = {
@@ -111,7 +119,7 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
     return <LinkAnalyticsSkeleton />;
   }
 
-  const { totalClicks, diffPercent, qrClicks, qrShare } = analytics;
+  const { totalClicks, diffPercent, qrClicks, qrShare, mobileShare } = analytics;
 
   return (
     <div className="flex flex-col gap-5">
@@ -159,11 +167,16 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
       </div>
 
       {/* Mini KPIs row */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <MiniKpi
           icon={MousePointerClick}
           label={t("total")}
           value={formatNumber(totalClicks)}
+        />
+        <MiniKpi
+          icon={Smartphone}
+          label={t("mobile")}
+          value={totalClicks > 0 ? `${mobileShare.toFixed(0)}%` : "0%"}
         />
         <MiniKpi
           icon={QrCode}
@@ -190,9 +203,14 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
         <DevicesList devices={analytics.devices} t={t} />
       </div>
 
-      {/* Two columns: countries + browsers */}
+      {/* Two columns: countries + OS */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <CountriesList countries={analytics.countries} t={t} />
+        <OsList os={analytics.osBreakdown} t={t} />
+      </div>
+
+      {/* Two columns: browsers + (empty or future) */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <BrowsersList browsers={analytics.browsers} t={t} />
       </div>
 
@@ -200,6 +218,14 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
       {analytics.utmCampaigns.length > 0 && (
         <UtmCampaignsList campaigns={analytics.utmCampaigns} t={t} />
       )}
+
+      {/* Health */}
+      <HealthCard
+        summary={analytics.healthSummary}
+        timeline={analytics.healthTimeline}
+        locale={locale}
+        t={t}
+      />
 
       {/* Recent clicks */}
       <RecentClicksTable clicks={analytics.recentClicks} locale={locale} t={t} />
@@ -423,6 +449,39 @@ function CountriesList({ countries, t }: { countries: TopCountry[]; t: TFunc }) 
   );
 }
 
+const OS_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  ios: Smartphone,
+  android: Smartphone,
+  windows: Monitor,
+  macos: Laptop,
+  linux: Monitor,
+};
+
+function OsList({ os, t }: { os: OsBreakdown[]; t: TFunc }) {
+  if (os.length === 0) return <EmptyCard title={t("os")} t={t} />;
+  return (
+    <div className="rounded-lg border p-4">
+      <p className="text-sm font-medium mb-3">{t("os")}</p>
+      <div className="flex flex-col gap-2">
+        {os.map((o) => {
+          const Icon = OS_ICONS[o.os.toLowerCase()] ?? Monitor;
+          return (
+            <div key={o.os} className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="font-medium">{o.os}</span>
+              </div>
+              <span className="text-muted-foreground">
+                {formatNumber(o.clicks)} · {o.percentage.toFixed(0)}%
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function BrowsersList({ browsers, t }: { browsers: BrowserBreakdown[]; t: TFunc }) {
   if (browsers.length === 0) return <EmptyCard title={t("browsers")} t={t} />;
   return (
@@ -554,6 +613,162 @@ function UtmCampaignsList({ campaigns, t }: { campaigns: UtmCampaign[]; t: TFunc
           ))}
         </TableBody>
       </Table>
+    </div>
+  );
+}
+
+const healthChartConfig = {
+  ok: { label: "OK", color: "var(--color-emerald-500, #10b981)" },
+  failures: { label: "Broken", color: "var(--color-red-500, #ef4444)" },
+} satisfies ChartConfig;
+
+function HealthCard({
+  summary,
+  timeline,
+  locale,
+  t,
+}: {
+  summary: HealthCheckSummary;
+  timeline: HealthTimelinePoint[];
+  locale: string;
+  t: TFunc;
+}) {
+  const hasChecks = summary.totalChecks > 0;
+  const uptimeColor =
+    summary.uptimePercent >= 99
+      ? "text-emerald-600 dark:text-emerald-500"
+      : summary.uptimePercent >= 90
+        ? "text-amber-600 dark:text-amber-500"
+        : "text-red-600 dark:text-red-500";
+
+  const UptimeIcon = summary.uptimePercent >= 90 ? ShieldCheck : ShieldAlert;
+
+  const formatDateShort = (iso: string) =>
+    new Date(iso).toLocaleDateString(locale, { month: "short", day: "numeric" });
+
+  return (
+    <div className="rounded-lg border p-4">
+      <div className="mb-4 flex items-center gap-2">
+        <UptimeIcon className={cn("h-4 w-4", uptimeColor)} />
+        <p className="text-sm font-medium">{t("health")}</p>
+      </div>
+
+      {!hasChecks ? (
+        <p className="text-xs text-muted-foreground text-center py-4">{t("noHealthData")}</p>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {/* KPIs */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground">{t("uptime")}</span>
+              <span className={cn("text-lg font-bold tabular-nums", uptimeColor)}>
+                {summary.uptimePercent.toFixed(1)}%
+              </span>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground">{t("totalChecks")}</span>
+              <span className="text-lg font-bold tabular-nums">
+                {formatNumber(summary.totalChecks)}
+              </span>
+              {summary.failedChecks > 0 && (
+                <span className="text-xs text-red-600 dark:text-red-500">
+                  {summary.failedChecks} {t("failures")}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Timer className="h-3 w-3" />
+                {t("avgResponse")}
+              </span>
+              <span className="text-lg font-bold tabular-nums">
+                {summary.avgResponseMs != null ? `${summary.avgResponseMs}ms` : "—"}
+              </span>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground">{t("fallbackRedirects")}</span>
+              <span className={cn(
+                "text-lg font-bold tabular-nums",
+                summary.fallbackClicks > 0
+                  ? "text-amber-600 dark:text-amber-500"
+                  : "text-muted-foreground",
+              )}>
+                {formatNumber(summary.fallbackClicks)}
+              </span>
+              {summary.fallbackClicks > 0 && (
+                <span className="text-xs text-amber-600 dark:text-amber-500">
+                  {summary.fallbackShare.toFixed(0)}% {t("ofClicks")}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Fallback warning banner */}
+          {summary.fallbackShare >= 20 && (
+            <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900 dark:bg-amber-950/30">
+              <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-500" />
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                {t("fallbackWarning", { percent: summary.fallbackShare.toFixed(0) })}
+              </p>
+            </div>
+          )}
+
+          {/* Timeline chart — response time bars, red when broken */}
+          {timeline.length > 0 && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">{t("healthTimeline")}</p>
+              <ChartContainer config={healthChartConfig} className="h-24 w-full">
+                <BarChart
+                  data={timeline}
+                  margin={{ left: 0, right: 0, top: 2, bottom: 0 }}
+                  barSize={8}
+                >
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={formatDateShort}
+                    interval={Math.max(0, Math.floor(timeline.length / 5) - 1)}
+                    className="text-[9px]"
+                  />
+                  <ChartTooltip
+                    cursor={{ fill: "var(--muted)", opacity: 0.3 }}
+                    content={
+                      <ChartTooltipContent
+                        labelFormatter={(v) => formatDateShort(v as string)}
+                        formatter={(value, name) => [
+                          name === "avgResponseMs" ? `${value}ms` : value,
+                          name === "avgResponseMs" ? t("avgResponse") : name,
+                        ]}
+                      />
+                    }
+                  />
+                  <Bar dataKey="avgResponseMs" radius={2}>
+                    {timeline.map((entry, i) => (
+                      <Cell
+                        key={i}
+                        fill={entry.failures > 0 ? "#ef4444" : "#10b981"}
+                        fillOpacity={0.85}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ChartContainer>
+              <div className="mt-1 flex items-center gap-4 text-[10px] text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <span className="inline-block h-2 w-2 rounded-sm bg-emerald-500" />
+                  {t("healthOk")}
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="inline-block h-2 w-2 rounded-sm bg-red-500" />
+                  {t("healthBroken")}
+                </span>
+                <span className="ml-auto">{t("barHeightIsResponseTime")}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

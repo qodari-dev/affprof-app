@@ -126,6 +126,12 @@ export type BrowserBreakdown = {
   percentage: number;
 };
 
+export type OsBreakdown = {
+  os: string;
+  clicks: number;
+  percentage: number;
+};
+
 export type UtmCampaign = {
   campaign: string;
   source: string | null;
@@ -145,6 +151,22 @@ export type RecentClick = {
   isQr: boolean;
 };
 
+export type HealthCheckSummary = {
+  totalChecks: number;
+  failedChecks: number;
+  uptimePercent: number; // 0–100
+  avgResponseMs: number | null;
+  fallbackClicks: number;
+  fallbackShare: number; // % of total clicks that used fallback
+};
+
+export type HealthTimelinePoint = {
+  date: string; // YYYY-MM-DD
+  total: number;
+  failures: number;
+  avgResponseMs: number | null;
+};
+
 export type LinkAnalytics = {
   linkId: string;
   range: DashboardRange;
@@ -155,14 +177,18 @@ export type LinkAnalytics = {
   diffPercent: number | null;
   qrClicks: number;
   qrShare: number;
+  mobileShare: number;
   timeseries: TimeseriesPoint[];
   peakDay: PeakDay | null;
   countries: TopCountry[];
   devices: DeviceBreakdown[];
+  osBreakdown: OsBreakdown[];
   browsers: BrowserBreakdown[];
   sources: TrafficSource[];
   utmCampaigns: UtmCampaign[];
   recentClicks: RecentClick[];
+  healthSummary: HealthCheckSummary;
+  healthTimeline: HealthTimelinePoint[];
 };
 
 // ============================================

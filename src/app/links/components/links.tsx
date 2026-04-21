@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { useLinks, useDeleteLink } from '@/hooks/queries/use-link-queries';
 import { useProducts } from '@/hooks/queries/use-product-queries';
 import { useProfile } from '@/hooks/queries/use-profile-queries';
+import { useBilling } from '@/hooks/queries/use-billing-queries';
 import { useTags } from '@/hooks/queries/use-tag-queries';
 import {
   getPrimaryVerifiedCustomDomainHostname,
@@ -72,6 +73,13 @@ export function Links() {
 
   // ---- Fetch data ----
   const { data, isLoading, isFetching, refetch } = useLinks(queryParams);
+  const { data: billingData } = useBilling();
+
+  // ---- Plan limits ----
+  const subscription = billingData?.status === 200 ? billingData.body : null;
+  const isPro = subscription ? subscription.plan !== 'free' : false;
+  const totalLinks = data?.body?.meta?.total ?? 0;
+  const atLinkLimit = !isPro && totalLinks >= 10;
   const { data: productsData } = useProducts({
     page: 1,
     limit: 100,
@@ -232,9 +240,10 @@ export function Links() {
               onTagFilterChange={(value) => handleFilterChange('tagId', value)}
               onReset={resetFilters}
               onCreate={handleCreate}
-              onImport={() => setOpenedImportDialog(true)}
+              onImport={isPro ? () => setOpenedImportDialog(true) : undefined}
               onRefresh={() => refetch()}
               isRefreshing={isFetching && !isLoading}
+              atLinkLimit={atLinkLimit}
             />
           }
         />

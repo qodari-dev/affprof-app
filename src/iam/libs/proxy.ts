@@ -12,7 +12,7 @@ export type IamProxyConfig = {
 const DEFAULT_PUBLIC_PATHS = ['/oauth/callback'];
 
 function isPublicPath(pathname: string, publicPaths: string[]): boolean {
-  if (publicPaths.includes(pathname)) return true;
+  if (publicPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) return true;
 
   if (pathname.startsWith('/_next')) return true;
   if (pathname.startsWith('/public')) return true;

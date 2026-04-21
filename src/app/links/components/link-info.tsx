@@ -123,6 +123,7 @@ export function LinkInfo({
   onOpened: (opened: boolean) => void;
 }) {
   const t = useTranslations('links.info');
+  const tToasts = useTranslations('toasts');
   const locale = useLocale();
   const { data: profileData } = useProfile();
   const { data: customDomainsData } = useCustomDomains();
@@ -141,7 +142,6 @@ export function LinkInfo({
 
   const handleToggleEnabled = React.useCallback(async () => {
     if (!link) return;
-
     try {
       const nextValue = !isEnabled;
       await updateLink({
@@ -161,14 +161,35 @@ export function LinkInfo({
     ? buildShortLinkUrl(userSlug, link.slug, primaryCustomDomain)
     : '';
 
+  const hasUtm = Boolean(link.utmSource || link.utmMedium || link.utmCampaign || link.utmContent || link.utmTerm);
+
   const sections: DescriptionSection[] = [
+    // ── Link ──────────────────────────────────────────────────────────
     {
-      title: t('linkDetails'),
+      title: t('sectionLink'),
       columns: 1,
       items: [
         {
-          label: t('slug'),
-          value: <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">/{link.slug}</code>,
+          label: t('shortUrl'),
+          value: shortUrl ? (
+            <div className="flex items-center gap-2">
+              <a
+                href={shortUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="break-all text-sm text-primary underline underline-offset-2"
+              >
+                {shortUrl}
+              </a>
+              <button
+                type="button"
+                onClick={() => { navigator.clipboard.writeText(shortUrl); toast.success(tToasts('urlCopied')); }}
+                className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : undefined,
         },
         {
           label: t('baseUrl'),
@@ -185,6 +206,7 @@ export function LinkInfo({
         },
         {
           label: t('finalDestination'),
+          hidden: link.originalUrl === link.baseUrl,
           value: (
             <a
               href={link.originalUrl}
@@ -196,10 +218,83 @@ export function LinkInfo({
             </a>
           ),
         },
+      ],
+    },
+
+    // ── Details ───────────────────────────────────────────────────────
+    {
+      title: t('sectionDetails'),
+      columns: 2,
+      items: [
         {
           label: t('product'),
           value: link.product?.name ?? undefined,
         },
+        {
+          label: t('platform'),
+          value: (
+            <Badge variant="outline" className="capitalize">
+              {link.platform}
+            </Badge>
+          ),
+        },
+      ],
+    },
+
+    // ── UTM Tracking ──────────────────────────────────────────────────
+    {
+      title: t('sectionUtm'),
+      columns: 2,
+      items: [
+        {
+          label: t('utmSource'),
+          hidden: !link.utmSource,
+          value: link.utmSource ? (
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">{link.utmSource}</code>
+          ) : undefined,
+        },
+        {
+          label: t('utmMedium'),
+          hidden: !link.utmMedium,
+          value: link.utmMedium ? (
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">{link.utmMedium}</code>
+          ) : undefined,
+        },
+        {
+          label: t('utmCampaign'),
+          hidden: !link.utmCampaign,
+          value: link.utmCampaign ? (
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">{link.utmCampaign}</code>
+          ) : undefined,
+        },
+        {
+          label: t('utmContent'),
+          hidden: !link.utmContent,
+          value: link.utmContent ? (
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">{link.utmContent}</code>
+          ) : undefined,
+        },
+        {
+          label: t('utmTerm'),
+          hidden: !link.utmTerm,
+          value: link.utmTerm ? (
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">{link.utmTerm}</code>
+          ) : undefined,
+        },
+        // Placeholder item shown only when no UTM is set (keeps section visible with a message)
+        {
+          label: t('utmTracking'),
+          hidden: hasUtm,
+          value: <span className="text-muted-foreground">{t('notConfigured')}</span>,
+        },
+      ],
+    },
+
+    // ── Options ───────────────────────────────────────────────────────
+    {
+      title: t('sectionOptions'),
+      columns: 2,
+      items: [
         {
           label: t('qrBrand'),
           value: link.brand ? (
@@ -210,19 +305,8 @@ export function LinkInfo({
           ) : t('standardQr'),
         },
         {
-          label: t('utmTracking'),
-          value: (link.utmSource || link.utmMedium || link.utmCampaign || link.utmContent || link.utmTerm) ? (
-            <div className="flex flex-wrap gap-1">
-              {link.utmSource ? <Badge variant="outline">source: {link.utmSource}</Badge> : null}
-              {link.utmMedium ? <Badge variant="outline">medium: {link.utmMedium}</Badge> : null}
-              {link.utmCampaign ? <Badge variant="outline">campaign: {link.utmCampaign}</Badge> : null}
-              {link.utmContent ? <Badge variant="outline">content: {link.utmContent}</Badge> : null}
-              {link.utmTerm ? <Badge variant="outline">term: {link.utmTerm}</Badge> : null}
-            </div>
-          ) : t('notConfigured'),
-        },
-        {
           label: t('fallbackUrl'),
+          hidden: !link.fallbackUrl,
           value: link.fallbackUrl ? (
             <a
               href={link.fallbackUrl}
@@ -232,33 +316,45 @@ export function LinkInfo({
             >
               {link.fallbackUrl}
             </a>
-          ) : t('notConfigured'),
+          ) : undefined,
         },
+      ],
+    },
+
+    // ── Organization ──────────────────────────────────────────────────
+    {
+      title: t('sectionOrganization'),
+      columns: 1,
+      items: [
         {
-          label: t('platform'),
-          value: (
-            <Badge variant="outline" className="capitalize">
-              {link.platform}
-            </Badge>
-          ),
+          label: t('tags'),
+          value:
+            tags.length > 0 ? (
+              <div className="flex flex-wrap gap-1">
+                {tags.map((tag) => (
+                  <TagBadge key={tag!.id} name={tag!.name} color={tag!.color} />
+                ))}
+              </div>
+            ) : (
+              t('noTags')
+            ),
         },
         {
           label: t('notes'),
+          hidden: !link.notes,
           value: link.notes || undefined,
         },
       ],
     },
+
+    // ── Monitoring ────────────────────────────────────────────────────
     {
-      title: t('statusMonitoring'),
+      title: t('sectionMonitoring'),
       columns: 2,
       items: [
         {
           label: t('status'),
           value: <LinkStatusBadge status={link.status} isEnabled={isEnabled} />,
-        },
-        {
-          label: t('enabled'),
-          value: isEnabled ? t('yes') : t('no'),
         },
         {
           label: t('consecutiveFailures'),
@@ -292,33 +388,16 @@ export function LinkInfo({
         },
       ],
     },
+
+    // ── Activity ──────────────────────────────────────────────────────
     {
-      title: t('performance'),
+      title: t('sectionActivity'),
       columns: 2,
       items: [
         {
           label: t('totalClicks'),
           value: <span className="text-lg font-semibold tabular-nums">{link.totalClicks.toLocaleString()}</span>,
         },
-        {
-          label: t('tags'),
-          value:
-            tags.length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {tags.map((tag) => (
-                  <TagBadge key={tag!.id} name={tag!.name} color={tag!.color} />
-                ))}
-              </div>
-            ) : (
-              t('noTags')
-            ),
-        },
-      ],
-    },
-    {
-      title: t('activity'),
-      columns: 2,
-      items: [
         {
           label: t('created'),
           value: new Date(link.createdAt).toLocaleDateString(locale, {
