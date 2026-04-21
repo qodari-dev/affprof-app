@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   const send = request.nextUrl.searchParams.get('send') === 'true';
   const locale = (request.nextUrl.searchParams.get('locale') ?? 'en') as 'en' | 'es';
 
-  const appUrl = 'https://app.affprof.com';
+  const appUrl = env.NEXT_PUBLIC_APP_URL;
   const settingsUrl = `${appUrl}/settings`;
   const linksUrl = `${appUrl}/links`;
   const dashboardUrl = `${appUrl}/dashboard`;

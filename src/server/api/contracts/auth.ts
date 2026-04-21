@@ -41,6 +41,16 @@ export const auth = c.router(
         500: TsRestErrorSchema,
       },
     },
+    deleteAccount: {
+      method: 'DELETE',
+      path: '/account',
+      body: c.noBody(),
+      responses: {
+        200: LogoutResponseSchema,
+        401: TsRestErrorSchema,
+        500: TsRestErrorSchema,
+      },
+    },
   },
   { pathPrefix: '/auth' }
 );

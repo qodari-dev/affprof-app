@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { Loader2, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import { isErrorResponse } from '@ts-rest/core';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,9 +54,24 @@ export function PasswordCard() {
         if (result.status === 204) {
           toast.success(t('success'));
           form.reset();
+        } else if (result.status === 400) {
+          const msg = (result.body as { message?: string })?.message;
+          if (msg === 'Current password is incorrect') {
+            form.setError('currentPassword', { message: t('currentPasswordIncorrect') });
+          } else {
+            toast.error(t('error'), { description: msg ?? t('genericError') });
+          }
         }
-      } catch {
-        // Error handled by mutation onError
+      } catch (e) {
+        // ts-rest throws for 4xx — check if it's a wrong-password error
+        if (isErrorResponse(e)) {
+          const body = e.body as { message?: string };
+          if (body?.message === 'Current password is incorrect') {
+            form.setError('currentPassword', { message: t('currentPasswordIncorrect') });
+            return;
+          }
+        }
+        toast.error(t('error'), { description: t('genericError') });
       }
     },
     [changePassword, form, t]

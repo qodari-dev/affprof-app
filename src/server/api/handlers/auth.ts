@@ -1,5 +1,7 @@
 import { db, users, subscriptions, userSettings } from '@/server/db';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
+import { getAuthContext } from '@/server/utils/auth-context';
+import { deleteSpacesUserFiles } from '@/server/utils/storage/spaces-presign';
 import { iamClient, IamClientError } from '@/iam/clients/iam-m2m-client';
 import { sendWelcomeEmail } from '@/server/services/transactional-emails';
 import { stripe } from '@/server/utils/stripe';
@@ -150,6 +152,72 @@ export const auth = tsr.router(contract.auth, {
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: 'Error creating account',
+      });
+    }
+  },
+
+  // ==========================================
+  // DELETE ACCOUNT - DELETE /auth/account
+  // ==========================================
+  deleteAccount: async (_args, { request }) => {
+    try {
+      const auth = await getAuthContext(request);
+
+      // 1) Get subscription to check for Stripe customer
+      const subscription = await db.query.subscriptions.findFirst({
+        where: eq(subscriptions.userId, auth.userId),
+        columns: { stripeSubscriptionId: true, stripeCustomerId: true },
+      });
+
+      // 2) Cancel Stripe subscription if active
+      if (subscription?.stripeSubscriptionId) {
+        try {
+          await stripe.subscriptions.cancel(subscription.stripeSubscriptionId);
+        } catch (err) {
+          // Log but don't block deletion if Stripe fails
+          console.error('[deleteAccount] Stripe cancel failed:', err);
+        }
+      }
+
+      // 3) Delete all files from Spaces (fire and forget — non-blocking)
+      void deleteSpacesUserFiles(auth.userId);
+
+      // 4) Delete user from IAM (M2M)
+      await iamClient.deleteUser(auth.userId);
+
+      // 5) Delete local user — cascade handles all child tables
+      await db.delete(users).where(eq(users.id, auth.userId));
+
+      // 5) Clear auth cookies
+      const secure = env.NODE_ENV === 'production';
+      const cookieStore = await cookies();
+
+      cookieStore.set(env.ACCESS_TOKEN_NAME, '', {
+        httpOnly: true,
+        secure,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 0,
+      });
+
+      cookieStore.set(env.REFRESH_TOKEN_NAME, '', {
+        httpOnly: true,
+        secure,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 0,
+      });
+
+      const logoutUrl = new URL('/oauth/logout', env.IAM_BASE_URL);
+      logoutUrl.searchParams.set('client_id', env.IAM_CLIENT_ID);
+
+      return {
+        status: 200,
+        body: { logoutUrl: logoutUrl.toString() },
+      };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, {
+        genericMsg: 'Error deleting account',
       });
     }
   },

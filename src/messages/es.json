@@ -466,7 +466,30 @@
       "confirmPasswordPlaceholder": "Confirmar nueva contraseña",
       "mismatch": "Las contraseñas no coinciden",
       "changePassword": "Cambiar contraseña",
-      "success": "Contraseña cambiada exitosamente"
+      "success": "Contraseña cambiada exitosamente",
+      "currentPasswordIncorrect": "La contraseña actual es incorrecta",
+      "error": "Error al cambiar contraseña",
+      "genericError": "Algo salió mal"
+    },
+    "deleteAccount": {
+      "title": "Eliminar cuenta",
+      "description": "Elimina permanentemente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer.",
+      "warningTitle": "Esto eliminará permanentemente:",
+      "warning1": "Todos tus enlaces de afiliado y analíticas de clics",
+      "warning2": "Todos tus productos, marcas y códigos QR",
+      "warning3": "Tus dominios personalizados y configuración",
+      "warning4": "Tu suscripción activa (si tienes una)",
+      "button": "Eliminar cuenta",
+      "dialogTitle": "¿Eliminar tu cuenta?",
+      "dialogDescription": "Esto eliminará permanentemente tu cuenta, todos tus enlaces, analíticas, productos y cancelará cualquier suscripción activa. No se puede deshacer.",
+      "confirmLabel": "Escribe ELIMINAR para confirmar",
+      "confirmPlaceholder": "ELIMINAR",
+      "confirmWord": "ELIMINAR",
+      "confirmError": "Escribe ELIMINAR para confirmar",
+      "cancel": "Cancelar",
+      "confirm": "Sí, eliminar mi cuenta",
+      "deleting": "Eliminando...",
+      "errorToast": "Error al eliminar la cuenta. Inténtalo de nuevo."
     }
   },
 
@@ -826,7 +849,7 @@
       "metadataTitle": "Crear cuenta — AffProf",
       "metadataDescription": "Crea tu cuenta de AffProf para administrar enlaces de afiliado, códigos QR y analítica de clics.",
       "title": "Empieza a proteger tus ingresos de afiliado",
-      "subtitle": "Empieza a manejar tus enlaces de afiliado, códigos QR y analítica de clics en un solo lugar.",
+      "subtitle": "Empieza a manejar tus enlaces de afiliado, códigos QR y analítica en un solo lugar.",
       "firstName": "Nombre",
       "firstNamePlaceholder": "Carlos",
       "lastName": "Apellido",
@@ -851,7 +874,7 @@
         "free": {
           "name": "Gratis",
           "price": "$0/mes",
-          "description": "Ideal para empezar y validar tu flujo con productos y enlaces básicos."
+          "description": "Perfecto para empezar con algunos productos y enlaces."
         }
       },
       "errors": {

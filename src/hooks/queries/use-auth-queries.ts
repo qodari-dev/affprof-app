@@ -27,3 +27,11 @@ export function useRegister() {
 export function useLogout() {
   return api.auth.logout.useMutation();
 }
+
+// ============================================================================
+// DELETE ACCOUNT
+// ============================================================================
+
+export function useDeleteAccount() {
+  return api.auth.deleteAccount.useMutation();
+}

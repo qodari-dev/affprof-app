@@ -466,7 +466,30 @@
       "confirmPasswordPlaceholder": "Confirm new password",
       "mismatch": "Passwords do not match",
       "changePassword": "Change password",
-      "success": "Password changed successfully"
+      "success": "Password changed successfully",
+      "currentPasswordIncorrect": "Current password is incorrect",
+      "error": "Error changing password",
+      "genericError": "Something went wrong"
+    },
+    "deleteAccount": {
+      "title": "Delete account",
+      "description": "Permanently delete your account and all associated data. This action cannot be undone.",
+      "warningTitle": "This will permanently delete:",
+      "warning1": "All your affiliate links and click analytics",
+      "warning2": "All your products, brands, and QR codes",
+      "warning3": "Your custom domains and settings",
+      "warning4": "Your active subscription (if any)",
+      "button": "Delete account",
+      "dialogTitle": "Delete your account?",
+      "dialogDescription": "This will permanently delete your account, all your links, analytics, products, and cancel any active subscription. This cannot be undone.",
+      "confirmLabel": "Type DELETE to confirm",
+      "confirmPlaceholder": "DELETE",
+      "confirmWord": "DELETE",
+      "confirmError": "Please type DELETE to confirm",
+      "cancel": "Cancel",
+      "confirm": "Yes, delete my account",
+      "deleting": "Deleting...",
+      "errorToast": "Failed to delete account. Please try again."
     }
   },
 
@@ -826,7 +849,7 @@
       "metadataTitle": "Create account — AffProf",
       "metadataDescription": "Create your AffProf account to manage affiliate links, QR codes, and click analytics.",
       "title": "Start protecting your affiliate revenue",
-      "subtitle": "Manage your affiliate links, QR codes, and click analytics — all in one place.",
+      "subtitle": "Manage your affiliate links, QR codes, and analytics — all in one place.",
       "firstName": "First name",
       "firstNamePlaceholder": "Jane",
       "lastName": "Last name",
@@ -851,7 +874,7 @@
         "free": {
           "name": "Free",
           "price": "$0/mo",
-          "description": "Great to get started and validate your flow with basic products and links."
+          "description": "Perfect to get started with a few products and links."
         }
       },
       "errors": {
