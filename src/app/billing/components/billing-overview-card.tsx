@@ -171,7 +171,6 @@ export function BillingOverviewCard() {
         </p>
         <Button
           type="button"
-          variant="outline"
           className="h-10 rounded-lg"
           disabled={!hasPortalAccess || isOpeningPortal}
           onClick={handleOpenPortal}

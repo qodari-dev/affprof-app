@@ -15,6 +15,7 @@ import {
   Star,
   Trash2,
 } from 'lucide-react';
+import { useBilling } from '@/hooks/queries/use-billing-queries';
 import { useTranslations } from 'next-intl';
 
 import { BrandLogo } from '@/components/brand-logo';
@@ -487,12 +488,15 @@ function BrandListItem({
 export function BrandsCard() {
   const t = useTranslations('settings.brands');
   const { data, isLoading } = useBrands();
+  const { data: billingData } = useBilling();
   const { mutateAsync: deleteBrand, isPending: isDeleting } = useDeleteBrand();
   const { mutateAsync: setDefaultBrand, isPending: isSettingDefault } = useSetDefaultBrand();
   const [formOpened, setFormOpened] = React.useState(false);
   const [editingBrand, setEditingBrand] = React.useState<Brands | undefined>(undefined);
 
   const brands = data?.status === 200 ? data.body : [];
+  const subscription = billingData?.status === 200 ? billingData.body : null;
+  const isPro = subscription ? subscription.plan !== 'free' : false;
 
   const handleCreate = React.useCallback(() => {
     setEditingBrand(undefined);
@@ -554,7 +558,21 @@ export function BrandsCard() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {brands.length === 0 ? (
+          {!isPro ? (
+            <div className="rounded-xl border border-dashed bg-muted/20 p-5">
+              <div className="flex items-start gap-3">
+                <div className="flex size-10 items-center justify-center rounded-xl border bg-background">
+                  <Palette className="size-5 text-muted-foreground" />
+                </div>
+                <div className="space-y-1">
+                  <div className="font-medium">{t('availableOnPro')}</div>
+                  <p className="text-sm text-muted-foreground">
+                    {t('upgradeDescription')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : brands.length === 0 ? (
             <div className="rounded-2xl border border-dashed bg-muted/20 p-6">
               <div className="flex items-start gap-4">
                 <div className="flex size-12 items-center justify-center rounded-2xl border bg-background">
@@ -582,12 +600,14 @@ export function BrandsCard() {
             ))
           )}
         </CardContent>
-        <CardFooter className="border-t bg-muted/10">
-          <Button type="button" onClick={handleCreate}>
-            <Plus />
-            {t('addBrand')}
-          </Button>
-        </CardFooter>
+        {isPro && (
+          <CardFooter className="border-t bg-muted/10">
+            <Button type="button" onClick={handleCreate}>
+              <Plus />
+              {t('addBrand')}
+            </Button>
+          </CardFooter>
+        )}
       </Card>
 
       <BrandFormSheet
