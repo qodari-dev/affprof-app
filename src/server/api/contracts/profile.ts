@@ -2,7 +2,6 @@ import { UpdateProfileBodySchema, ChangePasswordBodySchema } from '@/schemas/pro
 import { TsRestErrorSchema, TsRestMetaData } from '@/schemas/ts-rest';
 import { Users } from '@/server/db';
 import { initContract } from '@ts-rest/core';
-import { z } from 'zod';
 
 const c = initContract();
 
@@ -44,7 +43,7 @@ export const profile = c.router(
         auth: 'required',
       } satisfies TsRestMetaData,
       responses: {
-        204: z.void(),
+        204: c.noBody(),
         400: TsRestErrorSchema,
         401: TsRestErrorSchema,
         500: TsRestErrorSchema,

@@ -1,4 +1,4 @@
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, DeleteObjectsCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'node:crypto';
 
@@ -124,6 +124,55 @@ export async function createSpacesPresignedPutUrl(
       'x-amz-acl': 'public-read',
     },
   };
+}
+
+/**
+ * Delete all files for a user from Spaces.
+ * Uses the prefix {env}/{appSlug}/{userId}/ to find and delete all objects.
+ * Handles pagination — deletes up to 1000 objects per batch (S3 limit).
+ */
+export async function deleteSpacesUserFiles(userId: string): Promise<void> {
+  let config: ReturnType<typeof getSpacesConfig>;
+
+  try {
+    config = getSpacesConfig();
+  } catch {
+    // Spaces not configured — nothing to delete
+    return;
+  }
+
+  const client = createS3Client();
+  const envPrefix = env.NODE_ENV === 'production' ? 'prod' : 'dev';
+  const prefix = `${envPrefix}/${env.IAM_APP_SLUG}/${userId}/`;
+
+  try {
+    let continuationToken: string | undefined;
+
+    do {
+      const listResult = await client.send(
+        new ListObjectsV2Command({
+          Bucket: config.bucket,
+          Prefix: prefix,
+          ContinuationToken: continuationToken,
+        }),
+      );
+
+      const keys = listResult.Contents?.map((obj) => ({ Key: obj.Key! })) ?? [];
+
+      if (keys.length > 0) {
+        await client.send(
+          new DeleteObjectsCommand({
+            Bucket: config.bucket,
+            Delete: { Objects: keys, Quiet: true },
+          }),
+        );
+      }
+
+      continuationToken = listResult.IsTruncated ? listResult.NextContinuationToken : undefined;
+    } while (continuationToken);
+  } catch (err) {
+    console.error(`[spaces] Failed to delete files for user "${userId}":`, err);
+  }
 }
 
 /**

@@ -466,7 +466,30 @@
       "confirmPasswordPlaceholder": "Confirmar nueva contraseña",
       "mismatch": "Las contraseñas no coinciden",
       "changePassword": "Cambiar contraseña",
-      "success": "Contraseña cambiada exitosamente"
+      "success": "Contraseña cambiada exitosamente",
+      "currentPasswordIncorrect": "La contraseña actual es incorrecta",
+      "error": "Error al cambiar contraseña",
+      "genericError": "Algo salió mal"
+    },
+    "deleteAccount": {
+      "title": "Eliminar cuenta",
+      "description": "Elimina permanentemente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer.",
+      "warningTitle": "Esto eliminará permanentemente:",
+      "warning1": "Todos tus enlaces de afiliado y analíticas de clics",
+      "warning2": "Todos tus productos, marcas y códigos QR",
+      "warning3": "Tus dominios personalizados y configuración",
+      "warning4": "Tu suscripción activa (si tienes una)",
+      "button": "Eliminar cuenta",
+      "dialogTitle": "¿Eliminar tu cuenta?",
+      "dialogDescription": "Esto eliminará permanentemente tu cuenta, todos tus enlaces, analíticas, productos y cancelará cualquier suscripción activa. No se puede deshacer.",
+      "confirmLabel": "Escribe ELIMINAR para confirmar",
+      "confirmPlaceholder": "ELIMINAR",
+      "confirmWord": "ELIMINAR",
+      "confirmError": "Escribe ELIMINAR para confirmar",
+      "cancel": "Cancelar",
+      "confirm": "Sí, eliminar mi cuenta",
+      "deleting": "Eliminando...",
+      "errorToast": "Error al eliminar la cuenta. Inténtalo de nuevo."
     }
   },
 
@@ -483,6 +506,8 @@
       "title": "Marcas",
       "description": "Guarda logos y colores QR reutilizables. El modal QR puede cambiar entre marcas sin subir assets de nuevo.",
       "loadingDescription": "Logos reutilizables y presets de estilo QR.",
+      "availableOnPro": "Disponible en Pro",
+      "upgradeDescription": "Actualiza a Pro para guardar logos de marca y presets de colores QR reutilizables.",
       "empty": "Sin marcas aún",
       "emptyDescription": "Agrega una marca, sube su logo, y reutiliza ese estilo en descargas QR.",
       "addBrand": "Agregar marca",
@@ -547,7 +572,7 @@
       "recordName": "Nombre",
       "dnsUpdateHelp": "Las actualizaciones DNS pueden tomar unos minutos. Una vez que ambos registros estén activos, haz clic en Verificar.",
       "brandedLinksActive": "Tus enlaces de marca ahora resuelven desde {hostname}. Los enlaces existentes pueden mantener el dominio AffProf predeterminado, y los nuevos pueden usar el de tu marca.",
-      "proLimitNote": "Para v1, Pro soporta un subdominio personalizado activo.",
+      "proLimitNote": "Usa un subdominio que controles, ej. go.tumarca.com. Agrega los registros DNS abajo y AffProf verificará la propiedad automáticamente.",
       "addDomain": "Agregar dominio",
       "copied": "{label} copiado",
       "invalidHostname": "Ingresa un subdominio como go.tumarca.com.",
@@ -641,11 +666,11 @@
       "createdAfterPayment": "Se crea después del primer pago",
       "cancellationPending": "Cancelación pendiente",
       "noRenewalDate": "Sin fecha de renovación",
-      "howBillingWorks": "Cómo funciona la facturación",
-      "billingExplanation": "Administra tu suscripción directamente desde AffProf, con Stripe manejando el checkout seguro y los detalles de facturación detrás de escena.",
-      "bulletStartPlan": "Inicia un plan mensual o anual cuando estés listo para mejorar.",
-      "bulletOpenBilling": "Abre facturación para cambiar el método de pago, cambiar cadencia o cancelar más tarde.",
-      "bulletInvoices": "Las facturas y recibos quedan disponibles aquí después de cada pago exitoso.",
+      "howBillingWorks": "Gestiona tu plan",
+      "billingExplanation": "Mejora, cancela o cambia tus datos de pago en cualquier momento — sin compromisos.",
+      "bulletStartPlan": "Inicia un trial Pro mensual o anual — 14 días gratis, cancela cuando quieras.",
+      "bulletOpenBilling": "Abre el portal de facturación para actualizar el método de pago o cancelar.",
+      "bulletInvoices": "Todas las facturas y recibos están disponibles en tu portal de facturación.",
       "openBilling": "Abrir facturación",
       "footerScheduledCancel": "Tu plan sigue activo y terminará el {date}. Puedes reabrir facturación antes para mantenerlo activo.",
       "footerActivePaid": "¿Necesitas cambiar el ciclo de facturación, actualizar tu tarjeta o cancelar más tarde? Abre facturación.",
@@ -670,17 +695,21 @@
         "name": "Pro mensual",
         "trial": "14 días gratis",
         "description": "Ideal si quieres flexibilidad mientras validas tu flujo de trabajo de creador.",
-        "feature1": "Administra productos, enlaces, códigos QR y etiquetas",
-        "feature2": "Rastrea el rendimiento de enlaces y alertas de enlaces rotos",
-        "feature3": "Checkout y portal de clientes hospedado por Stripe"
+        "feature1": "Productos y enlaces ilimitados",
+        "feature2": "Códigos QR con tus colores",
+        "feature3": "Dominio personalizado para tus short links",
+        "feature4": "URL de respaldo cuando un enlace se rompe",
+        "feature5": "Importación masiva por CSV",
+        "feature6": "Monitoreo más rápido (4x al día)",
+        "feature7": "Soporte prioritario por correo"
       },
       "pro_annual": {
         "name": "Pro anual",
         "trial": "14 días gratis",
         "description": "Ideal si AffProf ya es parte de tu stack operativo.",
-        "feature1": "Todo lo de Pro mensual",
-        "feature2": "Compromiso más largo para negocios creadores serios",
-        "feature3": "Facturación anual más limpia con el mismo flujo de webhook"
+        "allFeaturesNote": "Todo lo de Pro mensual, más:",
+        "feature1": "2 meses gratis vs facturación mensual",
+        "feature2": "Soporte prioritario por correo"
       }
     },
     "history": {
@@ -826,7 +855,7 @@
       "metadataTitle": "Crear cuenta — AffProf",
       "metadataDescription": "Crea tu cuenta de AffProf para administrar enlaces de afiliado, códigos QR y analítica de clics.",
       "title": "Empieza a proteger tus ingresos de afiliado",
-      "subtitle": "Empieza a manejar tus enlaces de afiliado, códigos QR y analítica de clics en un solo lugar.",
+      "subtitle": "Empieza a manejar tus enlaces de afiliado, códigos QR y analítica en un solo lugar.",
       "firstName": "Nombre",
       "firstNamePlaceholder": "Carlos",
       "lastName": "Apellido",
@@ -851,7 +880,7 @@
         "free": {
           "name": "Gratis",
           "price": "$0/mes",
-          "description": "Ideal para empezar y validar tu flujo con productos y enlaces básicos."
+          "description": "Perfecto para empezar con algunos productos y enlaces."
         }
       },
       "errors": {

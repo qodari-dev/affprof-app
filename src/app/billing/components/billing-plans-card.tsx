@@ -38,7 +38,15 @@ export function BillingPlansCard() {
         price: PRICING.pro.label,
         description: tPro('description'),
         highlight: false,
-        features: [tPro('feature1'), tPro('feature2'), tPro('feature3')],
+        features: [
+          tPro('feature1'),
+          tPro('feature2'),
+          tPro('feature3'),
+          tPro('feature4'),
+          tPro('feature5'),
+          tPro('feature6'),
+          tPro('feature7'),
+        ].filter(Boolean),
       },
       {
         id: 'pro_annual' as PlanId,
@@ -47,7 +55,8 @@ export function BillingPlansCard() {
         subPrice: PRICING.proAnnual.subLabel,
         description: tProAnnual('description'),
         highlight: true,
-        features: [tProAnnual('feature1'), tProAnnual('feature2'), tProAnnual('feature3')],
+        allFeaturesNote: tProAnnual('allFeaturesNote'),
+        features: [tProAnnual('feature1'), tProAnnual('feature2')].filter(Boolean),
       },
     ],
     [tPro, tProAnnual],
@@ -88,7 +97,7 @@ export function BillingPlansCard() {
           {t('description')}
         </CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-4 lg:grid-cols-2">
+      <CardContent className="grid items-stretch gap-4 lg:grid-cols-2">
         {plans.map((plan) => {
           const isCurrentPlan = subscription?.plan === plan.id;
           const canStartCheckout = currentPlan === 'free';
@@ -99,7 +108,7 @@ export function BillingPlansCard() {
             <div
               key={plan.id}
               className={cn(
-                'rounded-2xl border p-5',
+                'flex flex-col rounded-2xl border p-5',
                 plan.highlight ? 'border-emerald-300 dark:bg-emerald-900/50 bg-emerald-50/50' : 'bg-card',
               )}
             >
@@ -126,18 +135,23 @@ export function BillingPlansCard() {
                 )}
               </div>
 
-              <ul className="mb-5 space-y-2">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <Check className="mt-0.5 size-4 text-emerald-600" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="mb-5 space-y-2">
+                {'allFeaturesNote' in plan && plan.allFeaturesNote && (
+                  <p className="text-xs font-medium text-muted-foreground">{plan.allFeaturesNote}</p>
+                )}
+                <ul className="space-y-1.5">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <Check className="mt-0.5 size-3.5 shrink-0 text-emerald-600" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
               <Button
                 type="button"
-                className="h-11 w-full rounded-lg"
+                className="mt-auto h-11 w-full rounded-lg"
                 variant={plan.highlight ? 'default' : 'outline'}
                 disabled={isBusy || isCurrentPlan}
                 onClick={() => {

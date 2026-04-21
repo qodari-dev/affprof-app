@@ -153,7 +153,11 @@ class IamM2MClient {
       );
     }
 
-    return response.json() as Promise<T>;
+    // Read body as text first; return undefined if empty (204 No Content or empty 200)
+    const text = await response.text();
+    if (!text) return undefined as T;
+
+    return JSON.parse(text) as T;
   }
 
   // ============================================
@@ -173,6 +177,41 @@ class IamM2MClient {
    */
   async getUserById(id: string): Promise<IamUser> {
     return this.request<IamUser>('GET', `/api/v1/users/${id}`);
+  }
+
+  /**
+   * Delete a user by ID from IAM.
+   * Used during account deletion flow.
+   */
+  async deleteUser(id: string): Promise<void> {
+    await this.request<void>('DELETE', `/api/v1/users/${id}`);
+  }
+
+  /**
+   * Verify a user's current password via M2M.
+   * Returns true if correct, false if wrong (401 from IAM).
+   */
+  async verifyUserPassword(id: string, password: string): Promise<boolean> {
+    try {
+      await this.request<void>('POST', `/api/v1/users/${id}/verify-password`, {
+        body: { password },
+      });
+      return true;
+    } catch (e) {
+      if (e instanceof IamClientError && e.status === 401) return false;
+      throw e;
+    }
+  }
+
+  /**
+   * Set a user's password via M2M.
+   * Used for change-password flow — IAM user token does not have permission
+   * to call this endpoint; only M2M (admin) credentials work.
+   */
+  async setUserPassword(id: string, password: string): Promise<void> {
+    await this.request<void>('POST', `/api/v1/users/${id}/set-password`, {
+      body: { password },
+    });
   }
 }
 

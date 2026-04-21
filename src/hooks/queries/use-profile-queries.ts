@@ -34,12 +34,5 @@ export function useUpdateProfile() {
 }
 
 export function useChangePassword() {
-  const getErrorMessage = useApiError();
-  const t = useTranslations('toasts');
-
-  return api.profile.changePassword.useMutation({
-    onError: (error) => {
-      toast.error(t('passwordChangeError'), { description: getErrorMessage(error) });
-    },
-  });
+  return api.profile.changePassword.useMutation();
 }

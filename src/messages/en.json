@@ -466,7 +466,30 @@
       "confirmPasswordPlaceholder": "Confirm new password",
       "mismatch": "Passwords do not match",
       "changePassword": "Change password",
-      "success": "Password changed successfully"
+      "success": "Password changed successfully",
+      "currentPasswordIncorrect": "Current password is incorrect",
+      "error": "Error changing password",
+      "genericError": "Something went wrong"
+    },
+    "deleteAccount": {
+      "title": "Delete account",
+      "description": "Permanently delete your account and all associated data. This action cannot be undone.",
+      "warningTitle": "This will permanently delete:",
+      "warning1": "All your affiliate links and click analytics",
+      "warning2": "All your products, brands, and QR codes",
+      "warning3": "Your custom domains and settings",
+      "warning4": "Your active subscription (if any)",
+      "button": "Delete account",
+      "dialogTitle": "Delete your account?",
+      "dialogDescription": "This will permanently delete your account, all your links, analytics, products, and cancel any active subscription. This cannot be undone.",
+      "confirmLabel": "Type DELETE to confirm",
+      "confirmPlaceholder": "DELETE",
+      "confirmWord": "DELETE",
+      "confirmError": "Please type DELETE to confirm",
+      "cancel": "Cancel",
+      "confirm": "Yes, delete my account",
+      "deleting": "Deleting...",
+      "errorToast": "Failed to delete account. Please try again."
     }
   },
 
@@ -483,6 +506,8 @@
       "title": "Brands",
       "description": "Save reusable logos and QR colors. The QR modal can then switch between brands without uploading assets again.",
       "loadingDescription": "Reusable logos and QR styling presets.",
+      "availableOnPro": "Available on Pro",
+      "upgradeDescription": "Upgrade to Pro to save reusable brand logos and QR color presets.",
       "empty": "No brands yet",
       "emptyDescription": "Add a brand once, upload its logo, and reuse that style across QR downloads.",
       "addBrand": "Add brand",
@@ -547,7 +572,7 @@
       "recordName": "Name",
       "dnsUpdateHelp": "DNS updates can take a few minutes. Once both records are live, click Verify.",
       "brandedLinksActive": "Your branded links now resolve from {hostname}. Existing links can keep the default AffProf domain, and new links can use the branded one.",
-      "proLimitNote": "For v1, Pro supports one active custom subdomain.",
+      "proLimitNote": "Use a subdomain you control, e.g. go.yourbrand.com. Add the DNS records below and AffProf will verify ownership automatically.",
       "addDomain": "Add domain",
       "copied": "{label} copied",
       "invalidHostname": "Enter a subdomain like go.yourbrand.com.",
@@ -641,11 +666,11 @@
       "createdAfterPayment": "Created after first payment",
       "cancellationPending": "Cancellation pending",
       "noRenewalDate": "No renewal date",
-      "howBillingWorks": "How billing works",
-      "billingExplanation": "Manage your subscription directly from AffProf, with Stripe handling secure checkout and billing details behind the scenes.",
-      "bulletStartPlan": "Start a monthly or annual plan when you're ready to upgrade.",
-      "bulletOpenBilling": "Open billing to change payment method, switch cadence, or cancel later.",
-      "bulletInvoices": "Invoices and receipts stay available here after each successful payment.",
+      "howBillingWorks": "Manage your plan",
+      "billingExplanation": "Upgrade, cancel, or change your billing details at any time — no lock-in.",
+      "bulletStartPlan": "Start a monthly or annual Pro trial — 14 days free, cancel anytime.",
+      "bulletOpenBilling": "Open billing portal to update payment method or cancel.",
+      "bulletInvoices": "All invoices and receipts are available in your billing portal.",
       "openBilling": "Open billing",
       "footerScheduledCancel": "Your plan is still active and will end on {date}. You can reopen billing anytime before then to keep it active.",
       "footerActivePaid": "Need to change billing cycle, update your card, or cancel later? Open billing.",
@@ -670,17 +695,21 @@
         "name": "Pro monthly",
         "trial": "14-day free trial",
         "description": "Best if you want flexibility while validating your creator workflow.",
-        "feature1": "Manage products, links, QR codes, and tags",
-        "feature2": "Track link performance and broken link alerts",
-        "feature3": "Stripe-hosted checkout and customer portal"
+        "feature1": "Unlimited products and links",
+        "feature2": "Branded QR codes with your colors",
+        "feature3": "Custom domains for your short links",
+        "feature4": "Fallback URL when a link breaks",
+        "feature5": "Bulk import via CSV",
+        "feature6": "Faster monitoring (4x a day)",
+        "feature7": "Priority email support"
       },
       "pro_annual": {
         "name": "Pro annual",
         "trial": "14-day free trial",
         "description": "Best if AffProf is already part of your operating stack.",
-        "feature1": "Everything in Pro monthly",
-        "feature2": "Longer commitment for serious creator businesses",
-        "feature3": "Cleaner yearly billing with the same webhook flow"
+        "allFeaturesNote": "All Pro features, plus:",
+        "feature1": "2 months free vs monthly billing",
+        "feature2": "Priority email support"
       }
     },
     "history": {
@@ -826,7 +855,7 @@
       "metadataTitle": "Create account — AffProf",
       "metadataDescription": "Create your AffProf account to manage affiliate links, QR codes, and click analytics.",
       "title": "Start protecting your affiliate revenue",
-      "subtitle": "Manage your affiliate links, QR codes, and click analytics — all in one place.",
+      "subtitle": "Manage your affiliate links, QR codes, and analytics — all in one place.",
       "firstName": "First name",
       "firstNamePlaceholder": "Jane",
       "lastName": "Last name",
@@ -851,7 +880,7 @@
         "free": {
           "name": "Free",
           "price": "$0/mo",
-          "description": "Great to get started and validate your flow with basic products and links."
+          "description": "Perfect to get started with a few products and links."
         }
       },
       "errors": {

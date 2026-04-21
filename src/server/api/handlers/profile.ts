@@ -1,6 +1,7 @@
 import { db, users } from '@/server/db';
 import { genericTsRestErrorResponse } from '@/server/utils/generic-ts-rest-error';
 import { getAuthContext } from '@/server/utils/auth-context';
+import { iamClient } from '@/iam/clients/iam-m2m-client';
 import { tsr } from '@ts-rest/serverless/next';
 import { eq, and, ne } from 'drizzle-orm';
 import { contract } from '../contracts';
@@ -84,39 +85,19 @@ export const profileHandler = tsr.router(contract.profile, {
   // ==========================================
   changePassword: async ({ body }, { request }) => {
     try {
-      await getAuthContext(request);
+      const auth = await getAuthContext(request);
 
-      // Proxy to IAM's change-password endpoint using the user's own token
-      const accessToken = request.headers.get('authorization')?.replace('Bearer ', '') ||
-        request.headers.get('cookie')?.match(new RegExp(`${env.ACCESS_TOKEN_NAME}=([^;]+)`))?.[1];
-
-      if (!accessToken) {
+      // Verify current password via IAM M2M before allowing the change.
+      const isCurrentPasswordValid = await iamClient.verifyUserPassword(auth.userId, body.currentPassword);
+      if (!isCurrentPasswordValid) {
         return {
-          status: 401 as const,
-          body: { message: 'Not authenticated' },
+          status: 400 as const,
+          body: { message: 'Current password is incorrect' },
         };
       }
 
-      const iamResponse = await fetch(`${env.IAM_BASE_URL}/api/v1/auth/change-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          currentPassword: body.currentPassword,
-          newPassword: body.newPassword,
-        }),
-      });
-
-      if (!iamResponse.ok) {
-        const errorBody = await iamResponse.json().catch(() => null);
-        const message = errorBody?.message ?? 'Failed to change password';
-        return {
-          status: (iamResponse.status === 400 ? 400 : 500) as 400,
-          body: { message },
-        };
-      }
+      // IAM's set-password endpoint requires M2M (admin) credentials.
+      await iamClient.setUserPassword(auth.userId, body.newPassword);
 
       return { status: 204 as const, body: undefined };
     } catch (e) {
