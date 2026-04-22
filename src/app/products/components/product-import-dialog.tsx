@@ -35,8 +35,11 @@ export function ProductImportDialog({
       });
 
       return {
-        importedCount: response.body.importedCount,
+        createdCount: response.body.importedCount,
+        updatedCount: 0,
         skippedCount: response.body.skippedCount,
+        createdProductsCount: 0,
+        createdTagsCount: 0,
         errors: response.body.errors,
       };
     },

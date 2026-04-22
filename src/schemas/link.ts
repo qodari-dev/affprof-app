@@ -110,6 +110,7 @@ const LinkImportRowSchema = z.object({
   utmTerm: z.string().max(255).optional(),
   isEnabled: z.boolean().optional(),
   notes: z.string().max(500).optional(),
+  tags: z.array(z.string().min(1).max(50)).max(10).optional(),
 });
 
 export const ImportLinksBodySchema = z.object({
@@ -117,9 +118,11 @@ export const ImportLinksBodySchema = z.object({
 });
 
 export const ImportLinksResponseSchema = z.object({
-  importedCount: z.number().int().min(0),
+  createdCount: z.number().int().min(0),
+  updatedCount: z.number().int().min(0),
   skippedCount: z.number().int().min(0),
   createdProductsCount: z.number().int().min(0),
+  createdTagsCount: z.number().int().min(0),
   errors: z.array(
     z.object({
       row: z.number().int().min(2),

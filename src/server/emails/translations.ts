@@ -139,7 +139,7 @@ const welcomeTranslations = {
 
 const subscriptionTranslations = {
   en: {
-    subjectTrial: (_plan: string) => `Your AffProf Pro trial has started 🚀`,
+    subjectTrial: () => `Your AffProf Pro trial has started 🚀`,
     subjectPaid: (plan: string) => `Welcome to AffProf ${plan} — you're all set 🎉`,
     preheaderTrial: 'Your 14-day Pro trial has started. Full access, no limits.',
     preheaderPaid: 'Your Pro subscription is now active. All features unlocked.',
@@ -165,7 +165,7 @@ const subscriptionTranslations = {
     footerLink: 'billing settings',
   },
   es: {
-    subjectTrial: (_plan: string) => `Tu prueba de AffProf Pro ha comenzado 🚀`,
+    subjectTrial: () => `Tu prueba de AffProf Pro ha comenzado 🚀`,
     subjectPaid: (plan: string) => `Bienvenido a AffProf ${plan} — ya está todo listo 🎉`,
     preheaderTrial: 'Tu prueba Pro de 14 días ha comenzado. Acceso completo, sin límites.',
     preheaderPaid: 'Tu suscripción Pro está activa. Todas las funciones desbloqueadas.',

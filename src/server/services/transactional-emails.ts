@@ -50,7 +50,7 @@ export async function sendSubscriptionActivatedEmail(input: SendSubscriptionActi
   const locale = input.locale ?? 'en';
   const t = getSubscriptionTranslations(locale);
   const planLabel = input.plan === 'pro_annual' ? 'Pro Annual' : 'Pro';
-  const subject = input.isTrial ? t.subjectTrial(planLabel) : t.subjectPaid(planLabel);
+  const subject = input.isTrial ? t.subjectTrial() : t.subjectPaid(planLabel);
 
   await sendResendEmail({
     from: env.RESEND_FROM_EMAIL!,

@@ -384,7 +384,7 @@
     },
     "import": {
       "title": "Import links from CSV",
-      "description": "Import affiliate links in bulk. Products are matched by name, and missing products will be created automatically. Link status is not imported because AffProf calculates it.",
+      "description": "Import affiliate links in bulk. Products are matched by name — any missing ones are created automatically.",
       "row": "Row",
       "product": "Product",
       "slug": "Slug",

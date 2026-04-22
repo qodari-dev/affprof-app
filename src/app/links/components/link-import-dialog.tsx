@@ -25,6 +25,7 @@ const LINK_TEMPLATE_ROWS = [
     'creator-tools',
     'true',
     'Top link for Instagram bio',
+    'amazon|audio|creator-gear',
   ],
   [
     'Kindle Paperwhite',
@@ -39,6 +40,22 @@ const LINK_TEMPLATE_ROWS = [
     '',
     'yes',
     'Linked from long-form review',
+    'amazon|books',
+  ],
+  [
+    'Notion',
+    'https://affiliate.notion.so/abc123',
+    'notion-affiliate',
+    'notion',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'true',
+    '',
+    'tools|productivity',
   ],
 ];
 
@@ -54,20 +71,15 @@ export function LinkImportDialog({
 
   const handleImport = React.useCallback(
     async (rows: NormalizedLinkImportRow[]) => {
-      const response = await importLinks({
-        body: {
-          rows,
-        },
-      });
-
+      const response = await importLinks({ body: { rows } });
+      const b = response.body;
       return {
-        importedCount: response.body.importedCount,
-        skippedCount: response.body.skippedCount,
-        errors: response.body.errors,
-        extraSummary:
-          response.body.createdProductsCount > 0
-            ? `${response.body.createdProductsCount} product${response.body.createdProductsCount === 1 ? '' : 's'} created automatically.`
-            : undefined,
+        createdCount: b.createdCount,
+        updatedCount: b.updatedCount,
+        skippedCount: b.skippedCount,
+        createdProductsCount: b.createdProductsCount,
+        createdTagsCount: b.createdTagsCount,
+        errors: b.errors,
       };
     },
     [importLinks],

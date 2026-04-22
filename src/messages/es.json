@@ -384,7 +384,7 @@
     },
     "import": {
       "title": "Importar enlaces desde CSV",
-      "description": "Importa enlaces de afiliado en masa. Los productos se emparejan por nombre, y los productos faltantes se crearán automáticamente. El estado del enlace no se importa porque AffProf lo calcula.",
+      "description": "Importa enlaces de afiliado en masa. Los productos se emparejan por nombre — los que no existan se crean automáticamente.",
       "row": "Fila",
       "product": "Producto",
       "slug": "Slug",
