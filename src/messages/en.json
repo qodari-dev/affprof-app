@@ -219,8 +219,12 @@
     "filters": {
       "product": "Product",
       "status": "Status",
+      "availability": "Availability",
+      "platform": "Platform",
       "tag": "Tag"
     },
+    "enabled": "Enabled",
+    "disabled": "Disabled",
     "columns": {
       "slug": "Slug",
       "product": "Product",

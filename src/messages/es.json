@@ -219,8 +219,12 @@
     "filters": {
       "product": "Producto",
       "status": "Estado",
+      "availability": "Disponibilidad",
+      "platform": "Plataforma",
       "tag": "Etiqueta"
     },
+    "enabled": "Habilitado",
+    "disabled": "Deshabilitado",
     "columns": {
       "slug": "Slug",
       "product": "Producto",

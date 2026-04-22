@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 
-import { useLinks, useDeleteLink } from '@/hooks/queries/use-link-queries';
+import { useLinks, useDeleteLink, useLinkPlatforms } from '@/hooks/queries/use-link-queries';
 import { useProducts } from '@/hooks/queries/use-product-queries';
 import { useProfile } from '@/hooks/queries/use-profile-queries';
 import { useBilling } from '@/hooks/queries/use-billing-queries';
@@ -139,10 +139,15 @@ export function Links() {
 
   const productFilter = typeof filters.productId === 'string' ? filters.productId : undefined;
   const tagFilter = typeof filters.tagId === 'string' ? filters.tagId : undefined;
-  const statusFilter = React.useMemo(() => {
+  const platformFilter = typeof filters.platform === 'string' ? filters.platform : undefined;
+  const statusFilter = typeof filters.status === 'string' ? filters.status : undefined;
+
+  // availability: 'enabled' → isEnabled=true, 'disabled' → isEnabled=false, undefined → all
+  const availabilityFilter = React.useMemo(() => {
+    if (filters.isEnabled === true) return 'enabled';
     if (filters.isEnabled === false) return 'disabled';
-    return typeof filters.status === 'string' ? filters.status : undefined;
-  }, [filters.isEnabled, filters.status]);
+    return undefined;
+  }, [filters.isEnabled]);
 
   const productOptions = React.useMemo(
     () =>
@@ -163,31 +168,33 @@ export function Links() {
     [tagsData?.body?.data],
   );
 
+  // Platform options from dedicated endpoint — all distinct platforms for this user
+  const { data: platformsData } = useLinkPlatforms();
+  const platformOptions = React.useMemo(
+    () => (platformsData?.body ?? []).map((p) => ({ label: p, value: p })),
+    [platformsData?.body],
+  );
+
   const statusOptions = React.useMemo(
     () => [
       { label: ts('active'), value: 'active', color: '#16a34a' },
       { label: ts('broken'), value: 'broken', color: '#dc2626' },
       { label: ts('unknown'), value: 'unknown', color: '#6b7280' },
-      { label: ts('disabled'), value: 'disabled', color: '#d97706' },
     ],
     [ts],
   );
 
-  const handleStatusFilterChange = React.useCallback((value: string | undefined) => {
-    if (!value) {
-      handleFilterChange('status', undefined);
-      handleFilterChange('isEnabled', undefined);
-      return;
-    }
+  const availabilityOptions = React.useMemo(
+    () => [
+      { label: t('enabled'), value: 'enabled', color: '#16a34a' },
+      { label: t('disabled'), value: 'disabled', color: '#d97706' },
+    ],
+    [t],
+  );
 
-    if (value === 'disabled') {
-      handleFilterChange('status', undefined);
-      handleFilterChange('isEnabled', false);
-      return;
-    }
-
-    handleFilterChange('isEnabled', undefined);
-    handleFilterChange('status', value);
+  const handleAvailabilityFilterChange = React.useCallback((value: string | undefined) => {
+    if (!value) { handleFilterChange('isEnabled', undefined); return; }
+    handleFilterChange('isEnabled', value === 'enabled' ? true : false);
   }, [handleFilterChange]);
 
   // ---- Short URL builder ----
@@ -234,7 +241,13 @@ export function Links() {
               onProductFilterChange={(value) => handleFilterChange('productId', value)}
               statusFilter={statusFilter}
               statusOptions={statusOptions}
-              onStatusFilterChange={handleStatusFilterChange}
+              onStatusFilterChange={(value) => handleFilterChange('status', value)}
+              availabilityFilter={availabilityFilter}
+              availabilityOptions={availabilityOptions}
+              onAvailabilityFilterChange={handleAvailabilityFilterChange}
+              platformFilter={platformFilter}
+              platformOptions={platformOptions}
+              onPlatformFilterChange={(value) => handleFilterChange('platform', value)}
               tagFilter={tagFilter}
               tagOptions={tagOptions}
               onTagFilterChange={(value) => handleFilterChange('tagId', value)}

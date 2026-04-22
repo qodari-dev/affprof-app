@@ -69,6 +69,12 @@ function buildAuthorizeUrl(params: {
   return url.toString();
 }
 
+function buildPostAuthRedirectPath(request: NextRequest): string {
+  const pathname = request.nextUrl.pathname || '/';
+  const search = request.nextUrl.search || '';
+  return `${pathname}${search}`;
+}
+
 /**
  * Reusable IAM proxy for Next.js middleware.
  * - Public routes → pass through.
@@ -122,7 +128,7 @@ export function createIamProxy(config: IamProxyConfig) {
       path: '/',
     });
 
-    response.cookies.set('oauth_next', request.nextUrl.href, {
+    response.cookies.set('oauth_next', buildPostAuthRedirectPath(request), {
       httpOnly: true,
       secure,
       sameSite: 'lax',

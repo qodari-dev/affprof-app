@@ -132,6 +132,12 @@ interface LinkToolbarProps {
   statusFilter?: string;
   statusOptions: FilterOption[];
   onStatusFilterChange: (value: string | undefined) => void;
+  availabilityFilter?: string;
+  availabilityOptions: FilterOption[];
+  onAvailabilityFilterChange: (value: string | undefined) => void;
+  platformFilter?: string;
+  platformOptions: FilterOption[];
+  onPlatformFilterChange: (value: string | undefined) => void;
   tagFilter?: string;
   tagOptions: FilterOption[];
   onTagFilterChange: (value: string | undefined) => void;
@@ -152,6 +158,12 @@ export function LinkToolbar({
   statusFilter,
   statusOptions,
   onStatusFilterChange,
+  availabilityFilter,
+  availabilityOptions,
+  onAvailabilityFilterChange,
+  platformFilter,
+  platformOptions,
+  onPlatformFilterChange,
   tagFilter,
   tagOptions,
   onTagFilterChange,
@@ -165,7 +177,7 @@ export function LinkToolbar({
   const t = useTranslations('links');
   const tf = useTranslations('links.filters');
   const tc = useTranslations('common');
-  const hasActiveFilters = Boolean(searchValue || productFilter || statusFilter || tagFilter);
+  const hasActiveFilters = Boolean(searchValue || productFilter || statusFilter || availabilityFilter || platformFilter || tagFilter);
 
   return (
     <div className="flex flex-col-reverse gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -192,6 +204,24 @@ export function LinkToolbar({
           clearFilterLabel={tc('clearFilter')}
           noResultsLabel={tc('noResultsFound')}
         />
+        <ToolbarSelectFilter
+          title={tf('availability')}
+          value={availabilityFilter}
+          options={availabilityOptions}
+          onValueChange={onAvailabilityFilterChange}
+          clearFilterLabel={tc('clearFilter')}
+          noResultsLabel={tc('noResultsFound')}
+        />
+        {platformOptions.length > 0 && (
+          <ToolbarSelectFilter
+            title={tf('platform')}
+            value={platformFilter}
+            options={platformOptions}
+            onValueChange={onPlatformFilterChange}
+            clearFilterLabel={tc('clearFilter')}
+            noResultsLabel={tc('noResultsFound')}
+          />
+        )}
         <ToolbarSelectFilter
           title={tf('tag')}
           value={tagFilter}
