@@ -1,0 +1,1 @@
+CREATE INDEX "products_user_deleted_idx" ON "products" USING btree ("user_id","deleted_at");

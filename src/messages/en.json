@@ -90,9 +90,22 @@
       "allHealthy": "All healthy",
       "topCountry": "Top country",
       "noData": "No data yet",
+      "ofClicks": "of clicks",
       "mobileShare": "Mobile share",
       "qrFromScans": "{pct}% from QR scans",
       "desktopTablet": "{pct}% desktop/tablet"
+    },
+    "devices": {
+      "title": "Devices",
+      "description": "How your audience accesses your links",
+      "empty": "No device data yet."
+    },
+    "healthStats": {
+      "sectionTitle": "Link health — this period",
+      "uptime": "Uptime",
+      "avgResponse": "Avg response",
+      "checks": "Checks passed",
+      "fallback": "Fallback used"
     },
     "chart": {
       "clicks": "Clicks",
@@ -130,6 +143,11 @@
       "title": "Traffic sources",
       "description": "Where your clicks come from",
       "empty": "No traffic data yet."
+    },
+    "topPlatforms": {
+      "title": "Top platforms",
+      "description": "Which affiliate platforms drive the most clicks",
+      "empty": "No platform data yet."
     },
     "countries": {
       "title": "Top countries",

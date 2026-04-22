@@ -145,17 +145,24 @@ export const brands = pgTable("brands", {
 
 // ─── Products ────────────────────────────────────────────────────────
 
-export const products = pgTable("products", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  description: text("description"),
-  imageKey: text("image_key"),
-  ...softDelete,
-  ...timestamps,
-});
+export const products = pgTable(
+  "products",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description"),
+    imageKey: text("image_key"),
+    ...softDelete,
+    ...timestamps,
+  },
+  (t) => [
+    // Top-products analytics query + product list: WHERE user_id = ? AND deleted_at IS NULL
+    index("products_user_deleted_idx").on(t.userId, t.deletedAt),
+  ],
+);
 
 // ─── Links ───────────────────────────────────────────────────────────
 

@@ -2,6 +2,7 @@ import {
   BrokenLink,
   BrowserBreakdown,
   DashboardAnalytics,
+  DashboardHealthStats,
   DashboardKpis,
   DeviceBreakdown,
   HealthCheckSummary,
@@ -14,6 +15,7 @@ import {
   TimeseriesPoint,
   TopCountry,
   TopLink,
+  TopPlatform,
   TopProduct,
   TrafficSource,
   UtmCampaign,
@@ -87,17 +89,21 @@ export const analytics = tsr.router(contract.analytics, {
         timeseriesResult,
         topLinksResult,
         topProductsResult,
+        topPlatformsResult,
         sourcesResult,
+        devicesResult,
         countriesResult,
         brokenLinksResult,
+        healthStatsResult,
       ] = await Promise.all([
-        // ---- Clicks aggregations (current, previous, mobile, qr) ----
+        // ---- Clicks aggregations (current, previous, mobile, qr, fallback) ----
         db.execute(sql`
           SELECT
             COUNT(*) FILTER (WHERE lc.clicked_at >= ${currentStart})::int AS current_clicks,
             COUNT(*) FILTER (WHERE lc.clicked_at >= ${previousStart} AND lc.clicked_at < ${currentStart})::int AS previous_clicks,
             COUNT(*) FILTER (WHERE lc.clicked_at >= ${currentStart} AND lc.device = 'mobile')::int AS mobile_clicks,
-            COUNT(*) FILTER (WHERE lc.clicked_at >= ${currentStart} AND lc.is_qr = true)::int AS qr_clicks
+            COUNT(*) FILTER (WHERE lc.clicked_at >= ${currentStart} AND lc.is_qr = true)::int AS qr_clicks,
+            COUNT(*) FILTER (WHERE lc.clicked_at >= ${currentStart} AND lc.used_fallback = true)::int AS fallback_clicks
           FROM link_clicks lc
           INNER JOIN links l ON l.id = lc.link_id
           WHERE l.user_id = ${userId}
@@ -175,7 +181,28 @@ export const analytics = tsr.router(contract.analytics, {
           LIMIT 5
         `),
 
-        // ---- Traffic sources ----
+        // ---- Top platforms ----
+        // Uses links_user_deleted_product_idx + link_clicks_link_clicked_idx
+        db.execute(sql`
+          SELECT
+            l.platform,
+            COUNT(lc.id) FILTER (WHERE lc.clicked_at >= ${currentStart})::int AS current_clicks,
+            COUNT(lc.id) FILTER (WHERE lc.clicked_at >= ${previousStart} AND lc.clicked_at < ${currentStart})::int AS previous_clicks
+          FROM links l
+          LEFT JOIN link_clicks lc
+            ON lc.link_id = l.id AND lc.clicked_at >= ${previousStart}
+          WHERE l.user_id = ${userId}
+            AND l.deleted_at IS NULL
+            AND l.platform IS NOT NULL
+            AND l.platform != ''
+            ${productFilter}
+          GROUP BY l.platform
+          HAVING COUNT(lc.id) FILTER (WHERE lc.clicked_at >= ${currentStart}) > 0
+          ORDER BY current_clicks DESC
+          LIMIT 8
+        `),
+
+        // ---- Traffic sources (all, we group overflow in app) ----
         db.execute(sql`
           SELECT
             COALESCE(NULLIF(lc.referrer_source, ''), 'direct') AS source,
@@ -188,7 +215,21 @@ export const analytics = tsr.router(contract.analytics, {
             AND lc.clicked_at >= ${currentStart}
           GROUP BY COALESCE(NULLIF(lc.referrer_source, ''), 'direct')
           ORDER BY clicks DESC
-          LIMIT 6
+        `),
+
+        // ---- Devices ----
+        db.execute(sql`
+          SELECT
+            COALESCE(lc.device::text, 'unknown') AS device,
+            COUNT(*)::int AS clicks
+          FROM link_clicks lc
+          INNER JOIN links l ON l.id = lc.link_id
+          WHERE l.user_id = ${userId}
+            AND l.deleted_at IS NULL
+            ${productFilter}
+            AND lc.clicked_at >= ${currentStart}
+          GROUP BY lc.device
+          ORDER BY clicks DESC
         `),
 
         // ---- Top countries ----
@@ -226,24 +267,42 @@ export const analytics = tsr.router(contract.analytics, {
           ORDER BY l.last_checked_at DESC NULLS LAST
           LIMIT 10
         `),
+
+        // ---- Health stats aggregate across all user links ----
+        // Uses link_checks_link_checked_idx(linkId, checkedAt) via JOIN
+        db.execute(sql`
+          SELECT
+            COUNT(*)::int AS total_checks,
+            COUNT(*) FILTER (WHERE lhc.is_broken = true)::int AS failed_checks,
+            ROUND(AVG(lhc.response_ms) FILTER (WHERE lhc.response_ms IS NOT NULL))::int AS avg_response_ms
+          FROM link_checks lhc
+          INNER JOIN links l ON l.id = lhc.link_id
+          WHERE l.user_id = ${userId}
+            AND l.deleted_at IS NULL
+            AND lhc.checked_at >= ${currentStart}
+            ${productFilter}
+        `),
       ]);
 
-      // ---- KPIs: clicks + mobile + QR share ----
+      // ---- KPIs: clicks + mobile + QR + fallback share ----
       const clicksRow = clicksAggResult.rows[0] as
         | {
             current_clicks: number;
             previous_clicks: number;
             mobile_clicks: number;
             qr_clicks: number;
+            fallback_clicks: number;
           }
         | undefined;
       const currentClicks = clicksRow?.current_clicks ?? 0;
       const previousClicks = clicksRow?.previous_clicks ?? 0;
       const mobileClicks = clicksRow?.mobile_clicks ?? 0;
       const qrClicks = clicksRow?.qr_clicks ?? 0;
+      const fallbackClicks = clicksRow?.fallback_clicks ?? 0;
       const mobileShare =
         currentClicks > 0 ? (mobileClicks / currentClicks) * 100 : 0;
       const qrShare = currentClicks > 0 ? (qrClicks / currentClicks) * 100 : 0;
+      const fallbackShare = currentClicks > 0 ? (fallbackClicks / currentClicks) * 100 : 0;
 
       // ---- KPIs: links count ----
       const linksRows = linksCountResult.rows as { status: string; count: number }[];
@@ -317,27 +376,55 @@ export const analytics = tsr.router(contract.analytics, {
             : ((r.current_clicks - r.previous_clicks) / r.previous_clicks) * 100,
       }));
 
-      // ---- Traffic sources ----
-      const sourcesRaw = sourcesResult.rows as { source: string; clicks: number }[];
-      const totalSourceClicks = sourcesRaw.reduce((acc, r) => acc + r.clicks, 0);
-      const trafficSources: TrafficSource[] = sourcesRaw.map((r) => ({
-        source: r.source,
-        clicks: r.clicks,
-        percentage:
-          totalSourceClicks > 0 ? (r.clicks / totalSourceClicks) * 100 : 0,
+      // ---- Top platforms ----
+      const topPlatformsRaw = topPlatformsResult.rows as {
+        platform: string;
+        current_clicks: number;
+        previous_clicks: number;
+      }[];
+      const topPlatforms: TopPlatform[] = topPlatformsRaw.map((r) => ({
+        platform: r.platform,
+        clicks: r.current_clicks,
+        previousClicks: r.previous_clicks,
+        diffPercent:
+          r.previous_clicks === 0
+            ? null
+            : ((r.current_clicks - r.previous_clicks) / r.previous_clicks) * 100,
       }));
 
-      // ---- Top countries ----
+      // ---- Traffic sources — top 5 + "other" bucket ----
+      const sourcesRaw = sourcesResult.rows as { source: string; clicks: number }[];
+      const top5Sources = sourcesRaw.slice(0, 5);
+      const top5Total = top5Sources.reduce((acc, r) => acc + r.clicks, 0);
+      const otherSourceClicks = currentClicks - top5Total;
+      const trafficSources: TrafficSource[] = [
+        ...top5Sources.map((r) => ({
+          source: r.source,
+          clicks: r.clicks,
+          percentage: currentClicks > 0 ? (r.clicks / currentClicks) * 100 : 0,
+        })),
+        ...(otherSourceClicks > 0
+          ? [{ source: 'other', clicks: otherSourceClicks, percentage: (otherSourceClicks / currentClicks) * 100 }]
+          : []),
+      ];
+
+      // ---- Top countries — % of total clicks (not just geolocated) ----
       const countriesRaw = countriesResult.rows as {
         code: string;
         clicks: number;
       }[];
-      const totalCountryClicks = countriesRaw.reduce((acc, r) => acc + r.clicks, 0);
       const topCountries: TopCountry[] = countriesRaw.map((r) => ({
         code: r.code,
         clicks: r.clicks,
-        percentage:
-          totalCountryClicks > 0 ? (r.clicks / totalCountryClicks) * 100 : 0,
+        percentage: currentClicks > 0 ? (r.clicks / currentClicks) * 100 : 0,
+      }));
+
+      // ---- Devices ----
+      const devicesRaw = devicesResult.rows as { device: string; clicks: number }[];
+      const devices: DeviceBreakdown[] = devicesRaw.map((r) => ({
+        device: r.device,
+        clicks: r.clicks,
+        percentage: currentClicks > 0 ? (r.clicks / currentClicks) * 100 : 0,
       }));
 
       // ---- Broken links ----
@@ -357,6 +444,21 @@ export const analytics = tsr.router(contract.analytics, {
         lastCheckedAt: r.last_checked_at,
         consecutiveFailures: r.consecutive_failures,
       }));
+
+      // ---- Health stats ----
+      const healthStatsRow = healthStatsResult.rows[0] as
+        | { total_checks: number; failed_checks: number; avg_response_ms: number | null }
+        | undefined;
+      const totalChecks = healthStatsRow?.total_checks ?? 0;
+      const failedHealthChecks = healthStatsRow?.failed_checks ?? 0;
+      const healthStats: DashboardHealthStats | null = totalChecks === 0 ? null : {
+        totalChecks,
+        failedChecks: failedHealthChecks,
+        uptimePercent: ((totalChecks - failedHealthChecks) / totalChecks) * 100,
+        avgResponseMs: healthStatsRow?.avg_response_ms ?? null,
+        fallbackClicks,
+        fallbackShare,
+      };
 
       // ---- Assemble ----
       const kpis: DashboardKpis = {
@@ -383,9 +485,12 @@ export const analytics = tsr.router(contract.analytics, {
         peakDay,
         topLinks,
         topProducts,
+        topPlatforms,
         trafficSources,
+        devices,
         topCountries,
         brokenLinks,
+        healthStats,
       };
 
       return { status: 200, body };

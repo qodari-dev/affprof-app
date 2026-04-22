@@ -90,9 +90,22 @@
       "allHealthy": "Todos saludables",
       "topCountry": "País principal",
       "noData": "Sin datos aún",
+      "ofClicks": "de los clics",
       "mobileShare": "Cuota móvil",
       "qrFromScans": "{pct}% desde escaneos QR",
       "desktopTablet": "{pct}% escritorio/tablet"
+    },
+    "devices": {
+      "title": "Dispositivos",
+      "description": "Cómo accede tu audiencia a tus enlaces",
+      "empty": "Sin datos de dispositivo aún."
+    },
+    "healthStats": {
+      "sectionTitle": "Salud de enlaces — este período",
+      "uptime": "Disponibilidad",
+      "avgResponse": "Respuesta media",
+      "checks": "Checks pasados",
+      "fallback": "Fallback usado"
     },
     "chart": {
       "clicks": "Clics",
@@ -130,6 +143,11 @@
       "title": "Fuentes de tráfico",
       "description": "De dónde vienen tus clics",
       "empty": "Sin datos de tráfico aún."
+    },
+    "topPlatforms": {
+      "title": "Plataformas principales",
+      "description": "Qué plataformas de afiliado generan más clics",
+      "empty": "Sin datos de plataforma aún."
     },
     "countries": {
       "title": "Principales países",
