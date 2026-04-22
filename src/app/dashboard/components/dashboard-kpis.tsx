@@ -1,6 +1,16 @@
 'use client';
 
 import { ArrowDownRight, ArrowUpRight, Link2, MousePointerClick, Smartphone, Globe2 } from 'lucide-react';
+
+function countryFlag(code: string) {
+  if (!code || code.length !== 2) return '';
+  const base = 0x1f1e6;
+  return code
+    .toUpperCase()
+    .split('')
+    .map((c) => String.fromCodePoint(base + c.charCodeAt(0) - 65))
+    .join('');
+}
 import { useTranslations } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -110,11 +120,15 @@ export function DashboardKpisCards({ kpis }: DashboardKpisProps) {
       />
       <KpiCard
         label={t('topCountry')}
-        value={topCountry?.code ?? '—'}
+        value={
+          topCountry
+            ? <span className="flex items-center gap-2">{countryFlag(topCountry.code)} {topCountry.code}</span>
+            : '—'
+        }
         icon={Globe2}
         sublabel={
           topCountry
-            ? `${formatPercent(topCountry.percentage)} of clicks`
+            ? `${formatPercent(topCountry.percentage)} ${t('ofClicks')}`
             : t('noData')
         }
       />

@@ -11,11 +11,14 @@ import type { DashboardRange } from '@/schemas/analytics';
 
 import { DashboardChart } from './dashboard-chart';
 import { DashboardCountries } from './dashboard-countries';
+import { DashboardDevices } from './dashboard-devices';
 import { DashboardHealthBanner } from './dashboard-health-banner';
+import { DashboardHealthStats } from './dashboard-health-stats';
 import { DashboardKpisCards } from './dashboard-kpis';
 import { DashboardSources } from './dashboard-sources';
 import { DashboardToolbar } from './dashboard-toolbar';
 import { DashboardTopLinks } from './dashboard-top-links';
+import { DashboardTopPlatforms } from './dashboard-top-platforms';
 import { DashboardTopProducts } from './dashboard-top-products';
 
 export function Dashboard() {
@@ -70,20 +73,36 @@ export function Dashboard() {
             <DashboardKpisCards kpis={analytics.kpis} />
             <DashboardChart data={analytics.timeseries} peakDay={analytics.peakDay} />
             {productId ? (
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <DashboardTopLinks topLinks={analytics.topLinks} />
-                <DashboardSources sources={analytics.trafficSources} />
-              </div>
+              <>
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <DashboardTopLinks topLinks={analytics.topLinks} />
+                  <DashboardSources sources={analytics.trafficSources} />
+                </div>
+                {analytics.topPlatforms.length > 0 && (
+                  <DashboardTopPlatforms topPlatforms={analytics.topPlatforms} />
+                )}
+              </>
             ) : (
               <>
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                   <DashboardTopProducts topProducts={analytics.topProducts} />
                   <DashboardTopLinks topLinks={analytics.topLinks} />
                 </div>
-                <DashboardSources sources={analytics.trafficSources} />
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <DashboardSources sources={analytics.trafficSources} />
+                  {analytics.topPlatforms.length > 0 && (
+                    <DashboardTopPlatforms topPlatforms={analytics.topPlatforms} />
+                  )}
+                </div>
               </>
             )}
-            <DashboardCountries countries={analytics.topCountries} />
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <DashboardDevices devices={analytics.devices} />
+              <DashboardCountries countries={analytics.topCountries} />
+            </div>
+            {analytics.healthStats && (
+              <DashboardHealthStats stats={analytics.healthStats} />
+            )}
           </>
         )}
       </PageContent>

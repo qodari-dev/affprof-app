@@ -100,6 +100,22 @@ export type BrokenLink = {
   consecutiveFailures: number;
 };
 
+export type TopPlatform = {
+  platform: string;
+  clicks: number;
+  previousClicks: number;
+  diffPercent: number | null;
+};
+
+export type DashboardHealthStats = {
+  totalChecks: number;
+  failedChecks: number;
+  uptimePercent: number;
+  avgResponseMs: number | null;
+  fallbackClicks: number;
+  fallbackShare: number; // % of total clicks
+};
+
 // ============================================
 // LINK ANALYTICS QUERY
 // ============================================
@@ -205,7 +221,10 @@ export type DashboardAnalytics = {
   peakDay: PeakDay | null;
   topLinks: TopLink[];
   topProducts: TopProduct[];
+  topPlatforms: TopPlatform[];
   trafficSources: TrafficSource[];
+  devices: DeviceBreakdown[];
   topCountries: TopCountry[];
   brokenLinks: BrokenLink[];
+  healthStats: DashboardHealthStats | null; // null = no checks run yet
 };
