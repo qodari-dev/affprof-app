@@ -101,6 +101,13 @@ async function syncCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   const patch = buildSubscriptionPatch(stripeSubscription);
 
+  // Idempotency: check if this subscription was already activated to prevent duplicate emails
+  const existing = await db.query.subscriptions.findFirst({
+    where: eq(subscriptions.userId, userId),
+    columns: { stripeSubscriptionId: true },
+  });
+  const isFirstActivation = existing?.stripeSubscriptionId !== stripeSubscriptionId;
+
   await db
     .update(subscriptions)
     .set({
@@ -113,7 +120,9 @@ async function syncCheckoutCompleted(session: Stripe.Checkout.Session) {
     })
     .where(eq(subscriptions.userId, userId));
 
-  // Send subscription activated email (fire and forget)
+  // Send activation email only on first activation (prevents duplicates on retries/replays)
+  if (!isFirstActivation) return;
+
   void (async () => {
     try {
       const user = await db.query.users.findFirst({
