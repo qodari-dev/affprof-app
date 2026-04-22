@@ -4,6 +4,7 @@ import { FileUp, Plus, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ProductToolbarProps {
   searchValue: string;
@@ -12,6 +13,7 @@ interface ProductToolbarProps {
   onCreate?: () => void;
   onImport?: () => void;
   isRefreshing?: boolean;
+  atProductLimit?: boolean;
 }
 
 export function ProductToolbar({
@@ -21,6 +23,7 @@ export function ProductToolbar({
   onCreate,
   onImport,
   isRefreshing,
+  atProductLimit,
 }: ProductToolbarProps) {
   const t = useTranslations('products');
   const tc = useTranslations('common');
@@ -46,16 +49,32 @@ export function ProductToolbar({
 
         {onImport && (
           <Button variant="outline" onClick={onImport}>
-            <FileUp className="mr-2 h-4 w-4" />
+            <FileUp />
             {tc('importCsv')}
           </Button>
         )}
 
         {onCreate && (
-          <Button onClick={onCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('newProduct')}
-          </Button>
+          atProductLimit ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger render={<span className="inline-flex" />}>
+                  <Button disabled>
+                    <Plus />
+                    {t('newProduct')}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t('limitReached')}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Button onClick={onCreate}>
+              <Plus />
+              {t('newProduct')}
+            </Button>
+          )
         )}
       </div>
     </div>

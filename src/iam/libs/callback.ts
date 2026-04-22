@@ -29,6 +29,29 @@ type TokenEndpointResponse = {
   idToken?: string;
 };
 
+function resolveSafeRedirectTarget(nextUrlValue: string, redirectUri: string, defaultRedirectPath: string): string {
+  const appOrigin = new URL(redirectUri).origin;
+
+  if (!nextUrlValue) {
+    return new URL(defaultRedirectPath, appOrigin).toString();
+  }
+
+  if (nextUrlValue.startsWith('/')) {
+    return new URL(nextUrlValue, appOrigin).toString();
+  }
+
+  try {
+    const nextUrl = new URL(nextUrlValue);
+    if (nextUrl.origin === appOrigin) {
+      return nextUrl.toString();
+    }
+  } catch {
+    // Ignore malformed redirect targets and fall back below.
+  }
+
+  return new URL(defaultRedirectPath, appOrigin).toString();
+}
+
 export function createIamCallbackHandler(config: IamCallbackConfig) {
   const secure = process.env.NODE_ENV === 'production';
   const defaultRedirect = config.defaultRedirectPath ?? '/';
@@ -45,7 +68,11 @@ export function createIamCallbackHandler(config: IamCallbackConfig) {
     const cookies = req.cookies;
     const storedState = cookies.get('oauth_state')?.value;
     const verifier = cookies.get('pkce_verifier')?.value;
-    const nextUrl = cookies.get('oauth_next')?.value ?? defaultRedirect;
+    const nextUrl = resolveSafeRedirectTarget(
+      cookies.get('oauth_next')?.value ?? '',
+      config.redirectUri,
+      defaultRedirect,
+    );
 
     if (!storedState || state !== storedState) {
       return new NextResponse('Invalid state', { status: 400 });

@@ -2,6 +2,7 @@ import { createHash } from 'crypto';
 
 import { after, type NextRequest } from 'next/server';
 import { and, eq, isNull, sql } from 'drizzle-orm';
+import geoip from 'geoip-lite';
 
 import { db, customDomains, linkClicks, links, userSettings, users } from '@/server/db';
 
@@ -65,7 +66,7 @@ function normalizeGeoValue(value: string | null, maxLength: number) {
   return normalized.length > 0 ? normalized : null;
 }
 
-function parseGeo(headers: Headers) {
+function parseGeoHeaders(headers: Headers) {
   const country = normalizeGeoValue(
     pickFirstHeader(headers, [
       'x-vercel-ip-country',
@@ -85,10 +86,18 @@ function parseGeo(headers: Headers) {
     120,
   );
 
-  return {
-    country: country?.toUpperCase() ?? null,
-    city,
-  };
+  return { country: country?.toUpperCase() ?? null, city };
+}
+
+function geoLookupByIp(ip: string): { country: string | null; city: string | null } {
+  const geo = geoip.lookup(ip);
+  if (geo) {
+    return {
+      country: geo.country?.toUpperCase() ?? null,
+      city: normalizeGeoValue(geo.city ?? null, 120),
+    };
+  }
+  return { country: null, city: null };
 }
 
 function buildRedirectUrl(originalUrl: string, searchParams: URLSearchParams) {
@@ -181,7 +190,7 @@ async function redirectToLink(
   const referrer = request.headers.get('referer') ?? null;
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     ?? request.headers.get('x-real-ip')
-    ?? '';
+    ?? null;
 
   const { searchParams } = request.nextUrl;
   const isQr = searchParams.get('qr') === '1';
@@ -190,11 +199,16 @@ async function redirectToLink(
   const utmCampaign = searchParams.get('utm_campaign') ?? null;
   const utmContent = searchParams.get('utm_content') ?? null;
   const utmTerm = searchParams.get('utm_term') ?? null;
-  const { country, city } = parseGeo(request.headers);
+  const geoFromHeaders = parseGeoHeaders(request.headers);
   const redirectUrl = buildRedirectUrl(target.destinationUrl, searchParams);
 
   after(async () => {
     try {
+      // Use CDN headers if available, otherwise fall back to local geoip lookup
+      const { country, city } = geoFromHeaders.country
+        ? geoFromHeaders
+        : ip ? geoLookupByIp(ip) : { country: null, city: null };
+
       await db.transaction(async (tx) => {
         await tx.insert(linkClicks).values({
           linkId: link.id,

@@ -16,7 +16,19 @@ export const linksKeys = {
   list: (filters: Partial<ListLinksQuery> = {}) => [...linksKeys.lists(), filters] as const,
   details: () => [...linksKeys.all, 'detail'] as const,
   detail: (id: string) => [...linksKeys.details(), id] as const,
+  platforms: () => [...linksKeys.all, 'platforms'] as const,
 };
+
+// ============================================================================
+// PLATFORMS
+// ============================================================================
+
+export function useLinkPlatforms() {
+  return api.link.platforms.useQuery({
+    queryKey: linksKeys.platforms(),
+    queryData: {},
+  });
+}
 
 // ============================================================================
 // LIST
@@ -53,6 +65,7 @@ export function useCreateLink() {
   return api.link.create.useMutation({
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: linksKeys.platforms() });
       toast.success(t('linkCreated'));
     },
     onError(error) {
@@ -94,6 +107,7 @@ export function useImportLinksCsv() {
   return api.link.importCsv.useMutation({
     onSuccess(data) {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: linksKeys.platforms() });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       const { importedCount, skippedCount, createdProductsCount } = data.body;
       const productNote = createdProductsCount > 0
@@ -124,6 +138,7 @@ export function useDeleteLink() {
     onSuccess(_data, variables) {
       queryClient.removeQueries({ queryKey: linksKeys.detail(variables.params.id) });
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: linksKeys.platforms() });
       toast.success(t('linkDeleted'));
     },
     onError(error) {

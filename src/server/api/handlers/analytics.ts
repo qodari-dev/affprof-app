@@ -4,7 +4,10 @@ import {
   DashboardAnalytics,
   DashboardKpis,
   DeviceBreakdown,
+  HealthCheckSummary,
+  HealthTimelinePoint,
   LinkAnalytics,
+  OsBreakdown,
   PeakDay,
   RANGE_DAYS,
   RecentClick,
@@ -427,17 +430,22 @@ export const analytics = tsr.router(contract.analytics, {
         timeseriesResult,
         countriesResult,
         devicesResult,
+        osResult,
         browsersResult,
         sourcesResult,
         utmCampaignsResult,
         recentClicksResult,
+        healthAggResult,
+        healthTimelineResult,
       ] = await Promise.all([
-        // ---- Aggregates: total, previous, QR ----
+        // ---- Aggregates: total, previous, QR, mobile, fallback ----
         db.execute(sql`
           SELECT
             COUNT(*) FILTER (WHERE lc.clicked_at >= ${currentStart})::int AS current_clicks,
             COUNT(*) FILTER (WHERE lc.clicked_at >= ${previousStart} AND lc.clicked_at < ${currentStart})::int AS previous_clicks,
-            COUNT(*) FILTER (WHERE lc.clicked_at >= ${currentStart} AND lc.is_qr = true)::int AS qr_clicks
+            COUNT(*) FILTER (WHERE lc.clicked_at >= ${currentStart} AND lc.is_qr = true)::int AS qr_clicks,
+            COUNT(*) FILTER (WHERE lc.clicked_at >= ${currentStart} AND lc.device = 'mobile')::int AS mobile_clicks,
+            COUNT(*) FILTER (WHERE lc.clicked_at >= ${currentStart} AND lc.used_fallback = true)::int AS fallback_clicks
           FROM link_clicks lc
           WHERE lc.link_id = ${id}
             AND lc.clicked_at >= ${previousStart}
@@ -476,6 +484,18 @@ export const analytics = tsr.router(contract.analytics, {
           WHERE lc.link_id = ${id}
             AND lc.clicked_at >= ${currentStart}
           GROUP BY lc.device
+          ORDER BY clicks DESC
+        `),
+
+        // ---- OS ----
+        db.execute(sql`
+          SELECT
+            COALESCE(NULLIF(lc.os, ''), 'other') AS os,
+            COUNT(*)::int AS clicks
+          FROM link_clicks lc
+          WHERE lc.link_id = ${id}
+            AND lc.clicked_at >= ${currentStart}
+          GROUP BY COALESCE(NULLIF(lc.os, ''), 'other')
           ORDER BY clicks DESC
         `),
 
@@ -538,18 +558,49 @@ export const analytics = tsr.router(contract.analytics, {
           ORDER BY lc.clicked_at DESC
           LIMIT 50
         `),
+
+        // ---- Health: aggregate stats for the period ----
+        // Uses index: link_checks_link_checked_idx (link_id, checked_at)
+        db.execute(sql`
+          SELECT
+            COUNT(*)::int AS total_checks,
+            COUNT(*) FILTER (WHERE lhc.is_broken = true)::int AS failed_checks,
+            ROUND(AVG(lhc.response_ms) FILTER (WHERE lhc.response_ms IS NOT NULL))::int AS avg_response_ms
+          FROM link_checks lhc
+          WHERE lhc.link_id = ${id}
+            AND lhc.checked_at >= ${currentStart}
+        `),
+
+        // ---- Health: per-day timeline ----
+        // Uses index: link_checks_link_checked_idx (link_id, checked_at)
+        db.execute(sql`
+          SELECT
+            to_char(date_trunc('day', lhc.checked_at), 'YYYY-MM-DD') AS date,
+            COUNT(*)::int AS total,
+            COUNT(*) FILTER (WHERE lhc.is_broken = true)::int AS failures,
+            ROUND(AVG(lhc.response_ms) FILTER (WHERE lhc.response_ms IS NOT NULL))::int AS avg_response_ms
+          FROM link_checks lhc
+          WHERE lhc.link_id = ${id}
+            AND lhc.checked_at >= ${currentStart}
+          GROUP BY date_trunc('day', lhc.checked_at)
+          ORDER BY date_trunc('day', lhc.checked_at) ASC
+        `),
       ]);
 
       // ---- Process clicks aggregate ----
       const aggRow = clicksAggResult.rows[0] as
-        | { current_clicks: number; previous_clicks: number; qr_clicks: number }
+        | { current_clicks: number; previous_clicks: number; qr_clicks: number; mobile_clicks: number; fallback_clicks: number }
         | undefined;
       const totalClicks = aggRow?.current_clicks ?? 0;
       const previousClicks = aggRow?.previous_clicks ?? 0;
       const qrClicks = aggRow?.qr_clicks ?? 0;
+      const mobileClicks = aggRow?.mobile_clicks ?? 0;
+      const fallbackClicks = aggRow?.fallback_clicks ?? 0;
       const diffPercent =
         previousClicks === 0 ? null : ((totalClicks - previousClicks) / previousClicks) * 100;
       const qrShare = totalClicks > 0 ? (qrClicks / totalClicks) * 100 : 0;
+      const mobileShare = totalClicks > 0 ? (mobileClicks / totalClicks) * 100 : 0;
+      const fallbackShare = totalClicks > 0 ? (fallbackClicks / totalClicks) * 100 : 0;
 
       // ---- Timeseries with gap filling ----
       const tsRaw = timeseriesResult.rows as { date: string; clicks: number }[];
@@ -578,6 +629,15 @@ export const analytics = tsr.router(contract.analytics, {
         device: r.device,
         clicks: r.clicks,
         percentage: totalDeviceClicks > 0 ? (r.clicks / totalDeviceClicks) * 100 : 0,
+      }));
+
+      // ---- OS ----
+      const osRaw = osResult.rows as { os: string; clicks: number }[];
+      const totalOsClicks = osRaw.reduce((a, r) => a + r.clicks, 0);
+      const osBreakdown: OsBreakdown[] = osRaw.map((r) => ({
+        os: r.os,
+        clicks: r.clicks,
+        percentage: totalOsClicks > 0 ? (r.clicks / totalOsClicks) * 100 : 0,
       }));
 
       // ---- Browsers ----
@@ -636,6 +696,35 @@ export const analytics = tsr.router(contract.analytics, {
         isQr: r.is_qr,
       }));
 
+      // ---- Health summary ----
+      const healthAggRow = healthAggResult.rows[0] as
+        | { total_checks: number; failed_checks: number; avg_response_ms: number | null }
+        | undefined;
+      const totalChecks = healthAggRow?.total_checks ?? 0;
+      const failedChecks = healthAggRow?.failed_checks ?? 0;
+      const healthSummary: HealthCheckSummary = {
+        totalChecks,
+        failedChecks,
+        uptimePercent: totalChecks > 0 ? ((totalChecks - failedChecks) / totalChecks) * 100 : 100,
+        avgResponseMs: healthAggRow?.avg_response_ms ?? null,
+        fallbackClicks,
+        fallbackShare,
+      };
+
+      // ---- Health timeline ----
+      const healthTimelineRaw = healthTimelineResult.rows as {
+        date: string;
+        total: number;
+        failures: number;
+        avg_response_ms: number | null;
+      }[];
+      const healthTimeline: HealthTimelinePoint[] = healthTimelineRaw.map((r) => ({
+        date: r.date,
+        total: r.total,
+        failures: r.failures,
+        avgResponseMs: r.avg_response_ms,
+      }));
+
       const body: LinkAnalytics = {
         linkId: id,
         range,
@@ -646,14 +735,18 @@ export const analytics = tsr.router(contract.analytics, {
         diffPercent,
         qrClicks,
         qrShare,
+        mobileShare,
         timeseries,
         peakDay,
         countries,
         devices,
+        osBreakdown,
         browsers,
         sources,
         utmCampaigns,
         recentClicks,
+        healthSummary,
+        healthTimeline,
       };
 
       return { status: 200, body };

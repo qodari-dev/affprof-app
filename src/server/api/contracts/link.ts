@@ -18,6 +18,18 @@ const c = initContract();
 
 export const link = c.router(
   {
+    platforms: {
+      method: 'GET',
+      path: '/platforms',
+      metadata: {
+        auth: 'required',
+      } satisfies TsRestMetaData,
+      responses: {
+        200: c.type<string[]>(),
+        401: TsRestErrorSchema,
+        500: TsRestErrorSchema,
+      },
+    },
     list: {
       method: 'GET',
       path: '/',

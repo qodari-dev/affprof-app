@@ -27,6 +27,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
   },
+  // Prevent Turbopack/webpack from bundling geoip-lite so __dirname resolves
+  // to the real filesystem path where the .dat files live.
+  serverExternalPackages: ['geoip-lite'],
 };
 
 export default withNextIntl(nextConfig);

@@ -2,7 +2,7 @@ import { db, links, linkTags, products } from '@/server/db';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { getAuthContext } from '@/server/utils/auth-context';
 import { tsr } from '@ts-rest/serverless/next';
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { contract } from '../contracts';
 import { checkLink, checkLinks } from '@/server/services/link-checker';
 import { normalizeTrackedDestinationInput } from '@/utils/tracked-destination-url';
@@ -94,6 +94,27 @@ function extractTagIdFilter(where: { and?: Record<string, unknown>[]; or?: Recor
 // ============================================
 
 export const link = tsr.router(contract.link, {
+  // ==========================================
+  // PLATFORMS - GET /links/platforms
+  // ==========================================
+  platforms: async (_args, { request }) => {
+    try {
+      const auth = await getAuthContext(request);
+
+      const rows = await db
+        .selectDistinct({ platform: links.platform })
+        .from(links)
+        .where(and(eq(links.userId, auth.userId), isNull(links.deletedAt), isNotNull(links.platform)))
+        .orderBy(asc(links.platform));
+
+      const platforms = rows.map((r) => r.platform).filter((p): p is string => p !== null);
+
+      return { status: 200 as const, body: platforms };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, { genericMsg: 'Error fetching link platforms' });
+    }
+  },
+
   // ==========================================
   // LIST - GET /links
   // ==========================================
