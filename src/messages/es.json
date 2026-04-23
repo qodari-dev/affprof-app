@@ -69,7 +69,12 @@
       "clearFilter": "Limpiar filtro",
       "clear": "Limpiar",
       "searchProduct": "Buscar producto...",
-      "noProducts": "No se encontraron productos."
+      "noProducts": "No se encontraron productos.",
+      "clickType": {
+        "all": "Todos los clicks",
+        "successful": "Exitosos",
+        "failed": "Sin destino"
+      }
     },
     "ranges": {
       "7d": "7d",
@@ -440,7 +445,15 @@
       "barHeightIsResponseTime": "Altura de barra = tiempo de respuesta",
       "fallbackRedirects": "Redirects al fallback",
       "ofClicks": "de los clics",
-      "fallbackWarning": "El {percent}% de los clics fueron redirigidos al URL de respaldo — tu enlace estuvo caído o deshabilitado durante una parte significativa de este período."
+      "fallbackWarning": "El {percent}% de los clics fueron redirigidos al URL de respaldo — tu enlace estuvo caído o deshabilitado durante una parte significativa de este período.",
+      "clickType": {
+        "all": "Todos los clicks",
+        "successful": "Exitosos",
+        "failed": "Sin destino"
+      },
+      "status": "Estado",
+      "statusOk": "Redirigido",
+      "statusFailed": "Sin destino"
     }
   },
   "tags": {
@@ -830,6 +843,15 @@
       "backToBilling": "Volver a facturación",
       "goToDashboard": "Ir al panel"
     }
+  },
+  "linkUnavailable": {
+    "metadataTitle": "Enlace no disponible — AffProf",
+    "badge": "OOPS",
+    "title": "Este enlace no está disponible",
+    "description": "El creador puede haberlo desactivado temporalmente o el enlace puede estar caído. Intenta más tarde.",
+    "infoTitle": "¿Qué pasó?",
+    "infoDesc": "Este enlace corto existe pero actualmente no tiene un destino activo. El creador puede haberlo pausado o la URL original ya no funciona.",
+    "discoverAffProf": "Descubrir AffProf"
   },
   "dataTable": {
     "selectedRows": "{selected} de {total} fila(s) seleccionada(s)",

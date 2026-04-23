@@ -7,7 +7,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 
 // Routes that render without the authenticated app shell (sidebar).
 // Keep in sync with proxy `publicPaths`.
-const PUBLIC_ROUTES = ['/register','/billing/success','/billing/canceled'];
+const PUBLIC_ROUTES = ['/register', '/billing/success', '/billing/canceled', '/link-unavailable'];
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some(

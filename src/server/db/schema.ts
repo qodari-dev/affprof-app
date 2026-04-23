@@ -247,6 +247,7 @@ export const linkClicks = pgTable(
     referrerSource: text("referrer_source"), // youtube | instagram | twitter | direct | other
     isQr: boolean("is_qr").notNull().default(false),
     usedFallback: boolean("used_fallback").notNull().default(false),
+    failed: boolean("failed").notNull().default(false),
     ipHash: text("ip_hash"),
     utmSource: text("utm_source"),
     utmMedium: text("utm_medium"),

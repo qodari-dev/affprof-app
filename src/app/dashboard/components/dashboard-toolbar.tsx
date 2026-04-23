@@ -18,9 +18,10 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import type { DashboardRange } from '@/schemas/analytics';
+import type { ClickType, DashboardRange } from '@/schemas/analytics';
 
 const RANGE_KEYS = ['7d', '30d', '90d', '180d', '360d'] as const;
+const CLICK_TYPE_KEYS: ClickType[] = ['all', 'successful', 'failed'];
 
 interface ProductOption {
   label: string;
@@ -30,6 +31,8 @@ interface ProductOption {
 interface DashboardToolbarProps {
   range: DashboardRange;
   onRangeChange: (range: DashboardRange) => void;
+  clickType: ClickType;
+  onClickTypeChange: (clickType: ClickType) => void;
   productId?: string;
   productOptions: ProductOption[];
   onProductChange: (id: string | undefined) => void;
@@ -40,6 +43,8 @@ interface DashboardToolbarProps {
 export function DashboardToolbar({
   range,
   onRangeChange,
+  clickType,
+  onClickTypeChange,
   productId,
   productOptions,
   onProductChange,
@@ -141,6 +146,30 @@ export function DashboardToolbar({
       </div>
 
       <div className="flex items-center gap-2">
+        <div className="flex items-center rounded-md border bg-background p-0.5">
+          {CLICK_TYPE_KEYS.map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onClickTypeChange(key)}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium rounded-sm transition-colors',
+                clickType === key
+                  ? key === 'successful'
+                    ? 'bg-emerald-500 text-white'
+                    : key === 'failed'
+                    ? 'bg-red-500 text-white'
+                    : 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {t(`clickType.${key}`)}
+            </button>
+          ))}
+        </div>
+
+        <Separator orientation="vertical" className="h-6" />
+
         <div className="flex items-center rounded-md border bg-background p-0.5">
           {RANGE_KEYS.map((key) => (
             <button

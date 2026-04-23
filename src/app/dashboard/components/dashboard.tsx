@@ -7,7 +7,7 @@ import { PageContent, PageHeader } from '@/components/layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDashboardAnalytics } from '@/hooks/queries/use-analytics-queries';
 import { useProducts } from '@/hooks/queries/use-product-queries';
-import type { DashboardRange } from '@/schemas/analytics';
+import type { ClickType, DashboardRange } from '@/schemas/analytics';
 
 import { DashboardChart } from './dashboard-chart';
 import { DashboardCountries } from './dashboard-countries';
@@ -24,6 +24,7 @@ import { DashboardTopProducts } from './dashboard-top-products';
 export function Dashboard() {
   const t = useTranslations('dashboard');
   const [range, setRange] = React.useState<DashboardRange>('30d');
+  const [clickType, setClickType] = React.useState<ClickType>('all');
   const [productId, setProductId] = React.useState<string | undefined>(undefined);
 
   const { data: productsData } = useProducts({
@@ -43,6 +44,7 @@ export function Dashboard() {
 
   const { data, isLoading, isFetching, refetch } = useDashboardAnalytics({
     range,
+    clickType,
     productId,
   });
 
@@ -58,6 +60,8 @@ export function Dashboard() {
         <DashboardToolbar
           range={range}
           onRangeChange={setRange}
+          clickType={clickType}
+          onClickTypeChange={setClickType}
           productId={productId}
           productOptions={productOptions}
           onProductChange={setProductId}

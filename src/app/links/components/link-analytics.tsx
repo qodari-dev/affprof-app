@@ -37,6 +37,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLinkAnalytics } from "@/hooks/queries/use-analytics-queries";
 import type {
+  ClickType,
   DashboardRange,
   BrowserBreakdown,
   DeviceBreakdown,
@@ -48,6 +49,7 @@ import type {
   TrafficSource,
   UtmCampaign,
 } from "@/schemas/analytics";
+import { CLICK_TYPES } from "@/schemas/analytics";
 
 // ============================================
 // CONFIG
@@ -110,7 +112,8 @@ const SOURCE_COLORS: Record<string, string> = {
 
 export function LinkAnalytics({ linkId }: { linkId: string }) {
   const [range, setRange] = React.useState<DashboardRange>("30d");
-  const { data, isLoading } = useLinkAnalytics(linkId, { range });
+  const [clickType, setClickType] = React.useState<ClickType>("all");
+  const { data, isLoading } = useLinkAnalytics(linkId, { range, clickType });
   const analytics = data?.body;
   const t = useTranslations("links.analytics");
   const locale = useLocale();
@@ -123,30 +126,30 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Range selector */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {formatNumber(totalClicks)}{" "}
-          {totalClicks === 1 ? "click" : t("clicks")}{" "}
-          {t("inPeriod")}
-          {diffPercent !== null && (
-            <span
+      {/* Toolbar: filters only */}
+      <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center rounded-md border bg-background p-0.5">
+          {CLICK_TYPES.map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setClickType(key)}
               className={cn(
-                "ml-2 inline-flex items-center gap-0.5 text-xs font-medium",
-                diffPercent >= 0
-                  ? "text-emerald-600 dark:text-emerald-500"
-                  : "text-red-600 dark:text-red-500",
+                "px-2.5 py-1 text-xs font-medium rounded-sm transition-colors",
+                clickType === key
+                  ? key === "successful"
+                    ? "bg-emerald-500 text-white"
+                    : key === "failed"
+                    ? "bg-red-500 text-white"
+                    : "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
-              {diffPercent >= 0 ? (
-                <ArrowUpRight className="h-3 w-3" />
-              ) : (
-                <ArrowDownRight className="h-3 w-3" />
-              )}
-              {Math.abs(diffPercent).toFixed(0)}%
-            </span>
-          )}
-        </p>
+              {t(`clickType.${key}`)}
+            </button>
+          ))}
+        </div>
+
         <div className="flex items-center rounded-md border bg-background p-0.5">
           {RANGE_OPTIONS.map((opt) => (
             <button
@@ -165,6 +168,30 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
           ))}
         </div>
       </div>
+
+      {/* Click summary line */}
+      <p className="text-sm text-muted-foreground">
+        {formatNumber(totalClicks)}{" "}
+        {totalClicks === 1 ? "click" : t("clicks")}{" "}
+        {t("inPeriod")}
+        {diffPercent !== null && (
+          <span
+            className={cn(
+              "ml-2 inline-flex items-center gap-0.5 text-xs font-medium",
+              diffPercent >= 0
+                ? "text-emerald-600 dark:text-emerald-500"
+                : "text-red-600 dark:text-red-500",
+            )}
+          >
+            {diffPercent >= 0 ? (
+              <ArrowUpRight className="h-3 w-3" />
+            ) : (
+              <ArrowDownRight className="h-3 w-3" />
+            )}
+            {Math.abs(diffPercent).toFixed(0)}%
+          </span>
+        )}
+      </p>
 
       {/* Mini KPIs row */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -531,11 +558,12 @@ function RecentClicksTable({ clicks, locale, t }: { clicks: RecentClick[]; local
             <TableHead className="text-xs">{t("location")}</TableHead>
             <TableHead className="text-xs">{t("device")}</TableHead>
             <TableHead className="text-xs">{t("source")}</TableHead>
+            <TableHead className="text-xs">{t("status")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {clicks.map((click) => (
-            <TableRow key={click.id}>
+            <TableRow key={click.id} className={click.failed ? "bg-red-500/5" : undefined}>
               <TableCell className="text-xs whitespace-nowrap">
                 {new Date(click.clickedAt).toLocaleDateString(locale, {
                   month: "short",
@@ -564,6 +592,17 @@ function RecentClicksTable({ clicks, locale, t }: { clicks: RecentClick[]; local
               </TableCell>
               <TableCell className="text-xs capitalize">
                 {click.referrerSource ?? t("direct")}
+              </TableCell>
+              <TableCell className="text-xs">
+                {click.failed ? (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-red-500/10 px-1.5 py-0.5 text-xs font-medium text-red-600 dark:text-red-400">
+                    {t("statusFailed")}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    {t("statusOk")}
+                  </span>
+                )}
               </TableCell>
             </TableRow>
           ))}

@@ -69,7 +69,12 @@
       "clearFilter": "Clear filter",
       "clear": "Clear",
       "searchProduct": "Search product...",
-      "noProducts": "No products found."
+      "noProducts": "No products found.",
+      "clickType": {
+        "all": "All clicks",
+        "successful": "Successful",
+        "failed": "No destination"
+      }
     },
     "ranges": {
       "7d": "7d",
@@ -440,7 +445,15 @@
       "barHeightIsResponseTime": "Bar height = response time",
       "fallbackRedirects": "Fallback redirects",
       "ofClicks": "of clicks",
-      "fallbackWarning": "{percent}% of clicks were redirected to the fallback URL — your link was broken or disabled for a significant part of this period."
+      "fallbackWarning": "{percent}% of clicks were redirected to the fallback URL — your link was broken or disabled for a significant part of this period.",
+      "clickType": {
+        "all": "All clicks",
+        "successful": "Successful",
+        "failed": "No destination"
+      },
+      "status": "Status",
+      "statusOk": "Redirected",
+      "statusFailed": "No destination"
     }
   },
   "tags": {
@@ -830,6 +843,15 @@
       "backToBilling": "Back to billing",
       "goToDashboard": "Go to dashboard"
     }
+  },
+  "linkUnavailable": {
+    "metadataTitle": "Link Unavailable — AffProf",
+    "badge": "OOPS",
+    "title": "This link isn't available",
+    "description": "The creator may have temporarily disabled this link or it could be broken. Check back later.",
+    "infoTitle": "What happened?",
+    "infoDesc": "This short link exists but currently has no active destination. The creator may have paused it or the original URL is no longer working.",
+    "discoverAffProf": "Discover AffProf"
   },
   "dataTable": {
     "selectedRows": "{selected} of {total} row(s) selected",

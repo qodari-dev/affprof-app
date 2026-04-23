@@ -1,0 +1,1 @@
+ALTER TABLE "link_clicks" ADD COLUMN "failed" boolean DEFAULT false NOT NULL;

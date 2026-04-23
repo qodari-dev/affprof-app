@@ -16,12 +16,20 @@ export const RANGE_DAYS: Record<DashboardRange, number> = {
 };
 
 // ============================================
+// CLICK TYPE FILTER
+// ============================================
+
+export const CLICK_TYPES = ['all', 'successful', 'failed'] as const;
+export type ClickType = (typeof CLICK_TYPES)[number];
+
+// ============================================
 // QUERY
 // ============================================
 
 export const DashboardQuerySchema = z.object({
   productId: z.string().uuid().optional(),
   range: z.enum(DASHBOARD_RANGES).default('30d'),
+  clickType: z.enum(CLICK_TYPES).default('all'),
 });
 
 export type DashboardQuery = z.infer<typeof DashboardQuerySchema>;
@@ -122,6 +130,7 @@ export type DashboardHealthStats = {
 
 export const LinkAnalyticsQuerySchema = z.object({
   range: z.enum(DASHBOARD_RANGES).default('30d'),
+  clickType: z.enum(CLICK_TYPES).default('all'),
 });
 
 export type LinkAnalyticsQuery = z.infer<typeof LinkAnalyticsQuerySchema>;
@@ -165,6 +174,7 @@ export type RecentClick = {
   browser: string | null;
   referrerSource: string | null;
   isQr: boolean;
+  failed: boolean;
 };
 
 export type HealthCheckSummary = {

@@ -9,7 +9,7 @@ const iamProxy = createIamProxy({
   clientId: env.IAM_CLIENT_ID,
   redirectUri: env.IAM_REDIRECT_URI,
   accessTokenCookieName: env.ACCESS_TOKEN_NAME,
-  publicPaths: ['/oauth/callback', '/register', '/billing/success', '/billing/canceled', '/go'],
+  publicPaths: ['/oauth/callback', '/register', '/billing/success', '/billing/canceled', '/go', '/link-unavailable'],
 });
 
 export default async function proxy(request: NextRequest) {
