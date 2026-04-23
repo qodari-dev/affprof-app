@@ -908,7 +908,10 @@
     "ALREADY_SUBSCRIBED": "Ya tienes una suscripción activa.",
     "NO_CUSTOMER": "No se encontró una cuenta de facturación. Contacta a soporte.",
     "INVALID_TOKEN": "Tu sesión no es válida. Inicia sesión de nuevo.",
-    "UNAUTHENTICATED": "Debes iniciar sesión para acceder a esto."
+    "UNAUTHENTICATED": "Debes iniciar sesión para acceder a esto.",
+    "DOMAIN_RECORDS_NOT_FOUND": "No se encontraron ni el registro TXT ni el CNAME aún. Verifica que ambos estén configurados y espera unos minutos para que el DNS se propague.",
+    "DOMAIN_TXT_NOT_FOUND": "No se encontró el registro TXT de verificación aún. Verifica que esté configurado correctamente y espera unos minutos para que el DNS se propague.",
+    "DOMAIN_CNAME_NOT_FOUND": "No se encontró el registro CNAME aún. Verifica que esté configurado correctamente y espera unos minutos para que el DNS se propague."
   },
   "toasts": {
     "linkCreated": "Enlace creado",

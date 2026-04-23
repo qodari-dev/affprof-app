@@ -908,7 +908,10 @@
     "ALREADY_SUBSCRIBED": "You already have an active subscription.",
     "NO_CUSTOMER": "No billing account found. Please contact support.",
     "INVALID_TOKEN": "Your session is invalid. Please log in again.",
-    "UNAUTHENTICATED": "You need to log in to access this."
+    "UNAUTHENTICATED": "You need to log in to access this.",
+    "DOMAIN_RECORDS_NOT_FOUND": "Neither the TXT nor the CNAME record were found yet. Check both are configured and wait a few minutes for DNS to propagate.",
+    "DOMAIN_TXT_NOT_FOUND": "TXT verification record not found yet. Check it is configured correctly and wait a few minutes for DNS to propagate.",
+    "DOMAIN_CNAME_NOT_FOUND": "CNAME record not found yet. Check it is configured correctly and wait a few minutes for DNS to propagate."
   },
   "toasts": {
     "linkCreated": "Link created",
