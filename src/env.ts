@@ -6,6 +6,7 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    APP_ENV: z.enum(["prod", "dev"]).default("dev"),
     DATABASE_URL: z.url(),
 
     // IAM / OAuth
@@ -80,6 +81,7 @@ export const env = createEnv({
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
+    APP_ENV: process.env.APP_ENV,
     DATABASE_URL: process.env.DATABASE_URL,
 
     // IAM / OAuth

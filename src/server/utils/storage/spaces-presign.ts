@@ -66,7 +66,7 @@ const CONTENT_TYPE_EXT: Record<string, string> = {
  *   prod/affprof/user_abc123/products/9b2c4e7f1a2b.jpg
  */
 export function buildFileKey(userId: string, resource: string, contentType: string): string {
-  const envPrefix = env.NODE_ENV === 'production' ? 'prod' : 'dev';
+  const envPrefix = env.APP_ENV;
   const appSlug = env.IAM_APP_SLUG;
   const ext = CONTENT_TYPE_EXT[contentType] ?? 'bin';
   const uuid = randomUUID().replace(/-/g, '');
@@ -142,7 +142,7 @@ export async function deleteSpacesUserFiles(userId: string): Promise<void> {
   }
 
   const client = createS3Client();
-  const envPrefix = env.NODE_ENV === 'production' ? 'prod' : 'dev';
+  const envPrefix = env.APP_ENV;
   const prefix = `${envPrefix}/${env.IAM_APP_SLUG}/${userId}/`;
 
   try {
