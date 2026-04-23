@@ -5,6 +5,7 @@ import { PageHeader, PageContent } from '@/components/layout';
 import { BrandsCard } from './brands-card';
 import { CustomDomainCard } from './custom-domain-card';
 import { EmailHistoryCard } from './email-history-card';
+import { FallbackUrlCard } from './fallback-url-card';
 import { NotificationsCard } from './notifications-card';
 
 export function SettingsPage() {
@@ -19,6 +20,7 @@ export function SettingsPage() {
       <PageContent>
         <BrandsCard />
         <CustomDomainCard />
+        <FallbackUrlCard />
         <NotificationsCard />
         <EmailHistoryCard />
       </PageContent>

@@ -20,7 +20,6 @@
       "cta": "Create your first link"
     }
   },
-
   "common": {
     "save": "Save",
     "cancel": "Cancel",
@@ -51,7 +50,6 @@
     "saveChanges": "Save changes",
     "downloadPng": "Download PNG"
   },
-
   "nav": {
     "dashboard": "Dashboard",
     "products": "Products",
@@ -63,7 +61,6 @@
     "profile": "Profile",
     "logOut": "Log out"
   },
-
   "dashboard": {
     "title": "Dashboard",
     "description": "Your affiliate performance, link health, and audience insights.",
@@ -158,7 +155,6 @@
       "share": "Share"
     }
   },
-
   "products": {
     "title": "Products",
     "description": "Group your affiliate links by product to keep them organized.",
@@ -226,7 +222,6 @@
       "templateFile": "affprof-products-template.csv"
     }
   },
-
   "links": {
     "title": "Links",
     "description": "Create and manage your affiliate short links. Monitor their health and track every click.",
@@ -448,7 +443,6 @@
       "fallbackWarning": "{percent}% of clicks were redirected to the fallback URL — your link was broken or disabled for a significant part of this period."
     }
   },
-
   "tags": {
     "title": "Tags",
     "description": "Label your links with tags to filter and find them faster.",
@@ -487,7 +481,6 @@
       "updated": "Updated"
     }
   },
-
   "profile": {
     "title": "Profile",
     "description": "Manage your personal information and security.",
@@ -541,7 +534,6 @@
       "errorToast": "Failed to delete account. Please try again."
     }
   },
-
   "settings": {
     "title": "Settings",
     "description": "Manage brands, notifications, branded domains, and delivery history.",
@@ -553,12 +545,12 @@
     },
     "brands": {
       "title": "Brands",
-      "description": "Save reusable logos and QR colors. The QR modal can then switch between brands without uploading assets again.",
+      "description": "Upload your logo and QR colors once, then apply them to any link in one click.",
       "loadingDescription": "Reusable logos and QR styling presets.",
       "availableOnPro": "Available on Pro",
-      "upgradeDescription": "Upgrade to Pro to save reusable brand logos and QR color presets.",
+      "upgradeDescription": "Upgrade to Pro to generate QR codes with your own logo and brand colors.",
       "empty": "No brands yet",
-      "emptyDescription": "Add a brand once, upload its logo, and reuse that style across QR downloads.",
+      "emptyDescription": "Create your first brand to start generating QR codes with your logo and colors — no re-uploading every time.",
       "addBrand": "Add brand",
       "default": "Default",
       "setDefault": "Set default",
@@ -567,7 +559,7 @@
       "form": {
         "createTitle": "Create brand",
         "editTitle": "Edit brand",
-        "description": "Save reusable logos and QR colors so links can generate branded codes without duplicated uploads.",
+        "description": "Give this brand a name, upload a logo, and set your QR colors. Apply it to any link instantly.",
         "brandPreview": "Brand preview",
         "brandFallback": "Brand",
         "brandPreviewHelp": "This style will appear in QR previews and downloads.",
@@ -582,8 +574,8 @@
         "uploadLogo": "Upload logo",
         "remove": "Remove",
         "logoHelp": "Upload a JPG, PNG, or WEBP image up to 4 MB.",
-        "logoUploadHelp": "Upload a JPG, PNG, or WEBP image up to 4 MB to DigitalOcean Spaces.",
-        "logoReuse": "The same uploaded asset can be reused across as many QR codes as needed.",
+        "logoUploadHelp": "Upload a JPG, PNG, or WEBP image up to 4 MB.",
+        "logoReuse": "The logo is stored once and reused across all QR codes that use this brand.",
         "qrForeground": "QR foreground",
         "qrForegroundHelp": "Main QR color. Darker colors scan more reliably.",
         "qrBackground": "QR background",
@@ -603,13 +595,13 @@
     "customDomain": {
       "title": "Custom domain",
       "description": "Use your own branded subdomain for short links.",
-      "cardDescription": "Connect one branded subdomain for your Pro short links.",
+      "cardDescription": "Replace the default affprof.com domain with your own subdomain on every short link.",
       "availableOnPro": "Available on Pro",
-      "upgradeDescription": "Upgrade to Pro to use one custom subdomain like go.yourbrand.com.",
+      "upgradeDescription": "Upgrade to Pro to use a custom subdomain like go.yourbrand.com for all your short links.",
       "subdomain": "Subdomain",
       "subdomainPlaceholder": "go.yourbrand.com",
-      "subdomainHelp": "Use a subdomain only. Root domains like yourbrand.com are not supported yet.",
-      "dnsHelp": "After adding the domain, AffProf will show the exact TXT and CNAME records you need to configure before verification.",
+      "subdomainHelp": "Subdomains only — e.g. go.yourbrand.com. Root domains are not supported yet.",
+      "dnsHelp": "Once added, AffProf will show the exact TXT and CNAME records to configure. Verification is automatic once DNS is live.",
       "verified": "Verified",
       "pendingVerification": "Pending verification",
       "primary": "Primary",
@@ -619,18 +611,20 @@
       "txtRecord": "TXT record",
       "cnameRecord": "CNAME record",
       "recordName": "Name",
-      "dnsUpdateHelp": "DNS updates can take a few minutes. Once both records are live, click Verify.",
-      "brandedLinksActive": "Your branded links now resolve from {hostname}. Existing links can keep the default AffProf domain, and new links can use the branded one.",
-      "proLimitNote": "Use a subdomain you control, e.g. go.yourbrand.com. Add the DNS records below and AffProf will verify ownership automatically.",
+      "dnsUpdateHelp": "DNS changes can take a few minutes to propagate. Once both records are live, click Verify.",
+      "brandedLinksActive": "All your short links now resolve from {hostname}.",
       "addDomain": "Add domain",
       "copied": "{label} copied",
-      "invalidHostname": "Enter a subdomain like go.yourbrand.com.",
+      "invalidHostname": "Enter a valid subdomain — e.g. go.yourbrand.com.",
       "toastDomainAdded": "Custom domain added",
       "toastDomainVerified": "Domain verified",
       "toastPrimaryUpdated": "Primary domain updated",
       "toastDomainRemoved": "Custom domain removed",
       "verifiedHelp": "New links can use this branded domain immediately.",
-      "pendingHelp": "Finish the DNS records below, then verify the domain."
+      "pendingHelp": "Finish the DNS records below, then verify the domain.",
+      "footerDefault": "Subdomains only — e.g. go.yourbrand.com. Root domains are not supported yet.",
+      "footerPending": "DNS changes can take a few minutes to propagate globally.",
+      "footerVerified": "One custom domain per account is supported for now."
     },
     "notifications": {
       "title": "Notifications",
@@ -683,9 +677,18 @@
         "processing": "Processing",
         "failed": "Failed"
       }
+    },
+    "fallbackUrl": {
+      "title": "Default fallback URL",
+      "description": "Backup destination for broken or disabled links.",
+      "whenUsed": "This URL is used automatically when a short link is disabled or broken and that link does not have its own fallback configured.",
+      "label": "Fallback URL",
+      "placeholder": "https://yourbrand.com/backup",
+      "help": "Leave empty to show no redirect when a link is unavailable.",
+      "save": "Save",
+      "toastSaved": "Fallback URL saved"
     }
   },
-
   "billing": {
     "title": "Billing",
     "description": "Manage your subscription, payment flow, and customer portal access.",
@@ -828,7 +831,6 @@
       "goToDashboard": "Go to dashboard"
     }
   },
-
   "dataTable": {
     "selectedRows": "{selected} of {total} row(s) selected",
     "showingResults": "Showing {start} to {end} of {total} results",
@@ -842,7 +844,6 @@
     "sortDesc": "Desc",
     "hide": "Hide"
   },
-
   "errors": {
     "GENERIC": "Something went wrong",
     "INTERNAL_ERROR": "An unexpected error occurred",
@@ -868,7 +869,6 @@
     "INVALID_TOKEN": "Your session is invalid. Please log in again.",
     "UNAUTHENTICATED": "You need to log in to access this."
   },
-
   "toasts": {
     "linkCreated": "Link created",
     "linkCreateError": "Error creating link",
@@ -925,7 +925,6 @@
     "qrDownloadError": "Could not download QR code",
     "logoutError": "Error logging out"
   },
-
   "auth": {
     "register": {
       "metadataTitle": "Create account — AffProf",
@@ -965,7 +964,6 @@
       }
     }
   },
-
   "errorPages": {
     "notFound": {
       "metadataTitle": "Not Found — AffProf",

@@ -8,6 +8,7 @@ import { db, customDomains } from '@/server/db';
 import {
   buildCustomDomainSetup,
   enforceCustomDomainLimit,
+  findVerifiedCustomDomainByHostname,
   getCustomDomainByIdForUser,
   getSubscriptionForDomainAccess,
   listUserCustomDomains,
@@ -147,6 +148,25 @@ export const customDomainHandler = tsr.router(contract.customDomain, {
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: 'Error deleting custom domain',
+      });
+    }
+  },
+
+  // Called by Caddy on-demand TLS before provisioning a certificate.
+  // Returns 200 if the hostname is a verified custom domain, 404 otherwise.
+  checkHostname: async ({ query: { domain } }) => {
+    try {
+      const hostname = domain.trim().toLowerCase().replace(/\.+$/, '');
+      const found = await findVerifiedCustomDomainByHostname(hostname);
+
+      if (!found) {
+        return { status: 404, body: { message: 'Hostname not found', code: 'NOT_FOUND' } };
+      }
+
+      return { status: 200, body: { hostname: found.hostname } };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, {
+        genericMsg: 'Error checking hostname',
       });
     }
   },
