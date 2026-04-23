@@ -26,7 +26,6 @@ import { useProductColumns } from './product-columns';
 import { ProductToolbar } from './product-toolbar';
 import { ProductForm } from './product-form';
 import { ProductInfo } from './product-info';
-import { ProductImportDialog } from './product-import-dialog';
 
 export function Products() {
   const t = useTranslations('products');
@@ -67,7 +66,6 @@ export function Products() {
   const [openedInfoSheet, setOpenedInfoSheet] = React.useState(false);
   const [openedFormSheet, setOpenedFormSheet] = React.useState(false);
   const [openedDeleteDialog, setOpenedDeleteDialog] = React.useState(false);
-  const [openedImportDialog, setOpenedImportDialog] = React.useState(false);
 
   // ---- Handlers ----
   const handleCreate = React.useCallback(() => {
@@ -134,7 +132,6 @@ export function Products() {
               searchValue={searchValue}
               onSearchChange={handleSearchChange}
               onCreate={handleCreate}
-              onImport={isPro ? () => setOpenedImportDialog(true) : undefined}
               onRefresh={() => refetch()}
               isRefreshing={isFetching && !isLoading}
               atProductLimit={atProductLimit}
@@ -148,8 +145,6 @@ export function Products() {
 
       {/* Form sheet (create / edit) */}
       <ProductForm product={product} opened={openedFormSheet} onOpened={setOpenedFormSheet} />
-
-      <ProductImportDialog opened={openedImportDialog} onOpened={setOpenedImportDialog} />
 
       {/* Delete confirmation */}
       <AlertDialog open={openedDeleteDialog} onOpenChange={setOpenedDeleteDialog}>

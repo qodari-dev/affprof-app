@@ -5,8 +5,6 @@ import { iamClient } from '@/iam/clients/iam-m2m-client';
 import { tsr } from '@ts-rest/serverless/next';
 import { eq, and, ne } from 'drizzle-orm';
 import { contract } from '../contracts';
-import { env } from '@/env';
-
 // ============================================
 // HANDLER
 // ============================================

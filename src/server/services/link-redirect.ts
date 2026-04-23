@@ -182,9 +182,6 @@ async function redirectToLink(
   },
 ) {
   const target = resolveRedirectTarget(link);
-  if (!target) {
-    return new Response('Not found', { status: 404 });
-  }
 
   const ua = request.headers.get('user-agent') ?? '';
   const referrer = request.headers.get('referer') ?? null;
@@ -200,11 +197,9 @@ async function redirectToLink(
   const utmContent = searchParams.get('utm_content') ?? null;
   const utmTerm = searchParams.get('utm_term') ?? null;
   const geoFromHeaders = parseGeoHeaders(request.headers);
-  const redirectUrl = buildRedirectUrl(target.destinationUrl, searchParams);
 
   after(async () => {
     try {
-      // Use CDN headers if available, otherwise fall back to local geoip lookup
       const { country, city } = geoFromHeaders.country
         ? geoFromHeaders
         : ip ? geoLookupByIp(ip) : { country: null, city: null };
@@ -221,7 +216,8 @@ async function redirectToLink(
           referrer: referrer?.slice(0, 2048) ?? null,
           referrerSource: parseReferrerSource(referrer),
           isQr,
-          usedFallback: target.usedFallback,
+          usedFallback: target?.usedFallback ?? false,
+          failed: target === null,
           ipHash: ip ? hashIp(ip) : null,
           utmSource,
           utmMedium,
@@ -240,6 +236,11 @@ async function redirectToLink(
     }
   });
 
+  if (!target) {
+    return Response.redirect(new URL('/link-unavailable', request.url), 302);
+  }
+
+  const redirectUrl = buildRedirectUrl(target.destinationUrl, searchParams);
   return Response.redirect(redirectUrl, 302);
 }
 

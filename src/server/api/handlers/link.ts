@@ -1,4 +1,4 @@
-import { db, links, linkTags, products } from '@/server/db';
+import { db, links, linkTags, products, tags } from '@/server/db';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { getAuthContext } from '@/server/utils/auth-context';
 import { tsr } from '@ts-rest/serverless/next';
@@ -7,6 +7,7 @@ import { contract } from '../contracts';
 import { checkLink, checkLinks } from '@/server/services/link-checker';
 import { normalizeTrackedDestinationInput } from '@/utils/tracked-destination-url';
 import { enforceLinkLimit, requireProPlan } from '@/server/services/plan-limits';
+import { pickTagColor } from '@/utils/tag-color';
 
 import { buildTypedIncludes, createIncludeMap } from '@/server/utils/query/include-builder';
 import {
@@ -272,47 +273,33 @@ export const link = tsr.router(contract.link, {
       const [existingProducts, existingLinks] = await Promise.all([
         db.query.products.findMany({
           where: and(eq(products.userId, auth.userId), isNull(products.deletedAt)),
-          columns: {
-            id: true,
-            name: true,
-          },
+          columns: { id: true, name: true },
         }),
         db.query.links.findMany({
-          where: eq(links.userId, auth.userId),
-          columns: {
-            slug: true,
-          },
+          where: and(eq(links.userId, auth.userId), isNull(links.deletedAt)),
+          columns: { id: true, slug: true },
         }),
       ]);
 
+      // ── Validation pass (reads only — outside transaction) ──────────────────
       const productMap = new Map(
-        existingProducts.map((product) => [product.name.trim().toLowerCase(), product]),
+        existingProducts.map((p) => [p.name.trim().toLowerCase(), p]),
       );
-      const existingSlugs = new Set(existingLinks.map((link) => link.slug.trim().toLowerCase()));
+      // Map of slug → existing link id (for upsert)
+      const existingLinkMap = new Map(existingLinks.map((l) => [l.slug.trim().toLowerCase(), l.id]));
       const seenSlugs = new Set<string>();
       const missingProductNames = new Set<string>();
       const skippedRows = new Set<number>();
       const errors: Array<{ row: number; message: string }> = [];
+      const allTagNames = new Set<string>();
 
       for (const row of body.rows) {
         const normalizedSlug = row.slug.trim().toLowerCase();
         const normalizedProductName = row.productName.trim().toLowerCase();
 
-        if (existingSlugs.has(normalizedSlug)) {
-          skippedRows.add(row.row);
-          errors.push({
-            row: row.row,
-            message: `Slug "${row.slug}" already exists and was skipped.`,
-          });
-          continue;
-        }
-
         if (seenSlugs.has(normalizedSlug)) {
           skippedRows.add(row.row);
-          errors.push({
-            row: row.row,
-            message: `Slug "${row.slug}" is duplicated in this file.`,
-          });
+          errors.push({ row: row.row, message: `Slug "${row.slug}" is duplicated in this file.` });
           continue;
         }
 
@@ -321,82 +308,170 @@ export const link = tsr.router(contract.link, {
         if (!productMap.has(normalizedProductName)) {
           missingProductNames.add(row.productName.trim());
         }
+
+        row.tags?.forEach((t) => allTagNames.add(t));
       }
 
-      let createdProductsCount = 0;
-      if (missingProductNames.size > 0) {
-        const insertedProducts = await db
-          .insert(products)
-          .values(
-            Array.from(missingProductNames).map((name) => ({
-              userId: auth.userId,
-              name,
-            })),
-          )
-          .returning({
-            id: products.id,
-            name: products.name,
-          });
+      // Pre-fetch existing tags (read outside tx to keep tx short)
+      const existingTagsRows = allTagNames.size > 0
+        ? await db.query.tags.findMany({
+            where: and(eq(tags.userId, auth.userId), inArray(tags.name, Array.from(allTagNames))),
+            columns: { id: true, name: true },
+          })
+        : [];
 
-        createdProductsCount = insertedProducts.length;
-        for (const product of insertedProducts) {
-          productMap.set(product.name.trim().toLowerCase(), product);
-        }
-      }
+      // ── All writes inside a single transaction ────────────────────────────────
+      const result = await db.transaction(async (tx) => {
+        // 1. Create missing products
+        let createdProductsCount = 0;
+        if (missingProductNames.size > 0) {
+          const insertedProducts = await tx
+            .insert(products)
+            .values(Array.from(missingProductNames).map((name) => ({ userId: auth.userId, name })))
+            .returning({ id: products.id, name: products.name });
 
-      const rowsToInsert: Array<typeof links.$inferInsert> = [];
-
-      for (const row of body.rows) {
-        if (skippedRows.has(row.row)) continue;
-
-        const product = productMap.get(row.productName.trim().toLowerCase());
-
-        if (!product) {
-          skippedRows.add(row.row);
-          errors.push({
-            row: row.row,
-            message: `Product "${row.productName}" could not be resolved.`,
-          });
-          continue;
+          createdProductsCount = insertedProducts.length;
+          for (const p of insertedProducts) {
+            productMap.set(p.name.trim().toLowerCase(), p);
+          }
         }
 
-        const destination = normalizeTrackedDestinationInput({
-          baseUrl: row.baseUrl,
-          utmSource: row.utmSource,
-          utmMedium: row.utmMedium,
-          utmCampaign: row.utmCampaign,
-          utmContent: row.utmContent,
-          utmTerm: row.utmTerm,
-        });
+        // 2. Resolve tags (create missing ones)
+        const tagMap = new Map<string, string>(); // name → id
+        for (const tag of existingTagsRows) {
+          tagMap.set(tag.name.toLowerCase(), tag.id);
+        }
 
-        rowsToInsert.push({
-          userId: auth.userId,
-          productId: product.id,
-          slug: row.slug.trim(),
-          platform: row.platform.trim(),
-          baseUrl: destination.baseUrl,
-          originalUrl: destination.originalUrl,
-          utmSource: row.utmSource,
-          utmMedium: row.utmMedium,
-          utmCampaign: row.utmCampaign,
-          utmContent: row.utmContent,
-          utmTerm: row.utmTerm,
-          fallbackUrl: row.fallbackUrl,
-          isEnabled: row.isEnabled ?? true,
-          notes: row.notes,
-        });
-      }
+        let createdTagsCount = 0;
+        if (allTagNames.size > 0) {
+          const missingTagNames = Array.from(allTagNames).filter((n) => !tagMap.has(n));
+          if (missingTagNames.length > 0) {
+            const newTags = await tx
+              .insert(tags)
+              .values(missingTagNames.map((name) => ({ userId: auth.userId, name, color: pickTagColor(name) })))
+              .returning({ id: tags.id, name: tags.name });
+            createdTagsCount = newTags.length;
+            for (const tag of newTags) {
+              tagMap.set(tag.name.toLowerCase(), tag.id);
+            }
+          }
+        }
 
-      if (rowsToInsert.length > 0) {
-        await db.insert(links).values(rowsToInsert);
-      }
+        // 3. Split rows into inserts and updates
+        const rowsToInsert: Array<typeof links.$inferInsert> = [];
+        const rowsToUpdate: Array<{ id: string; data: Partial<typeof links.$inferInsert>; rowTags?: string[] }> = [];
+
+        for (const row of body.rows) {
+          if (skippedRows.has(row.row)) continue;
+
+          const product = productMap.get(row.productName.trim().toLowerCase());
+          if (!product) {
+            skippedRows.add(row.row);
+            errors.push({ row: row.row, message: `Product "${row.productName}" could not be resolved.` });
+            continue;
+          }
+
+          const destination = normalizeTrackedDestinationInput({
+            baseUrl: row.baseUrl,
+            utmSource: row.utmSource,
+            utmMedium: row.utmMedium,
+            utmCampaign: row.utmCampaign,
+            utmContent: row.utmContent,
+            utmTerm: row.utmTerm,
+          });
+
+          const linkData = {
+            userId: auth.userId,
+            productId: product.id,
+            slug: row.slug.trim(),
+            platform: row.platform.trim(),
+            baseUrl: destination.baseUrl,
+            originalUrl: destination.originalUrl,
+            utmSource: row.utmSource ?? null,
+            utmMedium: row.utmMedium ?? null,
+            utmCampaign: row.utmCampaign ?? null,
+            utmContent: row.utmContent ?? null,
+            utmTerm: row.utmTerm ?? null,
+            fallbackUrl: row.fallbackUrl ?? null,
+            isEnabled: row.isEnabled ?? true,
+            notes: row.notes ?? null,
+          };
+
+          const existingId = existingLinkMap.get(row.slug.trim().toLowerCase());
+          if (existingId) {
+            rowsToUpdate.push({ id: existingId, data: linkData, rowTags: row.tags });
+          } else {
+            rowsToInsert.push(linkData);
+          }
+        }
+
+        // 4. Insert new links
+        let insertedLinks: Array<{ id: string; slug: string }> = [];
+        if (rowsToInsert.length > 0) {
+          insertedLinks = await tx
+            .insert(links)
+            .values(rowsToInsert)
+            .returning({ id: links.id, slug: links.slug });
+        }
+
+        // 5. Update existing links
+        let updatedLinks: Array<{ id: string; slug: string }> = [];
+        if (rowsToUpdate.length > 0) {
+          const updateResults = await Promise.all(
+            rowsToUpdate.map(({ id, data }) =>
+              tx
+                .update(links)
+                .set({ ...data, updatedAt: new Date() })
+                .where(and(eq(links.id, id), eq(links.userId, auth.userId)))
+                .returning({ id: links.id, slug: links.slug }),
+            ),
+          );
+          updatedLinks = updateResults.flat();
+
+          // Replace tags for updated links
+          const updatedIds = updatedLinks.map((l) => l.id);
+          if (updatedIds.length > 0) {
+            await tx.delete(linkTags).where(inArray(linkTags.linkId, updatedIds));
+          }
+        }
+
+        // 6. Insert link_tags for both new and updated links
+        const allProcessed = [
+          ...insertedLinks.map((l) => ({ ...l, tags: body.rows.find((r) => r.slug === l.slug)?.tags })),
+          ...updatedLinks.map((l) => ({ ...l, tags: rowsToUpdate.find((r) => r.id === l.id)?.rowTags })),
+        ];
+
+        if (allProcessed.length > 0 && tagMap.size > 0) {
+          const linkTagValues: Array<{ linkId: string; tagId: string }> = [];
+          for (const { id, tags: rowTags } of allProcessed) {
+            if (rowTags?.length) {
+              for (const tagName of rowTags) {
+                const tagId = tagMap.get(tagName);
+                if (tagId) linkTagValues.push({ linkId: id, tagId });
+              }
+            }
+          }
+          if (linkTagValues.length > 0) {
+            await tx.insert(linkTags).values(linkTagValues);
+          }
+        }
+
+        return {
+          createdCount: insertedLinks.length,
+          updatedCount: updatedLinks.length,
+          createdProductsCount,
+          createdTagsCount,
+        };
+      });
 
       return {
         status: 200 as const,
         body: {
-          importedCount: rowsToInsert.length,
+          createdCount: result.createdCount,
+          updatedCount: result.updatedCount,
           skippedCount: errors.length,
-          createdProductsCount,
+          createdProductsCount: result.createdProductsCount,
+          createdTagsCount: result.createdTagsCount,
           errors,
         },
       };

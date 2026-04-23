@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import {
   CreateCustomDomainBodySchema,
   SetPrimaryCustomDomainBodySchema,
@@ -85,6 +86,22 @@ export const customDomain = c.router(
         401: TsRestErrorSchema,
         404: TsRestErrorSchema,
         500: TsRestErrorSchema,
+      },
+    },
+
+    // Public endpoint used by Caddy on-demand TLS to check if a hostname
+    // belongs to a verified custom domain before provisioning a certificate.
+    // GET /api/v1/custom-domains/check-hostname?domain=go.client.com
+    checkHostname: {
+      method: 'GET',
+      path: '/check-hostname',
+      query: z.object({ domain: z.string().min(1) }),
+      metadata: {
+        auth: 'public',
+      } satisfies TsRestMetaData,
+      responses: {
+        200: c.type<{ hostname: string }>(),
+        404: TsRestErrorSchema,
       },
     },
   },

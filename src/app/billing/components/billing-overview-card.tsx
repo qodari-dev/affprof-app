@@ -34,13 +34,6 @@ function StatCard({
   );
 }
 
-function getStatusVariant(plan: string, status: string): 'secondary' | 'outline' | 'destructive' {
-  if (plan === 'free') return 'outline';
-  if (status === 'active') return 'secondary';
-  if (status === 'past_due') return 'destructive';
-  return 'outline';
-}
-
 export function BillingOverviewCard() {
   const t = useTranslations('billing.overview');
   const tPlans = useTranslations('billing.planNames');
@@ -60,17 +53,6 @@ export function BillingOverviewCard() {
       return tPlans('free');
     },
     [tPlans],
-  );
-
-  const formatStatus = React.useCallback(
-    (plan: string, status: string) => {
-      if (plan === 'free') return tStatuses('freePlan');
-      if (status === 'past_due') return tStatuses('past_due');
-      if (status === 'canceled') return tStatuses('canceled');
-      if (status === 'paused') return tStatuses('paused');
-      return tStatuses('active');
-    },
-    [tStatuses],
   );
 
   const handleOpenPortal = React.useCallback(async () => {
@@ -108,7 +90,6 @@ export function BillingOverviewCard() {
   const isScheduledToCancel =
     subscription.status === 'active' &&
     (Boolean(subscription.cancelAtPeriodEnd) || cancelAtDate !== null);
-  const periodLabel = isScheduledToCancel ? t('ends') : t('renews');
   const periodDate = isScheduledToCancel ? cancelAtDate : subscription.currentPeriodEnd
     ? new Date(subscription.currentPeriodEnd)
     : null;

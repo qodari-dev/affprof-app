@@ -189,26 +189,6 @@ export function NotificationsCard() {
             )}
           />
 
-          {/* Default fallback URL */}
-          <Controller
-            name="defaultFallbackUrl"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>{t('defaultFallbackUrl')}</FieldLabel>
-                <Input
-                  type="url"
-                  placeholder={t('defaultFallbackUrlPlaceholder')}
-                  value={field.value ?? ''}
-                  onChange={(e) => field.onChange(e.target.value || null)}
-                />
-                <FieldDescription>
-                  {t('defaultFallbackUrlHelp')}
-                </FieldDescription>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
         </CardContent>
         <CardFooter className="flex justify-end">
           <Button type="submit" size="sm" disabled={isSaving}>

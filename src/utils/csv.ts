@@ -85,7 +85,9 @@ function splitCsvText(text: string): string[] {
 }
 
 export function parseCsv(text: string): ParsedCsvFile {
-  const lines = splitCsvText(text);
+  // Strip UTF-8 BOM (exported by Excel, Google Sheets on some locales)
+  const cleaned = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+  const lines = splitCsvText(cleaned);
 
   if (lines.length === 0) {
     return { headers: [], rows: [] };

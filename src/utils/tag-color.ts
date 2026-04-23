@@ -68,3 +68,17 @@ export function getTagSwatchStyle(hex: string): CSSProperties {
     boxShadow: `inset 0 0 0 1px ${rgba(hex, 0.12)}`,
   };
 }
+
+/**
+ * Deterministically picks a color from the palette (excluding gray) based on
+ * the tag name. Same name always gets the same color; different names spread
+ * across the full palette.
+ */
+export function pickTagColor(name: string): string {
+  const palette = TAG_COLOR_PALETTE.filter((c) => c.value !== '#6B7280');
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash * 31 + name.charCodeAt(i)) >>> 0; // keep it unsigned 32-bit
+  }
+  return palette[hash % palette.length].value;
+}

@@ -64,7 +64,7 @@ export const analytics = tsr.router(contract.analytics, {
   dashboard: async ({ query }, { request }) => {
     try {
       const auth = await getAuthContext(request);
-      const { productId = null, range } = query;
+      const { productId = null, range, clickType } = query;
 
       const now = new Date();
       const days = RANGE_DAYS[range];
@@ -75,6 +75,11 @@ export const analytics = tsr.router(contract.analytics, {
 
       // Reusable filter fragments
       const userId = auth.userId;
+      const failedFilter = clickType === 'successful'
+        ? sql`AND lc.failed = false`
+        : clickType === 'failed'
+        ? sql`AND lc.failed = true`
+        : sql``;
       const productFilter = productId
         ? sql`AND l.product_id = ${productId}`
         : sql``;
@@ -110,6 +115,7 @@ export const analytics = tsr.router(contract.analytics, {
             AND l.deleted_at IS NULL
             ${productFilter}
             AND lc.clicked_at >= ${previousStart}
+            ${failedFilter}
         `),
 
         // ---- Links count by status ----
@@ -133,6 +139,7 @@ export const analytics = tsr.router(contract.analytics, {
             AND l.deleted_at IS NULL
             ${productFilter}
             AND lc.clicked_at >= ${currentStart}
+            ${failedFilter}
           GROUP BY date_trunc('day', lc.clicked_at)
           ORDER BY date_trunc('day', lc.clicked_at) ASC
         `),
@@ -151,6 +158,7 @@ export const analytics = tsr.router(contract.analytics, {
           INNER JOIN products p ON p.id = l.product_id
           LEFT JOIN link_clicks lc
             ON lc.link_id = l.id AND lc.clicked_at >= ${previousStart}
+            ${failedFilter}
           WHERE l.user_id = ${userId}
             AND l.deleted_at IS NULL
             ${productFilter}
@@ -172,6 +180,7 @@ export const analytics = tsr.router(contract.analytics, {
             ON l.product_id = p.id AND l.deleted_at IS NULL
           LEFT JOIN link_clicks lc
             ON lc.link_id = l.id AND lc.clicked_at >= ${previousStart}
+            ${failedFilter}
           WHERE p.user_id = ${userId}
             AND p.deleted_at IS NULL
             ${productFilterForProducts}
@@ -191,6 +200,7 @@ export const analytics = tsr.router(contract.analytics, {
           FROM links l
           LEFT JOIN link_clicks lc
             ON lc.link_id = l.id AND lc.clicked_at >= ${previousStart}
+            ${failedFilter}
           WHERE l.user_id = ${userId}
             AND l.deleted_at IS NULL
             AND l.platform IS NOT NULL
@@ -213,6 +223,7 @@ export const analytics = tsr.router(contract.analytics, {
             AND l.deleted_at IS NULL
             ${productFilter}
             AND lc.clicked_at >= ${currentStart}
+            ${failedFilter}
           GROUP BY COALESCE(NULLIF(lc.referrer_source, ''), 'direct')
           ORDER BY clicks DESC
         `),
@@ -228,6 +239,7 @@ export const analytics = tsr.router(contract.analytics, {
             AND l.deleted_at IS NULL
             ${productFilter}
             AND lc.clicked_at >= ${currentStart}
+            ${failedFilter}
           GROUP BY lc.device
           ORDER BY clicks DESC
         `),
@@ -244,6 +256,7 @@ export const analytics = tsr.router(contract.analytics, {
             ${productFilter}
             AND lc.clicked_at >= ${currentStart}
             AND lc.country IS NOT NULL
+            ${failedFilter}
           GROUP BY lc.country
           ORDER BY clicks DESC
           LIMIT 10
@@ -507,7 +520,7 @@ export const analytics = tsr.router(contract.analytics, {
   link: async ({ params: { id }, query }, { request }) => {
     try {
       const auth = await getAuthContext(request);
-      const { range } = query;
+      const { range, clickType } = query;
 
       // Verify ownership
       const linkRow = await db.query.links.findFirst({
@@ -529,6 +542,12 @@ export const analytics = tsr.router(contract.analytics, {
       currentStart.setUTCDate(currentStart.getUTCDate() - days);
       const previousStart = new Date(now);
       previousStart.setUTCDate(previousStart.getUTCDate() - days * 2);
+
+      const failedFilter = clickType === 'successful'
+        ? sql`AND lc.failed = false`
+        : clickType === 'failed'
+        ? sql`AND lc.failed = true`
+        : sql``;
 
       const [
         clicksAggResult,
@@ -554,6 +573,7 @@ export const analytics = tsr.router(contract.analytics, {
           FROM link_clicks lc
           WHERE lc.link_id = ${id}
             AND lc.clicked_at >= ${previousStart}
+            ${failedFilter}
         `),
 
         // ---- Timeseries ----
@@ -564,6 +584,7 @@ export const analytics = tsr.router(contract.analytics, {
           FROM link_clicks lc
           WHERE lc.link_id = ${id}
             AND lc.clicked_at >= ${currentStart}
+            ${failedFilter}
           GROUP BY date_trunc('day', lc.clicked_at)
           ORDER BY date_trunc('day', lc.clicked_at) ASC
         `),
@@ -575,6 +596,7 @@ export const analytics = tsr.router(contract.analytics, {
           WHERE lc.link_id = ${id}
             AND lc.clicked_at >= ${currentStart}
             AND lc.country IS NOT NULL
+            ${failedFilter}
           GROUP BY lc.country
           ORDER BY clicks DESC
           LIMIT 10
@@ -588,6 +610,7 @@ export const analytics = tsr.router(contract.analytics, {
           FROM link_clicks lc
           WHERE lc.link_id = ${id}
             AND lc.clicked_at >= ${currentStart}
+            ${failedFilter}
           GROUP BY lc.device
           ORDER BY clicks DESC
         `),
@@ -600,6 +623,7 @@ export const analytics = tsr.router(contract.analytics, {
           FROM link_clicks lc
           WHERE lc.link_id = ${id}
             AND lc.clicked_at >= ${currentStart}
+            ${failedFilter}
           GROUP BY COALESCE(NULLIF(lc.os, ''), 'other')
           ORDER BY clicks DESC
         `),
@@ -612,6 +636,7 @@ export const analytics = tsr.router(contract.analytics, {
           FROM link_clicks lc
           WHERE lc.link_id = ${id}
             AND lc.clicked_at >= ${currentStart}
+            ${failedFilter}
           GROUP BY COALESCE(NULLIF(lc.browser, ''), 'Unknown')
           ORDER BY clicks DESC
           LIMIT 8
@@ -625,6 +650,7 @@ export const analytics = tsr.router(contract.analytics, {
           FROM link_clicks lc
           WHERE lc.link_id = ${id}
             AND lc.clicked_at >= ${currentStart}
+            ${failedFilter}
           GROUP BY COALESCE(NULLIF(lc.referrer_source, ''), 'direct')
           ORDER BY clicks DESC
           LIMIT 6
@@ -642,6 +668,7 @@ export const analytics = tsr.router(contract.analytics, {
             AND lc.clicked_at >= ${currentStart}
             AND lc.utm_campaign IS NOT NULL
             AND lc.utm_campaign != ''
+            ${failedFilter}
           GROUP BY lc.utm_campaign, lc.utm_source, lc.utm_medium
           ORDER BY clicks DESC
           LIMIT 10
@@ -657,9 +684,11 @@ export const analytics = tsr.router(contract.analytics, {
             lc.device::text,
             lc.browser,
             lc.referrer_source,
-            lc.is_qr
+            lc.is_qr,
+            lc.failed
           FROM link_clicks lc
           WHERE lc.link_id = ${id}
+            ${failedFilter}
           ORDER BY lc.clicked_at DESC
           LIMIT 50
         `),
@@ -789,6 +818,7 @@ export const analytics = tsr.router(contract.analytics, {
         browser: string | null;
         referrer_source: string | null;
         is_qr: boolean;
+        failed: boolean;
       }[];
       const recentClicks: RecentClick[] = recentRaw.map((r) => ({
         id: r.id,
@@ -799,6 +829,7 @@ export const analytics = tsr.router(contract.analytics, {
         browser: r.browser,
         referrerSource: r.referrer_source,
         isQr: r.is_qr,
+        failed: r.failed,
       }));
 
       // ---- Health summary ----

@@ -269,7 +269,11 @@ export function CustomDomainCard() {
       </CardContent>
       <CardFooter className="flex flex-col items-start gap-3 border-t bg-muted/10 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
-          {t('proLimitNote')}
+          {currentDomain?.status === 'verified'
+            ? t('footerVerified')
+            : currentDomain?.status === 'pending'
+              ? t('footerPending')
+              : t('footerDefault')}
         </p>
         {!currentDomain && isPro ? (
           <Button type="button" size="sm" onClick={handleCreate} disabled={isCreating}>

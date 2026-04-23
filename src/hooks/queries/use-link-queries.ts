@@ -109,10 +109,11 @@ export function useImportLinksCsv() {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
       queryClient.invalidateQueries({ queryKey: linksKeys.platforms() });
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      const { importedCount, skippedCount, createdProductsCount } = data.body;
+      const { createdCount, updatedCount, skippedCount, createdProductsCount } = data.body;
       const productNote = createdProductsCount > 0
         ? ` ${t('linksImportProductsCreated', { count: createdProductsCount })}`
         : '';
+      const importedCount = createdCount + updatedCount;
       toast.success(t('linksImported', { count: importedCount }), {
         description: skippedCount > 0
           ? `${t('linksImportSkipped', { count: skippedCount })}${productNote}`.trim()

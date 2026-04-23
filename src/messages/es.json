@@ -20,7 +20,6 @@
       "cta": "Crear tu primer enlace"
     }
   },
-
   "common": {
     "save": "Guardar",
     "cancel": "Cancelar",
@@ -51,7 +50,6 @@
     "saveChanges": "Guardar cambios",
     "downloadPng": "Descargar PNG"
   },
-
   "nav": {
     "dashboard": "Panel",
     "products": "Productos",
@@ -63,7 +61,6 @@
     "profile": "Perfil",
     "logOut": "Cerrar sesión"
   },
-
   "dashboard": {
     "title": "Panel",
     "description": "Tu rendimiento de afiliado, estado de enlaces e información de audiencia.",
@@ -72,7 +69,12 @@
       "clearFilter": "Limpiar filtro",
       "clear": "Limpiar",
       "searchProduct": "Buscar producto...",
-      "noProducts": "No se encontraron productos."
+      "noProducts": "No se encontraron productos.",
+      "clickType": {
+        "all": "Todos los clicks",
+        "successful": "Exitosos",
+        "failed": "Sin destino"
+      }
     },
     "ranges": {
       "7d": "7d",
@@ -158,7 +160,6 @@
       "share": "Cuota"
     }
   },
-
   "products": {
     "title": "Productos",
     "description": "Agrupa tus enlaces de afiliado por producto para mantenerlos organizados.",
@@ -226,7 +227,6 @@
       "goToLinks": "Ir a enlaces"
     }
   },
-
   "links": {
     "title": "Enlaces",
     "description": "Crea y gestiona tus short links de afiliado. Monitorea su estado y rastrea cada clic.",
@@ -384,7 +384,7 @@
     },
     "import": {
       "title": "Importar enlaces desde CSV",
-      "description": "Importa enlaces de afiliado en masa. Los productos se emparejan por nombre, y los productos faltantes se crearán automáticamente. El estado del enlace no se importa porque AffProf lo calcula.",
+      "description": "Importa enlaces de afiliado en masa. Los productos se emparejan por nombre — los que no existan se crean automáticamente.",
       "row": "Fila",
       "product": "Producto",
       "slug": "Slug",
@@ -445,10 +445,17 @@
       "barHeightIsResponseTime": "Altura de barra = tiempo de respuesta",
       "fallbackRedirects": "Redirects al fallback",
       "ofClicks": "de los clics",
-      "fallbackWarning": "El {percent}% de los clics fueron redirigidos al URL de respaldo — tu enlace estuvo caído o deshabilitado durante una parte significativa de este período."
+      "fallbackWarning": "El {percent}% de los clics fueron redirigidos al URL de respaldo — tu enlace estuvo caído o deshabilitado durante una parte significativa de este período.",
+      "clickType": {
+        "all": "Todos los clicks",
+        "successful": "Exitosos",
+        "failed": "Sin destino"
+      },
+      "status": "Estado",
+      "statusOk": "Redirigido",
+      "statusFailed": "Sin destino"
     }
   },
-
   "tags": {
     "title": "Etiquetas",
     "description": "Etiqueta tus enlaces con tags para filtrarlos y encontrarlos más rápido.",
@@ -487,7 +494,6 @@
       "updated": "Actualizado"
     }
   },
-
   "profile": {
     "title": "Perfil",
     "description": "Administra tu información personal y seguridad.",
@@ -541,7 +547,6 @@
       "errorToast": "Error al eliminar la cuenta. Inténtalo de nuevo."
     }
   },
-
   "settings": {
     "title": "Configuración",
     "description": "Administra marcas, notificaciones, dominios personalizados e historial de envíos.",
@@ -553,12 +558,12 @@
     },
     "brands": {
       "title": "Marcas",
-      "description": "Guarda logos y colores QR reutilizables. El modal QR puede cambiar entre marcas sin subir assets de nuevo.",
+      "description": "Sube tu logo y colores QR una vez y aplícalos a cualquier enlace con un clic.",
       "loadingDescription": "Logos reutilizables y presets de estilo QR.",
       "availableOnPro": "Disponible en Pro",
-      "upgradeDescription": "Actualiza a Pro para guardar logos de marca y presets de colores QR reutilizables.",
+      "upgradeDescription": "Actualiza a Pro para generar códigos QR con tu propio logo y colores de marca.",
       "empty": "Sin marcas aún",
-      "emptyDescription": "Agrega una marca, sube su logo, y reutiliza ese estilo en descargas QR.",
+      "emptyDescription": "Crea tu primera marca para generar códigos QR con tu logo y colores — sin volver a subir cada vez.",
       "addBrand": "Agregar marca",
       "default": "Predeterminada",
       "setDefault": "Establecer predeterminada",
@@ -567,7 +572,7 @@
       "form": {
         "createTitle": "Crear marca",
         "editTitle": "Editar marca",
-        "description": "Guarda logos y colores QR reutilizables para que los enlaces generen códigos con marca sin subidas duplicadas.",
+        "description": "Dale un nombre a esta marca, sube un logo y elige tus colores QR. Aplícala a cualquier enlace al instante.",
         "brandPreview": "Vista previa de marca",
         "brandFallback": "Marca",
         "brandPreviewHelp": "Este estilo aparecerá en vistas previas y descargas QR.",
@@ -582,8 +587,8 @@
         "uploadLogo": "Subir logo",
         "remove": "Eliminar",
         "logoHelp": "Sube una imagen JPG, PNG o WEBP de hasta 4 MB.",
-        "logoUploadHelp": "Sube una imagen JPG, PNG o WEBP de hasta 4 MB a DigitalOcean Spaces.",
-        "logoReuse": "El mismo asset subido puede reutilizarse en todos los códigos QR que necesites.",
+        "logoUploadHelp": "Sube una imagen JPG, PNG o WEBP de hasta 4 MB.",
+        "logoReuse": "El logo se guarda una sola vez y se reutiliza en todos los códigos QR que usen esta marca.",
         "qrForeground": "Color frontal QR",
         "qrForegroundHelp": "Color principal del QR. Los colores oscuros se escanean más confiablemente.",
         "qrBackground": "Color de fondo QR",
@@ -603,13 +608,13 @@
     "customDomain": {
       "title": "Dominio personalizado",
       "description": "Usa tu propio subdominio de marca para enlaces cortos.",
-      "cardDescription": "Conecta un subdominio de marca para tus enlaces cortos Pro.",
+      "cardDescription": "Reemplaza el dominio affprof.com con tu propio subdominio en cada enlace corto.",
       "availableOnPro": "Disponible en Pro",
-      "upgradeDescription": "Actualiza a Pro para usar un subdominio personalizado como go.tumarca.com.",
+      "upgradeDescription": "Actualiza a Pro para usar un subdominio propio como go.tumarca.com en todos tus enlaces cortos.",
       "subdomain": "Subdominio",
       "subdomainPlaceholder": "go.tumarca.com",
-      "subdomainHelp": "Usa solo un subdominio. Los dominios raíz como tumarca.com aún no son compatibles.",
-      "dnsHelp": "Después de agregar el dominio, AffProf mostrará los registros TXT y CNAME exactos que necesitas configurar antes de la verificación.",
+      "subdomainHelp": "Solo subdominios — ej. go.tumarca.com. Los dominios raíz no están soportados aún.",
+      "dnsHelp": "Una vez agregado, AffProf mostrará los registros TXT y CNAME exactos a configurar. La verificación es automática cuando el DNS esté activo.",
       "verified": "Verificado",
       "pendingVerification": "Verificación pendiente",
       "primary": "Principal",
@@ -619,18 +624,20 @@
       "txtRecord": "Registro TXT",
       "cnameRecord": "Registro CNAME",
       "recordName": "Nombre",
-      "dnsUpdateHelp": "Las actualizaciones DNS pueden tomar unos minutos. Una vez que ambos registros estén activos, haz clic en Verificar.",
-      "brandedLinksActive": "Tus enlaces de marca ahora resuelven desde {hostname}. Los enlaces existentes pueden mantener el dominio AffProf predeterminado, y los nuevos pueden usar el de tu marca.",
-      "proLimitNote": "Usa un subdominio que controles, ej. go.tumarca.com. Agrega los registros DNS abajo y AffProf verificará la propiedad automáticamente.",
+      "dnsUpdateHelp": "Los cambios DNS pueden tardar unos minutos en propagarse. Una vez activos los dos registros, haz clic en Verificar.",
+      "brandedLinksActive": "Todos tus enlaces cortos ahora resuelven desde {hostname}.",
       "addDomain": "Agregar dominio",
       "copied": "{label} copiado",
-      "invalidHostname": "Ingresa un subdominio como go.tumarca.com.",
+      "invalidHostname": "Ingresa un subdominio válido — ej. go.tumarca.com.",
       "toastDomainAdded": "Dominio personalizado agregado",
       "toastDomainVerified": "Dominio verificado",
       "toastPrimaryUpdated": "Dominio principal actualizado",
       "toastDomainRemoved": "Dominio personalizado eliminado",
       "verifiedHelp": "Los nuevos enlaces pueden usar este dominio de marca inmediatamente.",
-      "pendingHelp": "Completa los registros DNS a continuación, luego verifica el dominio."
+      "pendingHelp": "Completa los registros DNS a continuación, luego verifica el dominio.",
+      "footerDefault": "Solo subdominios — ej. go.tumarca.com. Los dominios raíz no están soportados aún.",
+      "footerPending": "Los cambios DNS pueden tardar unos minutos en propagarse globalmente.",
+      "footerVerified": "Por ahora se admite un dominio personalizado por cuenta."
     },
     "notifications": {
       "title": "Notificaciones",
@@ -683,9 +690,18 @@
         "processing": "Procesando",
         "failed": "Fallido"
       }
+    },
+    "fallbackUrl": {
+      "title": "URL de respaldo predeterminada",
+      "description": "Destino de respaldo para enlaces rotos o deshabilitados.",
+      "whenUsed": "Esta URL se usa automáticamente cuando un enlace corto está deshabilitado o roto y ese enlace no tiene su propio respaldo configurado.",
+      "label": "URL de respaldo",
+      "placeholder": "https://tumarca.com/respaldo",
+      "help": "Déjalo vacío para no redirigir cuando un enlace no esté disponible.",
+      "save": "Guardar",
+      "toastSaved": "URL de respaldo guardada"
     }
   },
-
   "billing": {
     "title": "Facturación",
     "description": "Administra tu suscripción, flujo de pago y acceso al portal de clientes.",
@@ -828,7 +844,15 @@
       "goToDashboard": "Ir al panel"
     }
   },
-
+  "linkUnavailable": {
+    "metadataTitle": "Enlace no disponible — AffProf",
+    "badge": "OOPS",
+    "title": "Este enlace no está disponible",
+    "description": "El creador puede haberlo desactivado temporalmente o el enlace puede estar caído. Intenta más tarde.",
+    "infoTitle": "¿Qué pasó?",
+    "infoDesc": "Este enlace corto existe pero actualmente no tiene un destino activo. El creador puede haberlo pausado o la URL original ya no funciona.",
+    "discoverAffProf": "Descubrir AffProf"
+  },
   "dataTable": {
     "selectedRows": "{selected} de {total} fila(s) seleccionada(s)",
     "showingResults": "Mostrando {start} a {end} de {total} resultados",
@@ -842,7 +866,6 @@
     "sortDesc": "Desc",
     "hide": "Ocultar"
   },
-
   "errors": {
     "GENERIC": "Algo salió mal",
     "INTERNAL_ERROR": "Ocurrió un error inesperado",
@@ -868,7 +891,6 @@
     "INVALID_TOKEN": "Tu sesión no es válida. Inicia sesión de nuevo.",
     "UNAUTHENTICATED": "Debes iniciar sesión para acceder a esto."
   },
-
   "toasts": {
     "linkCreated": "Enlace creado",
     "linkCreateError": "Error al crear el enlace",
@@ -925,7 +947,6 @@
     "qrDownloadError": "No se pudo descargar el código QR",
     "logoutError": "Error al cerrar sesión"
   },
-
   "auth": {
     "register": {
       "metadataTitle": "Crear cuenta — AffProf",
@@ -965,7 +986,6 @@
       }
     }
   },
-
   "errorPages": {
     "notFound": {
       "metadataTitle": "No encontrado — AffProf",
