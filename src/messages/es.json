@@ -42,6 +42,16 @@
     "new": "nuevo",
     "viewDetails": "Ver detalles",
     "importCsv": "Importar CSV",
+    "exportCsv": "Exportar CSV",
+    "clickTypeHelp": {
+      "title": "Tipos de click",
+      "allLabel": "Todos",
+      "all": "Todos los clicks registrados, sin importar el resultado.",
+      "successfulLabel": "Exitoso",
+      "successful": "El enlace funcionó y el visitante fue redirigido al destino.",
+      "failedLabel": "Sin destino",
+      "failed": "No se encontró un destino válido — el visitante vio la página \"enlace no disponible\"."
+    },
     "areYouSure": "¿Estás seguro?",
     "welcome": "Bienvenido a AffProf",
     "clear": "Limpiar",
@@ -453,7 +463,16 @@
       },
       "status": "Estado",
       "statusOk": "Redirigido",
-      "statusFailed": "Sin destino"
+      "statusFailed": "Sin destino",
+      "recentChecks": "Revisiones recientes",
+      "lastChecks": "Últimas {count} revisiones",
+      "noChecks": "No hay revisiones de salud registradas aún.",
+      "checkedAt": "Cuándo",
+      "responseTime": "Respuesta",
+      "statusCode": "Código de estado",
+      "checkOk": "OK",
+      "checkBroken": "Caído",
+      "ms": "{value}ms"
     }
   },
   "tags": {
@@ -889,7 +908,10 @@
     "ALREADY_SUBSCRIBED": "Ya tienes una suscripción activa.",
     "NO_CUSTOMER": "No se encontró una cuenta de facturación. Contacta a soporte.",
     "INVALID_TOKEN": "Tu sesión no es válida. Inicia sesión de nuevo.",
-    "UNAUTHENTICATED": "Debes iniciar sesión para acceder a esto."
+    "UNAUTHENTICATED": "Debes iniciar sesión para acceder a esto.",
+    "DOMAIN_RECORDS_NOT_FOUND": "No se encontraron ni el registro TXT ni el CNAME aún. Verifica que ambos estén configurados y espera unos minutos para que el DNS se propague.",
+    "DOMAIN_TXT_NOT_FOUND": "No se encontró el registro TXT de verificación aún. Verifica que esté configurado correctamente y espera unos minutos para que el DNS se propague.",
+    "DOMAIN_CNAME_NOT_FOUND": "No se encontró el registro CNAME aún. Verifica que esté configurado correctamente y espera unos minutos para que el DNS se propague."
   },
   "toasts": {
     "linkCreated": "Enlace creado",
@@ -902,6 +924,7 @@
     "linksImportSkipped": "{count, plural, one {{count} fila omitida} other {{count} filas omitidas}}",
     "linksImportProductsCreated": "{count, plural, one {{count} producto creado automáticamente} other {{count} productos creados automáticamente}}",
     "linksImportError": "Error al importar enlaces",
+    "linksExportError": "Error al exportar enlaces",
     "linkCheckedHealthy": "El enlace está activo",
     "linkCheckedBroken": "El enlace está roto",
     "linkCheckError": "Error al verificar el enlace",

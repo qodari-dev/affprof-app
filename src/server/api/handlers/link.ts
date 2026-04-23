@@ -117,6 +117,64 @@ export const link = tsr.router(contract.link, {
   },
 
   // ==========================================
+  // EXPORT CSV - GET /links/export
+  // ==========================================
+  exportCsv: async (_args, { request }) => {
+    try {
+      const auth = await getAuthContext(request);
+
+      const rows = await db.query.links.findMany({
+        where: and(eq(links.userId, auth.userId), isNull(links.deletedAt)),
+        with: {
+          product: true,
+          linkTags: { with: { tag: true } },
+        },
+        orderBy: asc(links.createdAt),
+      });
+
+      const headers = [
+        'product', 'link', 'slug', 'platform', 'fallback_url',
+        'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
+        'is_enabled', 'notes', 'tags',
+      ];
+
+      const escape = (value: string | null | undefined): string => {
+        if (value == null) return '';
+        const s = String(value);
+        return s.includes(',') || s.includes('"') || s.includes('\n')
+          ? `"${s.replace(/"/g, '""')}"`
+          : s;
+      };
+
+      const lines = [
+        headers.join(','),
+        ...rows.map((row) => {
+          const tagNames = (row.linkTags ?? []).map((lt) => lt.tag.name).join('|');
+          return [
+            escape(row.product?.name),
+            escape(row.baseUrl),
+            escape(row.slug),
+            escape(row.platform),
+            escape(row.fallbackUrl),
+            escape(row.utmSource),
+            escape(row.utmMedium),
+            escape(row.utmCampaign),
+            escape(row.utmContent),
+            escape(row.utmTerm),
+            row.isEnabled ? 'true' : 'false',
+            escape(row.notes),
+            escape(tagNames),
+          ].join(',');
+        }),
+      ];
+
+      return { status: 200 as const, body: { csv: lines.join('\n') } };
+    } catch (e) {
+      return genericTsRestErrorResponse(e, { genericMsg: 'Error exporting links' });
+    }
+  },
+
+  // ==========================================
   // LIST - GET /links
   // ==========================================
   list: async ({ query }, { request }) => {

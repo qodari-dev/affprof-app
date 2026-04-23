@@ -42,6 +42,16 @@
     "new": "new",
     "viewDetails": "View details",
     "importCsv": "Import CSV",
+    "exportCsv": "Export CSV",
+    "clickTypeHelp": {
+      "title": "Click types",
+      "allLabel": "All clicks",
+      "all": "Every recorded click, regardless of outcome.",
+      "successfulLabel": "Successful",
+      "successful": "The link worked and the visitor was redirected to the destination.",
+      "failedLabel": "No destination",
+      "failed": "No valid destination was found — the visitor saw a \"link unavailable\" page."
+    },
     "areYouSure": "Are you sure?",
     "welcome": "Welcome to AffProf",
     "clear": "Clear",
@@ -453,7 +463,16 @@
       },
       "status": "Status",
       "statusOk": "Redirected",
-      "statusFailed": "No destination"
+      "statusFailed": "No destination",
+      "recentChecks": "Recent checks",
+      "lastChecks": "Last {count} checks",
+      "noChecks": "No health checks recorded yet.",
+      "checkedAt": "When",
+      "responseTime": "Response",
+      "statusCode": "Status code",
+      "checkOk": "OK",
+      "checkBroken": "Broken",
+      "ms": "{value}ms"
     }
   },
   "tags": {
@@ -889,7 +908,10 @@
     "ALREADY_SUBSCRIBED": "You already have an active subscription.",
     "NO_CUSTOMER": "No billing account found. Please contact support.",
     "INVALID_TOKEN": "Your session is invalid. Please log in again.",
-    "UNAUTHENTICATED": "You need to log in to access this."
+    "UNAUTHENTICATED": "You need to log in to access this.",
+    "DOMAIN_RECORDS_NOT_FOUND": "Neither the TXT nor the CNAME record were found yet. Check both are configured and wait a few minutes for DNS to propagate.",
+    "DOMAIN_TXT_NOT_FOUND": "TXT verification record not found yet. Check it is configured correctly and wait a few minutes for DNS to propagate.",
+    "DOMAIN_CNAME_NOT_FOUND": "CNAME record not found yet. Check it is configured correctly and wait a few minutes for DNS to propagate."
   },
   "toasts": {
     "linkCreated": "Link created",
@@ -902,6 +924,7 @@
     "linksImportSkipped": "{count, plural, one {{count} row skipped} other {{count} rows skipped}}",
     "linksImportProductsCreated": "{count, plural, one {{count} product created automatically} other {{count} products created automatically}}",
     "linksImportError": "Error importing links",
+    "linksExportError": "Error exporting links",
     "linkCheckedHealthy": "Link is healthy",
     "linkCheckedBroken": "Link is broken",
     "linkCheckError": "Error checking link",

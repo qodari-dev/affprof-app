@@ -16,19 +16,28 @@ import {
   verifyCustomDomainRecord,
 } from '@/server/services/custom-domains';
 
-function getVerificationErrorMessage(input: {
+function getVerificationError(input: {
   hasVerificationTxt: boolean;
   hasExpectedCname: boolean;
-}) {
+}): { message: string; code: string } {
   if (!input.hasVerificationTxt && !input.hasExpectedCname) {
-    return 'AffProf could not find the TXT verification record or the required CNAME yet.';
+    return {
+      message: 'Neither the TXT verification record nor the CNAME record were found yet.',
+      code: 'DOMAIN_RECORDS_NOT_FOUND',
+    };
   }
 
   if (!input.hasVerificationTxt) {
-    return 'AffProf could not find the TXT verification record yet.';
+    return {
+      message: 'The TXT verification record was not found yet.',
+      code: 'DOMAIN_TXT_NOT_FOUND',
+    };
   }
 
-  return 'AffProf could not find the required CNAME yet.';
+  return {
+    message: 'The CNAME record was not found yet.',
+    code: 'DOMAIN_CNAME_NOT_FOUND',
+  };
 }
 
 export const customDomainHandler = tsr.router(contract.customDomain, {
@@ -81,11 +90,8 @@ export const customDomainHandler = tsr.router(contract.customDomain, {
       const result = await verifyCustomDomainRecord(domain);
 
       if (!result.isVerified) {
-        throwHttpError({
-          status: 400,
-          message: getVerificationErrorMessage(result),
-          code: 'BAD_REQUEST',
-        });
+        const { message, code } = getVerificationError(result);
+        throwHttpError({ status: 400, message, code });
       }
 
       const [verifiedDomain] = await db

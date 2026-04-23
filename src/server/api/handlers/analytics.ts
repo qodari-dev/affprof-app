@@ -11,6 +11,7 @@ import {
   OsBreakdown,
   PeakDay,
   RANGE_DAYS,
+  RecentCheck,
   RecentClick,
   TimeseriesPoint,
   TopCountry,
@@ -561,6 +562,7 @@ export const analytics = tsr.router(contract.analytics, {
         recentClicksResult,
         healthAggResult,
         healthTimelineResult,
+        recentChecksResult,
       ] = await Promise.all([
         // ---- Aggregates: total, previous, QR, mobile, fallback ----
         db.execute(sql`
@@ -719,6 +721,20 @@ export const analytics = tsr.router(contract.analytics, {
           GROUP BY date_trunc('day', lhc.checked_at)
           ORDER BY date_trunc('day', lhc.checked_at) ASC
         `),
+
+        // ---- Recent checks (latest 10) ----
+        db.execute(sql`
+          SELECT
+            lhc.id,
+            lhc.checked_at,
+            lhc.status_code,
+            lhc.response_ms,
+            lhc.is_broken
+          FROM link_checks lhc
+          WHERE lhc.link_id = ${id}
+          ORDER BY lhc.checked_at DESC
+          LIMIT 10
+        `),
       ]);
 
       // ---- Process clicks aggregate ----
@@ -861,6 +877,22 @@ export const analytics = tsr.router(contract.analytics, {
         avgResponseMs: r.avg_response_ms,
       }));
 
+      // ---- Recent checks ----
+      const recentChecksRaw = recentChecksResult.rows as {
+        id: string;
+        checked_at: string;
+        status_code: number | null;
+        response_ms: number | null;
+        is_broken: boolean;
+      }[];
+      const recentChecks: RecentCheck[] = recentChecksRaw.map((r) => ({
+        id: r.id,
+        checkedAt: r.checked_at,
+        statusCode: r.status_code,
+        responseMs: r.response_ms,
+        isBroken: r.is_broken,
+      }));
+
       const body: LinkAnalytics = {
         linkId: id,
         range,
@@ -883,6 +915,7 @@ export const analytics = tsr.router(contract.analytics, {
         recentClicks,
         healthSummary,
         healthTimeline,
+        recentChecks,
       };
 
       return { status: 200, body };

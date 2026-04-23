@@ -1,5 +1,6 @@
 import {
   CreateLinkBodySchema,
+  ExportLinksResponseSchema,
   GetLinkQuerySchema,
   ImportLinksBodySchema,
   ImportLinksResponseSchema,
@@ -72,6 +73,18 @@ export const link = c.router(
         400: TsRestErrorSchema,
         401: TsRestErrorSchema,
         409: TsRestErrorSchema,
+        500: TsRestErrorSchema,
+      },
+    },
+    exportCsv: {
+      method: 'GET',
+      path: '/export',
+      metadata: {
+        auth: 'required',
+      } satisfies TsRestMetaData,
+      responses: {
+        200: ExportLinksResponseSchema,
+        401: TsRestErrorSchema,
         500: TsRestErrorSchema,
       },
     },
