@@ -96,6 +96,38 @@ export function useUpdateLink() {
 }
 
 // ============================================================================
+// EXPORT
+// ============================================================================
+
+export function useExportLinks() {
+  const t = useTranslations('toasts');
+
+  const query = api.link.exportCsv.useQuery({
+    queryKey: [...linksKeys.all, 'export'],
+    queryData: {},
+    enabled: false,
+  });
+
+  async function exportLinks() {
+    const result = await query.refetch();
+    if (result.data?.status === 200) {
+      const csv = result.data.body.csv;
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'links.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    } else {
+      toast.error(t('linksExportError'));
+    }
+  }
+
+  return { exportLinks, isExporting: query.isFetching };
+}
+
+// ============================================================================
 // IMPORT
 // ============================================================================
 

@@ -193,6 +193,14 @@ export type HealthTimelinePoint = {
   avgResponseMs: number | null;
 };
 
+export type RecentCheck = {
+  id: string;
+  checkedAt: string;
+  statusCode: number | null;
+  responseMs: number | null;
+  isBroken: boolean;
+};
+
 export type LinkAnalytics = {
   linkId: string;
   range: DashboardRange;
@@ -215,6 +223,7 @@ export type LinkAnalytics = {
   recentClicks: RecentClick[];
   healthSummary: HealthCheckSummary;
   healthTimeline: HealthTimelinePoint[];
+  recentChecks: RecentCheck[];
 };
 
 // ============================================

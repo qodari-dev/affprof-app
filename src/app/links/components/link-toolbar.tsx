@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Check, FileUp, Plus, PlusCircle, RefreshCw, X } from 'lucide-react';
+import { Check, FileDown, FileUp, Plus, PlusCircle, RefreshCw, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
@@ -145,6 +145,8 @@ interface LinkToolbarProps {
   onRefresh?: () => void;
   onCreate?: () => void;
   onImport?: () => void;
+  onExport?: () => void;
+  isExporting?: boolean;
   isRefreshing?: boolean;
   atLinkLimit?: boolean;
 }
@@ -171,6 +173,8 @@ export function LinkToolbar({
   onRefresh,
   onCreate,
   onImport,
+  onExport,
+  isExporting,
   isRefreshing,
   atLinkLimit,
 }: LinkToolbarProps) {
@@ -243,6 +247,13 @@ export function LinkToolbar({
           <Button variant="outline" onClick={onRefresh} disabled={isRefreshing}>
             <RefreshCw className={isRefreshing ? 'animate-spin' : ''} />
             {tc('refresh')}
+          </Button>
+        )}
+
+        {onExport && (
+          <Button variant="outline" onClick={onExport} disabled={isExporting}>
+            <FileDown className="mr-2 h-4 w-4" />
+            {tc('exportCsv')}
           </Button>
         )}
 

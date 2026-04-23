@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 
-import { useLinks, useDeleteLink, useLinkPlatforms } from '@/hooks/queries/use-link-queries';
+import { useLinks, useDeleteLink, useLinkPlatforms, useExportLinks } from '@/hooks/queries/use-link-queries';
 import { useProducts } from '@/hooks/queries/use-product-queries';
 import { useProfile } from '@/hooks/queries/use-profile-queries';
 import { useBilling } from '@/hooks/queries/use-billing-queries';
@@ -93,6 +93,7 @@ export function Links() {
 
   // ---- Mutations ----
   const { mutateAsync: deleteLink, isPending: isDeleting } = useDeleteLink();
+  const { exportLinks, isExporting } = useExportLinks();
 
   // ---- Sheet / dialog state ----
   const [openedInfoSheet, setOpenedInfoSheet] = React.useState(false);
@@ -253,6 +254,8 @@ export function Links() {
               onTagFilterChange={(value) => handleFilterChange('tagId', value)}
               onReset={resetFilters}
               onCreate={handleCreate}
+              onExport={isPro ? exportLinks : undefined}
+              isExporting={isExporting}
               onImport={isPro ? () => setOpenedImportDialog(true) : undefined}
               onRefresh={() => refetch()}
               isRefreshing={isFetching && !isLoading}

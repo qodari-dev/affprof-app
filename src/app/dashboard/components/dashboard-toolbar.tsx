@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Check, PlusCircle, RefreshCw, X } from 'lucide-react';
+import { ClickTypeInfo } from '@/components/click-type-info';
 import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
@@ -146,26 +147,29 @@ export function DashboardToolbar({
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="flex items-center rounded-md border bg-background p-0.5">
-          {CLICK_TYPE_KEYS.map((key) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => onClickTypeChange(key)}
-              className={cn(
-                'px-3 py-1.5 text-xs font-medium rounded-sm transition-colors',
-                clickType === key
-                  ? key === 'successful'
-                    ? 'bg-emerald-500 text-white'
-                    : key === 'failed'
-                    ? 'bg-red-500 text-white'
-                    : 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {t(`clickType.${key}`)}
-            </button>
-          ))}
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center rounded-md border bg-background p-0.5">
+            {CLICK_TYPE_KEYS.map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => onClickTypeChange(key)}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-medium rounded-sm transition-colors',
+                  clickType === key
+                    ? key === 'successful'
+                      ? 'bg-emerald-500 text-white'
+                      : key === 'failed'
+                      ? 'bg-red-500 text-white'
+                      : 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {t(`clickType.${key}`)}
+              </button>
+            ))}
+          </div>
+          <ClickTypeInfo />
         </div>
 
         <Separator orientation="vertical" className="h-6" />

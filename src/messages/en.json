@@ -42,6 +42,16 @@
     "new": "new",
     "viewDetails": "View details",
     "importCsv": "Import CSV",
+    "exportCsv": "Export CSV",
+    "clickTypeHelp": {
+      "title": "Click types",
+      "allLabel": "All clicks",
+      "all": "Every recorded click, regardless of outcome.",
+      "successfulLabel": "Successful",
+      "successful": "The link worked and the visitor was redirected to the destination.",
+      "failedLabel": "No destination",
+      "failed": "No valid destination was found — the visitor saw a \"link unavailable\" page."
+    },
     "areYouSure": "Are you sure?",
     "welcome": "Welcome to AffProf",
     "clear": "Clear",
@@ -453,7 +463,16 @@
       },
       "status": "Status",
       "statusOk": "Redirected",
-      "statusFailed": "No destination"
+      "statusFailed": "No destination",
+      "recentChecks": "Recent checks",
+      "lastChecks": "Last {count} checks",
+      "noChecks": "No health checks recorded yet.",
+      "checkedAt": "When",
+      "responseTime": "Response",
+      "statusCode": "Status code",
+      "checkOk": "OK",
+      "checkBroken": "Broken",
+      "ms": "{value}ms"
     }
   },
   "tags": {
@@ -902,6 +921,7 @@
     "linksImportSkipped": "{count, plural, one {{count} row skipped} other {{count} rows skipped}}",
     "linksImportProductsCreated": "{count, plural, one {{count} product created automatically} other {{count} products created automatically}}",
     "linksImportError": "Error importing links",
+    "linksExportError": "Error exporting links",
     "linkCheckedHealthy": "Link is healthy",
     "linkCheckedBroken": "Link is broken",
     "linkCheckError": "Error checking link",

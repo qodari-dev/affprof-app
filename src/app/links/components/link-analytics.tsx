@@ -16,6 +16,7 @@ import {
   Laptop,
   Timer,
 } from "lucide-react";
+import { ClickTypeInfo } from "@/components/click-type-info";
 import { useLocale, useTranslations } from "next-intl";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
@@ -44,6 +45,7 @@ import type {
   HealthCheckSummary,
   HealthTimelinePoint,
   OsBreakdown,
+  RecentCheck,
   RecentClick,
   TopCountry,
   TrafficSource,
@@ -128,26 +130,29 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
     <div className="flex flex-col gap-5">
       {/* Toolbar: filters only */}
       <div className="flex items-center justify-end gap-2">
-        <div className="flex items-center rounded-md border bg-background p-0.5">
-          {CLICK_TYPES.map((key) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setClickType(key)}
-              className={cn(
-                "px-2.5 py-1 text-xs font-medium rounded-sm transition-colors",
-                clickType === key
-                  ? key === "successful"
-                    ? "bg-emerald-500 text-white"
-                    : key === "failed"
-                    ? "bg-red-500 text-white"
-                    : "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {t(`clickType.${key}`)}
-            </button>
-          ))}
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center rounded-md border bg-background p-0.5">
+            {CLICK_TYPES.map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setClickType(key)}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-medium rounded-sm transition-colors",
+                  clickType === key
+                    ? key === "successful"
+                      ? "bg-emerald-500 text-white"
+                      : key === "failed"
+                      ? "bg-red-500 text-white"
+                      : "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {t(`clickType.${key}`)}
+              </button>
+            ))}
+          </div>
+          <ClickTypeInfo />
         </div>
 
         <div className="flex items-center rounded-md border bg-background p-0.5">
@@ -256,6 +261,9 @@ export function LinkAnalytics({ linkId }: { linkId: string }) {
 
       {/* Recent clicks */}
       <RecentClicksTable clicks={analytics.recentClicks} locale={locale} t={t} />
+
+      {/* Recent checks */}
+      <RecentChecksTable checks={analytics.recentChecks} locale={locale} t={t} />
     </div>
   );
 }
@@ -841,6 +849,71 @@ function LinkAnalyticsSkeleton() {
         <Skeleton className="h-40" />
       </div>
       <Skeleton className="h-50" />
+    </div>
+  );
+}
+
+function RecentChecksTable({ checks, locale, t }: { checks: RecentCheck[]; locale: string; t: TFunc }) {
+  if (checks.length === 0) {
+    return (
+      <div className="rounded-lg border p-4">
+        <p className="text-sm font-medium mb-3">{t("recentChecks")}</p>
+        <p className="text-xs text-muted-foreground text-center py-6">
+          {t("noChecks")}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border">
+      <div className="px-4 pt-4 pb-2">
+        <p className="text-sm font-medium">{t("recentChecks")}</p>
+        <p className="text-xs text-muted-foreground">
+          {t("lastChecks", { count: checks.length })}
+        </p>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-xs">{t("checkedAt")}</TableHead>
+            <TableHead className="text-xs">{t("statusCode")}</TableHead>
+            <TableHead className="text-xs">{t("responseTime")}</TableHead>
+            <TableHead className="text-xs">{t("status")}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {checks.map((check) => (
+            <TableRow key={check.id} className={check.isBroken ? "bg-red-500/5" : undefined}>
+              <TableCell className="text-xs whitespace-nowrap">
+                {new Date(check.checkedAt).toLocaleDateString(locale, {
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </TableCell>
+              <TableCell className="text-xs tabular-nums">
+                {check.statusCode ?? "—"}
+              </TableCell>
+              <TableCell className="text-xs tabular-nums">
+                {check.responseMs != null ? t("ms", { value: check.responseMs }) : "—"}
+              </TableCell>
+              <TableCell className="text-xs">
+                {check.isBroken ? (
+                  <span className="inline-flex items-center rounded-md bg-red-500/10 px-1.5 py-0.5 text-xs font-medium text-red-600 dark:text-red-400">
+                    {t("checkBroken")}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    {t("checkOk")}
+                  </span>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }

@@ -131,6 +131,10 @@ export const ImportLinksResponseSchema = z.object({
   ),
 });
 
+export const ExportLinksResponseSchema = z.object({
+  csv: z.string(),
+});
+
 export const UpdateLinkBodySchema = z.object({
   brandId: z.union([z.string().uuid(), z.literal('')]).optional().nullable(),
   baseUrl: z.string().url().max(2048).optional(),
