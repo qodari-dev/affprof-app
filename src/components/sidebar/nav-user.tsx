@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronsUpDown, CreditCard, LogOut, Settings, User } from 'lucide-react';
+import { ChevronsUpDown, CreditCard, LifeBuoy, LogOut, Settings, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { api } from '@/clients/api';
@@ -113,6 +113,13 @@ export function NavUser({
               >
                 <CreditCard />
                 {t('billing')}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => (window.location.href = '/help')}>
+                <LifeBuoy />
+                {t('help')}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

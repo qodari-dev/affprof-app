@@ -6,6 +6,9 @@ import { SubscriptionActivatedEmail } from '@/server/emails/subscription-activat
 import { type EmailLocale, getSubscriptionTranslations, getWelcomeTranslations } from '@/server/emails/translations';
 import { WelcomeEmail } from '@/server/emails/welcome-email';
 
+/** Strips trailing slash so templates can safely do `${appUrl}/path` */
+const appUrl = env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '');
+
 // ─── Welcome ─────────────────────────────────────────────────────────────────
 
 type SendWelcomeEmailInput = {
@@ -26,10 +29,10 @@ export async function sendWelcomeEmail(input: SendWelcomeEmailInput) {
     subject: t.subject,
     react: React.createElement(WelcomeEmail, {
       userName: input.userName,
-      appUrl: env.NEXT_PUBLIC_APP_URL,
+      appUrl: appUrl,
       locale,
     }),
-    text: `Hi ${input.userName},\n\nWelcome to AffProf!\n\nGet started: ${env.NEXT_PUBLIC_APP_URL}/links`,
+    text: `Hi ${input.userName},\n\nWelcome to AffProf!\n\nGet started: ${appUrl}/links`,
   });
 }
 
@@ -61,9 +64,9 @@ export async function sendSubscriptionActivatedEmail(input: SendSubscriptionActi
       plan: input.plan,
       isTrial: input.isTrial,
       trialEndDate: input.trialEndDate,
-      appUrl: env.NEXT_PUBLIC_APP_URL,
+      appUrl: appUrl,
       locale,
     }),
-    text: `Hi ${input.userName},\n\nYour ${planLabel} ${input.isTrial ? 'trial is now active' : 'subscription is now active'}.\n\nExplore: ${env.NEXT_PUBLIC_APP_URL}/dashboard`,
+    text: `Hi ${input.userName},\n\nYour ${planLabel} ${input.isTrial ? 'trial is now active' : 'subscription is now active'}.\n\nExplore: ${appUrl}/dashboard`,
   });
 }

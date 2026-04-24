@@ -69,8 +69,21 @@
     "saveChanges": "Save changes",
     "downloadPng": "Download PNG"
   },
+  "help": {
+    "metadataTitle": "Help & Feedback",
+    "title": "Help & Feedback",
+    "description": "Questions, suggestions, or something not working? We're here.",
+    "cardTitle": "Get in touch with us",
+    "cardDesc": "We read every message and reply within 24 hours. No bots, no ticket queues — just a direct line to the team building AffProf.",
+    "topic1": "Questions about how to use AffProf",
+    "topic2": "Feature requests and suggestions",
+    "topic3": "Report a bug or unexpected behaviour",
+    "emailLabel": "Send us an email",
+    "responseTime": "We reply within 24 hours ·  Mon – Fri"
+  },
   "nav": {
     "home": "Home",
+    "help": "Help & Feedback",
     "dashboard": "Dashboard",
     "products": "Products",
     "links": "Links",

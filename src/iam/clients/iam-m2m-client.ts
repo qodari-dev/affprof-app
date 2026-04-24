@@ -213,6 +213,22 @@ class IamM2MClient {
       body: { password },
     });
   }
+
+  /**
+   * Issue an access + refresh token pair for a user via M2M.
+   * Used after registration to auto-login the user without the OAuth flow.
+   * Passes the app's own clientId so the IAM signs with the correct JWT secret.
+   */
+  async createUserToken(id: string): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    tokenType: 'Bearer';
+    expiresIn: number;
+  }> {
+    return this.request('POST', `/api/v1/users/${id}/token`, {
+      body: { clientId: env.IAM_CLIENT_ID },
+    });
+  }
 }
 
 // ============================================

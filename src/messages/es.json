@@ -69,8 +69,21 @@
     "saveChanges": "Guardar cambios",
     "downloadPng": "Descargar PNG"
   },
+  "help": {
+    "metadataTitle": "Ayuda y comentarios",
+    "title": "Ayuda y comentarios",
+    "description": "¿Tienes preguntas, sugerencias o algo que no funciona? Estamos aquí.",
+    "cardTitle": "Contáctanos",
+    "cardDesc": "Leemos cada mensaje y respondemos en menos de 24 horas. Sin bots ni filas de soporte — una línea directa con el equipo que construye AffProf.",
+    "topic1": "Preguntas sobre cómo usar AffProf",
+    "topic2": "Solicitudes de nuevas funciones",
+    "topic3": "Reportar un error o comportamiento inesperado",
+    "emailLabel": "Envíanos un correo",
+    "responseTime": "Respondemos en menos de 24 horas · Lun – Vie"
+  },
   "nav": {
     "home": "Inicio",
+    "help": "Ayuda y comentarios",
     "dashboard": "Panel",
     "products": "Productos",
     "links": "Enlaces",

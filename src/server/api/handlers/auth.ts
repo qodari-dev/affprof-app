@@ -2,6 +2,7 @@ import { db, users, subscriptions, userSettings } from '@/server/db';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { getAuthContext } from '@/server/utils/auth-context';
 import { clearAuthCookies } from '@/server/utils/clear-auth-cookies';
+import { setAuthCookies } from '@/server/utils/set-auth-cookies';
 import { deleteSpacesUserFiles } from '@/server/utils/storage/spaces-presign';
 import { iamClient, IamClientError } from '@/iam/clients/iam-m2m-client';
 import { sendWelcomeEmail } from '@/server/services/transactional-emails';
@@ -105,7 +106,12 @@ export const auth = tsr.router(contract.auth, {
         locale: 'en',
       });
 
-      // 5) If paid plan, create Stripe customer + Checkout Session
+      // 5) Auto-login: issue tokens for the new user and set auth cookies so the
+      //    browser is immediately authenticated after registration completes.
+      const tokens = await iamClient.createUserToken(iamUser.id);
+      await setAuthCookies(tokens);
+
+      // 6) If paid plan, create Stripe customer + Checkout Session
       let checkoutUrl: string | null = null;
 
       if (plan !== 'free') {
