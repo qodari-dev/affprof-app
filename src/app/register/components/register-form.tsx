@@ -105,7 +105,7 @@ export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId })
 
         // Free plan → trigger IAM login flow via the proxy
         toast.success(t('toastSuccessFree'));
-        window.location.assign('/dashboard');
+        window.location.assign('/');
         return;
       }
 

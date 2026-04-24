@@ -2,7 +2,7 @@
   "home": {
     "title": "Welcome to AffProf",
     "greeting": "Welcome back, {name}!",
-    "description": "Here's a quick look at how your affiliate links are doing.",
+    "description": "Manage your affiliate links, track clicks, and monitor link health — all in one place.",
     "stats": {
       "totalLinks": "Total links",
       "activeLinks": "{count, plural, one {# active} other {# active}}",
@@ -15,9 +15,18 @@
       "openDashboard": "Open Dashboard"
     },
     "empty": {
-      "title": "No links yet",
-      "description": "Create your first affiliate link and start tracking clicks, health, and revenue.",
+      "title": "Get started with AffProf",
+      "description": "Create your first link to track every click, monitor link health, and never lose a commission to a broken URL.",
+      "feat1": "Short trackable links",
+      "feat2": "Click analytics",
+      "feat3": "Broken link alerts",
+      "feat4": "Instant QR codes",
       "cta": "Create your first link"
+    },
+    "actions": {
+      "addLink": "Add link",
+      "viewDashboard": "Analytics",
+      "viewLinks": "All links"
     }
   },
   "common": {
@@ -61,6 +70,7 @@
     "downloadPng": "Download PNG"
   },
   "nav": {
+    "home": "Home",
     "dashboard": "Dashboard",
     "products": "Products",
     "links": "Links",
@@ -843,24 +853,23 @@
     },
     "success": {
       "metadataTitle": "Welcome to Pro — AffProf",
-      "badge": "PRO",
-      "title": "You're all set!",
-      "description": "Your Pro plan is now active. Full access to all AffProf features starts right now.",
-      "whatHappensNext": "A few things to know",
-      "whatHappensNextDesc1": "We sent a confirmation to your email inbox with your plan details.",
-      "whatHappensNextDesc2": "Your billing page will reflect your new plan in just a moment.",
-      "backToBilling": "Back to billing",
-      "goToDashboard": "Go to dashboard"
+      "title": "You're in. Welcome to Pro.",
+      "description": "Your subscription is active. Every affiliate link you add is now tracked, monitored, and protected.",
+      "unlockedTitle": "What you just unlocked",
+      "feature1": "Unlimited affiliate links with click analytics",
+      "feature2": "Automatic broken link detection and alerts",
+      "feature3": "Custom domains so links look like yours",
+      "cta": "Start adding links",
+      "redirecting": "Taking you in {count}s…"
     },
     "canceled": {
       "metadataTitle": "Checkout Canceled — AffProf",
-      "badge": "HOLD",
-      "title": "No changes made",
-      "description": "You didn't complete the change. Your current plan is still the same.",
-      "tryAgain": "Go back anytime",
-      "tryAgainDesc": "Head to billing to manage your plan whenever you're ready.",
-      "backToBilling": "Back to billing",
-      "goToDashboard": "Go to dashboard"
+      "title": "No worries",
+      "description": "You didn't complete the payment. Nothing was charged — but your account is ready.",
+      "freeTitle": "Your free account is active",
+      "freeDesc": "Log in to start using AffProf. You can upgrade to Pro from your billing page anytime.",
+      "tryAgainCta": "Log in and upgrade",
+      "continueFree": "Continue with free"
     }
   },
   "linkUnavailable": {
