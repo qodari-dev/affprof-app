@@ -1,14 +1,16 @@
 import { db, users, subscriptions, userSettings } from '@/server/db';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { getAuthContext } from '@/server/utils/auth-context';
+import { clearAuthCookies } from '@/server/utils/clear-auth-cookies';
+import { setAuthCookies } from '@/server/utils/set-auth-cookies';
 import { deleteSpacesUserFiles } from '@/server/utils/storage/spaces-presign';
 import { iamClient, IamClientError } from '@/iam/clients/iam-m2m-client';
 import { sendWelcomeEmail } from '@/server/services/transactional-emails';
+import { createStripeCheckoutSession, ensureStripeCustomer } from '@/server/services/stripe-billing';
 import { stripe } from '@/server/utils/stripe';
 import { env } from '@/env';
 import { tsr } from '@ts-rest/serverless/next';
 import { eq } from 'drizzle-orm';
-import { cookies } from 'next/headers';
 import { contract } from '../contracts';
 
 // ============================================
@@ -25,10 +27,6 @@ function generateSlug(firstName: string, lastName: string): string {
   // Add random suffix to avoid collisions
   const suffix = Math.random().toString(36).substring(2, 6);
   return `${base}-${suffix}`;
-}
-
-function getPriceId(plan: 'pro' | 'pro_annual'): string {
-  return plan === 'pro' ? env.STRIPE_PRO_MONTHLY_PRICE_ID : env.STRIPE_PRO_ANNUAL_PRICE_ID;
 }
 
 // ============================================
@@ -108,34 +106,25 @@ export const auth = tsr.router(contract.auth, {
         locale: 'en',
       });
 
-      // 5) If paid plan, create Stripe customer + Checkout Session
+      // 5) Auto-login: issue tokens for the new user and set auth cookies so the
+      //    browser is immediately authenticated after registration completes.
+      const tokens = await iamClient.createUserToken(iamUser.id);
+      await setAuthCookies(tokens);
+
+      // 6) If paid plan, create Stripe customer + Checkout Session
       let checkoutUrl: string | null = null;
 
       if (plan !== 'free') {
-        const customer = await stripe.customers.create({
+        const customerId = await ensureStripeCustomer({
+          subscription: { userId: iamUser.id, stripeCustomerId: null },
+          userId: iamUser.id,
           email: email.toLowerCase(),
-          name: `${firstName} ${lastName}`,
-          metadata: { userId: iamUser.id },
         });
 
-        // Update subscription with Stripe customer ID
-        await db
-          .update(subscriptions)
-          .set({ stripeCustomerId: customer.id })
-          .where(eq(subscriptions.userId, iamUser.id));
-
-        const session = await stripe.checkout.sessions.create({
-          customer: customer.id,
-          mode: 'subscription',
-          line_items: [
-            {
-              price: getPriceId(plan),
-              quantity: 1,
-            },
-          ],
-          metadata: { userId: iamUser.id },
-          success_url: `${env.NEXT_PUBLIC_APP_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${env.NEXT_PUBLIC_APP_URL}/billing/canceled`,
+        const session = await createStripeCheckoutSession({
+          customerId,
+          userId: iamUser.id,
+          plan,
         });
 
         checkoutUrl = session.url;
@@ -189,24 +178,7 @@ export const auth = tsr.router(contract.auth, {
       await db.delete(users).where(eq(users.id, auth.userId));
 
       // 5) Clear auth cookies
-      const secure = env.NODE_ENV === 'production';
-      const cookieStore = await cookies();
-
-      cookieStore.set(env.ACCESS_TOKEN_NAME, '', {
-        httpOnly: true,
-        secure,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 0,
-      });
-
-      cookieStore.set(env.REFRESH_TOKEN_NAME, '', {
-        httpOnly: true,
-        secure,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 0,
-      });
+      await clearAuthCookies();
 
       const logoutUrl = new URL('/oauth/logout', env.IAM_BASE_URL);
       logoutUrl.searchParams.set('client_id', env.IAM_CLIENT_ID);
@@ -227,28 +199,8 @@ export const auth = tsr.router(contract.auth, {
   // ==========================================
   logout: async () => {
     try {
-      const secure = env.NODE_ENV === 'production';
-      const cookieStore = await cookies();
+      await clearAuthCookies();
 
-      // Clear access token
-      cookieStore.set(env.ACCESS_TOKEN_NAME, '', {
-        httpOnly: true,
-        secure,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 0,
-      });
-
-      // Clear refresh token
-      cookieStore.set(env.REFRESH_TOKEN_NAME, '', {
-        httpOnly: true,
-        secure,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 0,
-      });
-
-      // Build IAM logout URL
       const logoutUrl = new URL('/oauth/logout', env.IAM_BASE_URL);
       logoutUrl.searchParams.set('client_id', env.IAM_CLIENT_ID);
 

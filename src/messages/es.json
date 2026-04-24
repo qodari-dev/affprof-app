@@ -2,7 +2,7 @@
   "home": {
     "title": "Bienvenido a AffProf",
     "greeting": "¡Bienvenido de nuevo, {name}!",
-    "description": "Un vistazo rápido al estado de tus enlaces de afiliado.",
+    "description": "Gestiona tus enlaces de afiliado, rastrea clics y monitorea la salud de tus links — todo en un solo lugar.",
     "stats": {
       "totalLinks": "Total de enlaces",
       "activeLinks": "{count, plural, one {# activo} other {# activos}}",
@@ -15,9 +15,18 @@
       "openDashboard": "Abrir Panel"
     },
     "empty": {
-      "title": "Aún no tienes enlaces",
-      "description": "Crea tu primer enlace de afiliado y empieza a rastrear clics, salud y ganancias.",
+      "title": "Comienza con AffProf",
+      "description": "Crea tu primer enlace para rastrear cada clic, monitorear la salud de tus links y no perder ninguna comisión por una URL rota.",
+      "feat1": "Links cortos rastreables",
+      "feat2": "Analíticas de clics",
+      "feat3": "Alertas de enlaces rotos",
+      "feat4": "Códigos QR al instante",
       "cta": "Crear tu primer enlace"
+    },
+    "actions": {
+      "addLink": "Agregar enlace",
+      "viewDashboard": "Analíticas",
+      "viewLinks": "Todos los enlaces"
     }
   },
   "common": {
@@ -60,7 +69,21 @@
     "saveChanges": "Guardar cambios",
     "downloadPng": "Descargar PNG"
   },
+  "help": {
+    "metadataTitle": "Ayuda y comentarios",
+    "title": "Ayuda y comentarios",
+    "description": "¿Tienes preguntas, sugerencias o algo que no funciona? Estamos aquí.",
+    "cardTitle": "Contáctanos",
+    "cardDesc": "Leemos cada mensaje y respondemos en menos de 24 horas. Sin bots ni filas de soporte — una línea directa con el equipo que construye AffProf.",
+    "topic1": "Preguntas sobre cómo usar AffProf",
+    "topic2": "Solicitudes de nuevas funciones",
+    "topic3": "Reportar un error o comportamiento inesperado",
+    "emailLabel": "Envíanos un correo",
+    "responseTime": "Respondemos en menos de 24 horas · Lun – Vie"
+  },
   "nav": {
+    "home": "Inicio",
+    "help": "Ayuda y comentarios",
     "dashboard": "Panel",
     "products": "Productos",
     "links": "Enlaces",
@@ -843,24 +866,23 @@
     },
     "success": {
       "metadataTitle": "Bienvenido a Pro — AffProf",
-      "badge": "PRO",
-      "title": "¡Todo listo!",
-      "description": "Tu plan Pro ya está activo. Acceso completo a todas las funciones de AffProf desde ahora mismo.",
-      "whatHappensNext": "Algunas cosas que saber",
-      "whatHappensNextDesc1": "Te enviamos un correo de confirmación con los detalles de tu plan.",
-      "whatHappensNextDesc2": "Tu página de facturación reflejará el nuevo plan en un momento.",
-      "backToBilling": "Volver a facturación",
-      "goToDashboard": "Ir al panel"
+      "title": "Ya estás dentro. Bienvenido a Pro.",
+      "description": "Tu suscripción está activa. Cada enlace de afiliado que agregues ahora está rastreado, monitoreado y protegido.",
+      "unlockedTitle": "Lo que acabas de desbloquear",
+      "feature1": "Enlaces de afiliado ilimitados con analíticas de clics",
+      "feature2": "Detección automática de enlaces rotos y alertas",
+      "feature3": "Dominios personalizados para que los enlaces sean tuyos",
+      "cta": "Empezar a agregar enlaces",
+      "redirecting": "Te llevamos en {count}s…"
     },
     "canceled": {
       "metadataTitle": "Checkout Cancelado — AffProf",
-      "badge": "HOLD",
-      "title": "Sin cambios realizados",
-      "description": "No completaste el cambio. Tu plan actual sigue siendo el mismo.",
-      "tryAgain": "Vuelve cuando quieras",
-      "tryAgainDesc": "Ve a facturación para gestionar tu plan cuando estés listo.",
-      "backToBilling": "Volver a facturación",
-      "goToDashboard": "Ir al panel"
+      "title": "Sin problema",
+      "description": "No completaste el pago. No se realizó ningún cobro — pero tu cuenta ya está lista.",
+      "freeTitle": "Tu cuenta gratuita está activa",
+      "freeDesc": "Inicia sesión para empezar a usar AffProf. Puedes actualizar a Pro desde tu página de facturación cuando quieras.",
+      "tryAgainCta": "Iniciar sesión y actualizar",
+      "continueFree": "Continuar con el plan gratis"
     }
   },
   "linkUnavailable": {

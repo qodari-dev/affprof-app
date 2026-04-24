@@ -137,7 +137,7 @@ class IamM2MClient {
     const response = await fetch(url, {
       method,
       headers: {
-        'Content-Type': 'application/json',
+        ...(options?.body ? { 'Content-Type': 'application/json' } : {}),
         Authorization: `Bearer ${token}`,
       },
       ...(options?.body ? { body: JSON.stringify(options.body) } : {}),
@@ -211,6 +211,22 @@ class IamM2MClient {
   async setUserPassword(id: string, password: string): Promise<void> {
     await this.request<void>('POST', `/api/v1/users/${id}/set-password`, {
       body: { password },
+    });
+  }
+
+  /**
+   * Issue an access + refresh token pair for a user via M2M.
+   * Used after registration to auto-login the user without the OAuth flow.
+   * Passes the app's own clientId so the IAM signs with the correct JWT secret.
+   */
+  async createUserToken(id: string): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    tokenType: 'Bearer';
+    expiresIn: number;
+  }> {
+    return this.request('POST', `/api/v1/users/${id}/token`, {
+      body: { clientId: env.IAM_CLIENT_ID },
     });
   }
 }

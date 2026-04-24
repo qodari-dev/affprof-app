@@ -1,5 +1,6 @@
-import { db, subscriptions, links, products } from '@/server/db';
 import { and, count, eq, isNull } from 'drizzle-orm';
+
+import { db, subscriptions, links, products } from '@/server/db';
 import { throwHttpError } from '@/server/utils/generic-ts-rest-error';
 
 const FREE_LIMITS = {
@@ -15,40 +16,36 @@ async function getUserPlan(userId: string) {
   return sub?.plan ?? 'free';
 }
 
-export async function enforceLinkLimit(userId: string) {
+async function enforceEntityLimit(
+  userId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  table: any,
+  limit: number,
+  featureName: string,
+) {
   const plan = await getUserPlan(userId);
   if (plan !== 'free') return;
 
   const [row] = await db
     .select({ total: count() })
-    .from(links)
-    .where(and(eq(links.userId, userId), isNull(links.deletedAt)));
+    .from(table)
+    .where(and(eq(table.userId, userId), isNull(table.deletedAt)));
 
-  if ((row?.total ?? 0) >= FREE_LIMITS.links) {
+  if ((row?.total ?? 0) >= limit) {
     throwHttpError({
       status: 403,
-      message: `Free plan supports up to ${FREE_LIMITS.links} links. Upgrade to Pro for unlimited.`,
+      message: `Free plan supports up to ${limit} ${featureName}. Upgrade to Pro for unlimited.`,
       code: 'FORBIDDEN',
     });
   }
 }
 
+export async function enforceLinkLimit(userId: string) {
+  return enforceEntityLimit(userId, links, FREE_LIMITS.links, 'links');
+}
+
 export async function enforceProductLimit(userId: string) {
-  const plan = await getUserPlan(userId);
-  if (plan !== 'free') return;
-
-  const [row] = await db
-    .select({ total: count() })
-    .from(products)
-    .where(and(eq(products.userId, userId), isNull(products.deletedAt)));
-
-  if ((row?.total ?? 0) >= FREE_LIMITS.products) {
-    throwHttpError({
-      status: 403,
-      message: `Free plan supports up to ${FREE_LIMITS.products} products. Upgrade to Pro for unlimited.`,
-      code: 'FORBIDDEN',
-    });
-  }
+  return enforceEntityLimit(userId, products, FREE_LIMITS.products, 'products');
 }
 
 export async function requireProPlan(userId: string, feature: string) {

@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft, BadgeCheck, CreditCard } from 'lucide-react';
+import { BadgeCheck, Link2, BarChart2, ShieldCheck } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 
 import { buttonVariants } from '@/components/ui/button';
 import { SidebarInset } from '@/components/ui/sidebar';
+import { RedirectCountdown } from '@/components/redirect-countdown';
 import { cn } from '@/lib/utils';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,51 +18,53 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function BillingSuccessPage() {
   const t = await getTranslations('billing.success');
 
+  const features = [
+    { icon: Link2, label: t('feature1') },
+    { icon: BarChart2, label: t('feature2') },
+    { icon: ShieldCheck, label: t('feature3') },
+  ];
+
   return (
     <SidebarInset>
       <main className="flex min-h-svh flex-1 items-center justify-center px-6 py-10">
-        <div className="flex max-w-xl flex-col items-center text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10">
-            <BadgeCheck className="h-8 w-8 text-emerald-600" />
+        <div className="flex w-full max-w-lg flex-col items-center text-center">
+
+          {/* Icon */}
+          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-500/10 ring-1 ring-emerald-500/20">
+            <BadgeCheck className="h-10 w-10 text-emerald-600" />
           </div>
 
-          <span className="mb-2 text-[5.5rem] font-black leading-none tracking-tighter text-emerald-500/20 dark:text-emerald-400/30">
-            {t('badge')}
-          </span>
-
+          {/* Heading */}
           <h1 className="mb-2 text-3xl font-bold tracking-tight">{t('title')}</h1>
-          <p className="mb-4 max-w-md text-muted-foreground">
+          <p className="mb-8 max-w-md text-muted-foreground">
             {t('description')}
           </p>
 
-          <div className="mb-8 rounded-2xl border bg-muted/25 p-4 text-left">
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 rounded-xl bg-background p-2 shadow-sm ring-1 ring-border">
-                <CreditCard className="h-4 w-4 text-emerald-600" />
-              </div>
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <p className="font-medium text-foreground">{t('whatHappensNext')}</p>
-                <p>{t('whatHappensNextDesc1')}</p>
-                <p>{t('whatHappensNextDesc2')}</p>
-              </div>
-            </div>
+          {/* Features unlocked */}
+          <div className="mb-8 w-full rounded-2xl border bg-muted/25 p-5">
+            <p className="mb-4 text-sm font-semibold text-foreground">{t('unlockedTitle')}</p>
+            <ul className="space-y-3">
+              {features.map(({ icon: Icon, label }) => (
+                <li key={label} className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
+                    <Icon className="h-3.5 w-3.5 text-emerald-600" />
+                  </div>
+                  {label}
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="flex flex-col items-center gap-3 sm:flex-row">
-            <Link
-              href="/billing"
-              className={cn(buttonVariants({ variant: 'outline', size: 'lg' }))}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {t('backToBilling')}
-            </Link>
-            <Link
-              href="/dashboard"
-              className={cn(buttonVariants({ size: 'lg' }), 'bg-primary text-primary-foreground hover:bg-primary/90')}
-            >
-              {t('goToDashboard')}
-            </Link>
-          </div>
+          {/* CTA */}
+          <Link
+            href="/"
+            className={cn(buttonVariants({ size: 'lg' }), 'mb-4 w-full sm:w-auto')}
+          >
+            {t('cta')}
+          </Link>
+
+          {/* Countdown */}
+          <RedirectCountdown to="/" seconds={10} namespace="billing.success" labelKey="redirecting" />
         </div>
       </main>
     </SidebarInset>

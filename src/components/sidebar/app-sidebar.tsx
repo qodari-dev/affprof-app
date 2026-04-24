@@ -2,7 +2,9 @@
 
 import {
   CreditCard,
+  Home,
   LayoutDashboard,
+  LifeBuoy,
   Link2,
   Package,
   Settings,
@@ -32,12 +34,15 @@ function withAutoActive<
     url?: string;
     icon?: LucideIcon;
     title?: string;
+    exact?: boolean;
   },
 >(menuItems: T[], pathname: string): (T & { isActive: boolean })[] {
   return menuItems.map((item) => ({
     ...item,
     isActive: item.url
-      ? pathname.startsWith(item.url)
+      ? item.exact
+        ? pathname === item.url
+        : pathname.startsWith(item.url)
       : (item.items?.some((sub) => pathname.startsWith(sub.url)) ?? false),
   }));
 }
@@ -58,6 +63,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {
           items: withAutoActive(
             [
+              {
+                title: t("home"),
+                url: "/",
+                icon: Home,
+                exact: true,
+              },
               {
                 title: t("dashboard"),
                 url: "/dashboard",
@@ -100,6 +111,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 title: t("billing"),
                 url: "/billing",
                 icon: CreditCard,
+              },
+              {
+                title: t("help"),
+                url: "/help",
+                icon: LifeBuoy,
+                exact: true,
               },
             ],
             pathname,
