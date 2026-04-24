@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { PageContent, PageHeader } from '@/components/layout';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import { useDashboardAnalytics } from '@/hooks/queries/use-analytics-queries';
 import { useProfile } from '@/hooks/queries/use-profile-queries';
 
@@ -94,24 +95,18 @@ function QuickActions() {
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Button asChild variant="outline" size="sm">
-        <Link href="/links">
-          <Plus className="mr-1.5 size-3.5" />
-          {t('addLink')}
-        </Link>
-      </Button>
-      <Button asChild variant="outline" size="sm">
-        <Link href="/dashboard">
-          <BarChart2 className="mr-1.5 size-3.5" />
-          {t('viewDashboard')}
-        </Link>
-      </Button>
-      <Button asChild variant="outline" size="sm">
-        <Link href="/links">
-          <Link2 className="mr-1.5 size-3.5" />
-          {t('viewLinks')}
-        </Link>
-      </Button>
+      <Link href="/links" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}>
+        <Plus className="mr-1.5 size-3.5" />
+        {t('addLink')}
+      </Link>
+      <Link href="/dashboard" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}>
+        <BarChart2 className="mr-1.5 size-3.5" />
+        {t('viewDashboard')}
+      </Link>
+      <Link href="/links" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}>
+        <Link2 className="mr-1.5 size-3.5" />
+        {t('viewLinks')}
+      </Link>
     </div>
   );
 }

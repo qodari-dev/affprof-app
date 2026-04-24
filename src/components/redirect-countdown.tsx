@@ -8,7 +8,7 @@ interface RedirectCountdownProps {
   to: string;
   seconds?: number;
   /** next-intl namespace, e.g. "billing.success" */
-  namespace: string;
+  namespace: Parameters<typeof useTranslations>[0];
   /** Translation key inside the namespace. The string must use {count} as the placeholder. */
   labelKey: string;
 }
@@ -33,7 +33,8 @@ export function RedirectCountdown({ to, seconds = 5, namespace, labelKey }: Redi
 
   return (
     <p className="text-sm text-muted-foreground">
-      {t(labelKey, { count })}
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      {(t as any)(labelKey, { count })}
     </p>
   );
 }
