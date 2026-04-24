@@ -137,7 +137,7 @@ class IamM2MClient {
     const response = await fetch(url, {
       method,
       headers: {
-        'Content-Type': 'application/json',
+        ...(options?.body ? { 'Content-Type': 'application/json' } : {}),
         Authorization: `Bearer ${token}`,
       },
       ...(options?.body ? { body: JSON.stringify(options.body) } : {}),

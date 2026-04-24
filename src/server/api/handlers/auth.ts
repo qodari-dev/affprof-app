@@ -4,6 +4,7 @@ import { getAuthContext } from '@/server/utils/auth-context';
 import { deleteSpacesUserFiles } from '@/server/utils/storage/spaces-presign';
 import { iamClient, IamClientError } from '@/iam/clients/iam-m2m-client';
 import { sendWelcomeEmail } from '@/server/services/transactional-emails';
+import { createStripeCheckoutSession, ensureStripeCustomer } from '@/server/services/stripe-billing';
 import { stripe } from '@/server/utils/stripe';
 import { env } from '@/env';
 import { tsr } from '@ts-rest/serverless/next';
@@ -25,10 +26,6 @@ function generateSlug(firstName: string, lastName: string): string {
   // Add random suffix to avoid collisions
   const suffix = Math.random().toString(36).substring(2, 6);
   return `${base}-${suffix}`;
-}
-
-function getPriceId(plan: 'pro' | 'pro_annual'): string {
-  return plan === 'pro' ? env.STRIPE_PRO_MONTHLY_PRICE_ID : env.STRIPE_PRO_ANNUAL_PRICE_ID;
 }
 
 // ============================================
@@ -112,30 +109,16 @@ export const auth = tsr.router(contract.auth, {
       let checkoutUrl: string | null = null;
 
       if (plan !== 'free') {
-        const customer = await stripe.customers.create({
+        const customerId = await ensureStripeCustomer({
+          subscription: { userId: iamUser.id, stripeCustomerId: null },
+          userId: iamUser.id,
           email: email.toLowerCase(),
-          name: `${firstName} ${lastName}`,
-          metadata: { userId: iamUser.id },
         });
 
-        // Update subscription with Stripe customer ID
-        await db
-          .update(subscriptions)
-          .set({ stripeCustomerId: customer.id })
-          .where(eq(subscriptions.userId, iamUser.id));
-
-        const session = await stripe.checkout.sessions.create({
-          customer: customer.id,
-          mode: 'subscription',
-          line_items: [
-            {
-              price: getPriceId(plan),
-              quantity: 1,
-            },
-          ],
-          metadata: { userId: iamUser.id },
-          success_url: `${env.NEXT_PUBLIC_APP_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${env.NEXT_PUBLIC_APP_URL}/billing/canceled`,
+        const session = await createStripeCheckoutSession({
+          customerId,
+          userId: iamUser.id,
+          plan,
         });
 
         checkoutUrl = session.url;
