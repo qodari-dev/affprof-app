@@ -1,6 +1,7 @@
 import { db, users, subscriptions, userSettings } from '@/server/db';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { getAuthContext } from '@/server/utils/auth-context';
+import { clearAuthCookies } from '@/server/utils/clear-auth-cookies';
 import { deleteSpacesUserFiles } from '@/server/utils/storage/spaces-presign';
 import { iamClient, IamClientError } from '@/iam/clients/iam-m2m-client';
 import { sendWelcomeEmail } from '@/server/services/transactional-emails';
@@ -9,7 +10,6 @@ import { stripe } from '@/server/utils/stripe';
 import { env } from '@/env';
 import { tsr } from '@ts-rest/serverless/next';
 import { eq } from 'drizzle-orm';
-import { cookies } from 'next/headers';
 import { contract } from '../contracts';
 
 // ============================================
@@ -172,24 +172,7 @@ export const auth = tsr.router(contract.auth, {
       await db.delete(users).where(eq(users.id, auth.userId));
 
       // 5) Clear auth cookies
-      const secure = env.NODE_ENV === 'production';
-      const cookieStore = await cookies();
-
-      cookieStore.set(env.ACCESS_TOKEN_NAME, '', {
-        httpOnly: true,
-        secure,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 0,
-      });
-
-      cookieStore.set(env.REFRESH_TOKEN_NAME, '', {
-        httpOnly: true,
-        secure,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 0,
-      });
+      await clearAuthCookies();
 
       const logoutUrl = new URL('/oauth/logout', env.IAM_BASE_URL);
       logoutUrl.searchParams.set('client_id', env.IAM_CLIENT_ID);
@@ -210,28 +193,8 @@ export const auth = tsr.router(contract.auth, {
   // ==========================================
   logout: async () => {
     try {
-      const secure = env.NODE_ENV === 'production';
-      const cookieStore = await cookies();
+      await clearAuthCookies();
 
-      // Clear access token
-      cookieStore.set(env.ACCESS_TOKEN_NAME, '', {
-        httpOnly: true,
-        secure,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 0,
-      });
-
-      // Clear refresh token
-      cookieStore.set(env.REFRESH_TOKEN_NAME, '', {
-        httpOnly: true,
-        secure,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 0,
-      });
-
-      // Build IAM logout URL
       const logoutUrl = new URL('/oauth/logout', env.IAM_BASE_URL);
       logoutUrl.searchParams.set('client_id', env.IAM_CLIENT_ID);
 

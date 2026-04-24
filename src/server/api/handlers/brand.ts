@@ -5,10 +5,9 @@ import { getAuthContext } from '@/server/utils/auth-context';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { requireProPlan } from '@/server/services/plan-limits';
 import {
-  buildFileKey,
-  createSpacesPresignedPutUrl,
   createSpacesPublicUrl,
   deleteSpacesObject,
+  presignFileUpload,
 } from '@/server/utils/storage/spaces-presign';
 import { tsr } from '@ts-rest/serverless/next';
 import { and, asc, desc, eq } from 'drizzle-orm';
@@ -171,39 +170,16 @@ export const brandHandler = tsr.router(contract.brand, {
   presignLogoUpload: async ({ body }, { request }) => {
     try {
       const auth = await getAuthContext(request);
-
       await requireProPlan(auth.userId, 'Branding');
-
-      if (!BRAND_LOGO_ALLOWED_TYPES.includes(body.contentType)) {
-        throwHttpError({
-          status: 400,
-          message: 'Only JPG, PNG, and WEBP images are allowed',
-          code: 'BAD_REQUEST',
-        });
-      }
-
-      if (body.fileSize > BRAND_LOGO_MAX_BYTES) {
-        throwHttpError({
-          status: 400,
-          message: 'Image is too large',
-          code: 'BAD_REQUEST',
-        });
-      }
-
-      const fileKey = buildFileKey(auth.userId, 'brands', body.contentType);
-      const { url: uploadUrl, headers: uploadHeaders } = await createSpacesPresignedPutUrl(fileKey, body.contentType);
-      const publicUrl = createSpacesPublicUrl(fileKey);
-
-      return {
-        status: 200 as const,
-        body: {
-          fileKey,
-          uploadUrl,
-          uploadHeaders,
-          publicUrl,
-          method: 'PUT' as const,
-        },
-      };
+      const result = await presignFileUpload({
+        userId: auth.userId,
+        folder: 'brands',
+        contentType: body.contentType,
+        fileSize: body.fileSize,
+        allowedTypes: BRAND_LOGO_ALLOWED_TYPES,
+        maxBytes: BRAND_LOGO_MAX_BYTES,
+      });
+      return { status: 200 as const, body: result };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: 'Error generating brand logo upload URL',

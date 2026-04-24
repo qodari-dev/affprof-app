@@ -8,10 +8,9 @@ import { enforceProductLimit, requireProPlan } from '@/server/services/plan-limi
 import { PRODUCT_IMAGE_ALLOWED_TYPES, PRODUCT_IMAGE_MAX_BYTES } from '@/schemas/product';
 import { contract } from '../contracts';
 import {
-  buildFileKey,
-  createSpacesPresignedPutUrl,
   createSpacesPublicUrl,
   deleteSpacesObject,
+  presignFileUpload,
 } from '@/server/utils/storage/spaces-presign';
 
 import { buildTypedIncludes, createIncludeMap } from '@/server/utils/query/include-builder';
@@ -282,37 +281,15 @@ export const product = tsr.router(contract.product, {
   presignImageUpload: async ({ body }, { request }) => {
     try {
       const auth = await getAuthContext(request);
-
-      if (!PRODUCT_IMAGE_ALLOWED_TYPES.includes(body.contentType)) {
-        throwHttpError({
-          status: 400,
-          message: 'Only JPG, PNG, and WEBP images are allowed',
-          code: 'BAD_REQUEST',
-        });
-      }
-
-      if (body.fileSize > PRODUCT_IMAGE_MAX_BYTES) {
-        throwHttpError({
-          status: 400,
-          message: 'Image is too large',
-          code: 'BAD_REQUEST',
-        });
-      }
-
-      const fileKey = buildFileKey(auth.userId, 'products', body.contentType);
-      const { url: uploadUrl, headers: uploadHeaders } = await createSpacesPresignedPutUrl(fileKey, body.contentType);
-      const publicUrl = createSpacesPublicUrl(fileKey);
-
-      return {
-        status: 200 as const,
-        body: {
-          fileKey,
-          uploadUrl,
-          uploadHeaders,
-          publicUrl,
-          method: 'PUT' as const,
-        },
-      };
+      const result = await presignFileUpload({
+        userId: auth.userId,
+        folder: 'products',
+        contentType: body.contentType,
+        fileSize: body.fileSize,
+        allowedTypes: PRODUCT_IMAGE_ALLOWED_TYPES,
+        maxBytes: PRODUCT_IMAGE_MAX_BYTES,
+      });
+      return { status: 200 as const, body: result };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
         genericMsg: 'Error generating product image upload URL',

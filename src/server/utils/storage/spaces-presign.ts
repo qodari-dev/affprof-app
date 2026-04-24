@@ -3,6 +3,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'node:crypto';
 
 import { env } from '@/env';
+import { throwHttpError } from '@/server/utils/generic-ts-rest-error';
 
 // ─── Client ──────────────────────────────────────────────────────────────────
 
@@ -124,6 +125,35 @@ export async function createSpacesPresignedPutUrl(
       'x-amz-acl': 'public-read',
     },
   };
+}
+
+// ─── Presign helper ───────────────────────────────────────────────────────────
+
+/**
+ * Validates a file upload request and generates a presigned PUT URL for Spaces.
+ * Throws 400 if the content type or file size is not allowed.
+ */
+export async function presignFileUpload(input: {
+  userId: string;
+  folder: string;
+  contentType: string;
+  fileSize: number;
+  allowedTypes: readonly string[];
+  maxBytes: number;
+}) {
+  if (!input.allowedTypes.includes(input.contentType)) {
+    throwHttpError({ status: 400, message: 'Only JPG, PNG, and WEBP images are allowed', code: 'BAD_REQUEST' });
+  }
+
+  if (input.fileSize > input.maxBytes) {
+    throwHttpError({ status: 400, message: 'Image is too large', code: 'BAD_REQUEST' });
+  }
+
+  const fileKey = buildFileKey(input.userId, input.folder, input.contentType);
+  const { url: uploadUrl, headers: uploadHeaders } = await createSpacesPresignedPutUrl(fileKey, input.contentType);
+  const publicUrl = createSpacesPublicUrl(fileKey);
+
+  return { fileKey, uploadUrl, uploadHeaders, publicUrl, method: 'PUT' as const };
 }
 
 /**
