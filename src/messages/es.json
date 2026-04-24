@@ -574,7 +574,7 @@
       "warningTitle": "Esto eliminará permanentemente:",
       "warning1": "Todos tus enlaces de afiliado y analíticas de clics",
       "warning2": "Todos tus productos, marcas y códigos QR",
-      "warning3": "Tus dominios personalizados y configuración",
+      "warning3": "Tu dominio personalizado y configuración",
       "warning4": "Tu suscripción activa (si tienes una)",
       "button": "Eliminar cuenta",
       "dialogTitle": "¿Eliminar tu cuenta?",
@@ -591,7 +591,7 @@
   },
   "settings": {
     "title": "Configuración",
-    "description": "Administra marcas, notificaciones, dominios personalizados e historial de envíos.",
+    "description": "Administra marcas, notificaciones, dominio personalizado e historial de envíos.",
     "language": {
       "title": "Idioma",
       "description": "Elige tu idioma preferido para la interfaz.",
@@ -871,7 +871,7 @@
       "unlockedTitle": "Lo que acabas de desbloquear",
       "feature1": "Enlaces de afiliado ilimitados con analíticas de clics",
       "feature2": "Detección automática de enlaces rotos y alertas",
-      "feature3": "Dominios personalizados para que los enlaces sean tuyos",
+      "feature3": "Dominio personalizado para que los enlaces sean tuyos",
       "cta": "Empezar a agregar enlaces",
       "redirecting": "Te llevamos en {count}s…"
     },

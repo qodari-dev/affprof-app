@@ -574,7 +574,7 @@
       "warningTitle": "This will permanently delete:",
       "warning1": "All your affiliate links and click analytics",
       "warning2": "All your products, brands, and QR codes",
-      "warning3": "Your custom domains and settings",
+      "warning3": "Your custom domain and settings",
       "warning4": "Your active subscription (if any)",
       "button": "Delete account",
       "dialogTitle": "Delete your account?",
@@ -591,7 +591,7 @@
   },
   "settings": {
     "title": "Settings",
-    "description": "Manage brands, notifications, branded domains, and delivery history.",
+    "description": "Manage brands, notifications, branded domain, and delivery history.",
     "language": {
       "title": "Language",
       "description": "Choose your preferred language for the interface.",
@@ -831,7 +831,7 @@
         "description": "Best if you want flexibility while validating your creator workflow.",
         "feature1": "Unlimited products and links",
         "feature2": "Branded QR codes with your colors",
-        "feature3": "Custom domains for your short links",
+        "feature3": "Custom domain for your short links",
         "feature4": "Fallback URL when a link breaks",
         "feature5": "Bulk import via CSV",
         "feature6": "Faster monitoring (4x a day)",
@@ -871,7 +871,7 @@
       "unlockedTitle": "What you just unlocked",
       "feature1": "Unlimited affiliate links with click analytics",
       "feature2": "Automatic broken link detection and alerts",
-      "feature3": "Custom domains so links look like yours",
+      "feature3": "Custom domain so links look like yours",
       "cta": "Start adding links",
       "redirecting": "Taking you in {count}s…"
     },
