@@ -2,6 +2,7 @@
 
 import {
   CreditCard,
+  BookOpen,
   Home,
   LayoutDashboard,
   LifeBuoy,
@@ -115,6 +116,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {
                 title: t("help"),
                 url: "/help",
+                icon: BookOpen,
+              },
+              {
+                title: t("contact"),
+                url: "/contact",
                 icon: LifeBuoy,
                 exact: true,
               },
