@@ -656,7 +656,7 @@
       "subdomain": "Subdominio",
       "subdomainPlaceholder": "go.tumarca.com",
       "subdomainHelp": "Solo subdominios — ej. go.tumarca.com. Los dominios raíz no están soportados aún.",
-      "dnsHelp": "Una vez agregado, AffProf mostrará los registros TXT y CNAME exactos a configurar. La verificación es automática cuando el DNS esté activo.",
+      "dnsHelp": "Una vez agregado, AffProf mostrará los registros TXT y CNAME exactos a configurar.",
       "verified": "Verificado",
       "pendingVerification": "Verificación pendiente",
       "primary": "Principal",
@@ -667,7 +667,7 @@
       "cnameRecord": "Registro CNAME",
       "recordName": "Nombre",
       "dnsUpdateHelp": "Los cambios DNS pueden tardar unos minutos en propagarse. Una vez activos los dos registros, haz clic en Verificar.",
-      "brandedLinksActive": "Todos tus enlaces cortos ahora resuelven desde {hostname}.",
+      "brandedLinksActive": "Los enlaces cortos existentes y nuevos ahora se pueden compartir desde {hostname}.",
       "addDomain": "Agregar dominio",
       "copied": "{label} copiado",
       "invalidHostname": "Ingresa un subdominio válido — ej. go.tumarca.com.",
@@ -675,11 +675,11 @@
       "toastDomainVerified": "Dominio verificado",
       "toastPrimaryUpdated": "Dominio principal actualizado",
       "toastDomainRemoved": "Dominio personalizado eliminado",
-      "verifiedHelp": "Los nuevos enlaces pueden usar este dominio de marca inmediatamente.",
+      "verifiedHelp": "Tu dominio de marca está verificado y listo para usarse.",
       "pendingHelp": "Completa los registros DNS a continuación, luego verifica el dominio.",
-      "footerDefault": "Solo subdominios — ej. go.tumarca.com. Los dominios raíz no están soportados aún.",
-      "footerPending": "Los cambios DNS pueden tardar unos minutos en propagarse globalmente.",
-      "footerVerified": "Por ahora se admite un dominio personalizado por cuenta."
+      "footerDefault": "Por ahora se admite un dominio personalizado por cuenta.",
+      "footerPending": "Por ahora se admite un dominio personalizado por cuenta.",
+      "footerVerified": "Los enlaces cortos predeterminados de AffProf siguen funcionando."
     },
     "notifications": {
       "title": "Notificaciones",

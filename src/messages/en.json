@@ -656,7 +656,7 @@
       "subdomain": "Subdomain",
       "subdomainPlaceholder": "go.yourbrand.com",
       "subdomainHelp": "Subdomains only — e.g. go.yourbrand.com. Root domains are not supported yet.",
-      "dnsHelp": "Once added, AffProf will show the exact TXT and CNAME records to configure. Verification is automatic once DNS is live.",
+      "dnsHelp": "Once added, AffProf will show the exact TXT and CNAME records to configure.",
       "verified": "Verified",
       "pendingVerification": "Pending verification",
       "primary": "Primary",
@@ -667,7 +667,7 @@
       "cnameRecord": "CNAME record",
       "recordName": "Name",
       "dnsUpdateHelp": "DNS changes can take a few minutes to propagate. Once both records are live, click Verify.",
-      "brandedLinksActive": "All your short links now resolve from {hostname}.",
+      "brandedLinksActive": "Existing and new short links can now be shared from {hostname}.",
       "addDomain": "Add domain",
       "copied": "{label} copied",
       "invalidHostname": "Enter a valid subdomain — e.g. go.yourbrand.com.",
@@ -675,11 +675,11 @@
       "toastDomainVerified": "Domain verified",
       "toastPrimaryUpdated": "Primary domain updated",
       "toastDomainRemoved": "Custom domain removed",
-      "verifiedHelp": "New links can use this branded domain immediately.",
+      "verifiedHelp": "Your branded domain is verified and ready to use.",
       "pendingHelp": "Finish the DNS records below, then verify the domain.",
-      "footerDefault": "Subdomains only — e.g. go.yourbrand.com. Root domains are not supported yet.",
-      "footerPending": "DNS changes can take a few minutes to propagate globally.",
-      "footerVerified": "One custom domain per account is supported for now."
+      "footerDefault": "One custom domain per account is supported for now.",
+      "footerPending": "One custom domain per account is supported for now.",
+      "footerVerified": "Default AffProf short links continue to work."
     },
     "notifications": {
       "title": "Notifications",
