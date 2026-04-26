@@ -70,8 +70,90 @@
     "downloadPng": "Download PNG"
   },
   "help": {
-    "metadataTitle": "Help & Feedback",
-    "title": "Help & Feedback",
+    "metadataTitle": "Help Center",
+    "title": "AffProf Help Center",
+    "badge": "Docs",
+    "description": "Practical guides for setting up your account, organizing links, using QR codes, configuring custom domains, and reading your analytics.",
+    "backToHelp": "Back to Help Center",
+    "outlineTitle": "What this guide will cover",
+    "outlineDescription": "This page is ready for the full guide. For now, it keeps the key topics scoped and easy to expand.",
+    "contactCard": {
+      "title": "Need a human?",
+      "description": "Questions, bugs, and product feedback now live in Contact & Feedback.",
+      "cta": "Contact us"
+    },
+    "gettingStarted": {
+      "title": "Getting started with AffProf",
+      "description": "A quick walkthrough for creating your first tracked link and understanding the core workflow before you move into advanced setup.",
+      "time": "5-10 minutes",
+      "step1": "Create your free account",
+      "step2": "Review your home dashboard",
+      "step3": "Create your first product",
+      "step4": "Add and share a tracked link",
+      "step5": "Watch clicks and link health"
+    },
+    "topics": {
+      "products": {
+        "title": "Products, links & tags",
+        "description": "How AffProf organizes campaigns and the data behind every short link.",
+        "point1": "Products group links by the item, offer, or campaign you promote.",
+        "point2": "Links store the destination URL, slug, UTM fields, status, and click tracking.",
+        "point3": "Tags help filter links across products, platforms, and campaigns."
+      },
+      "brandsQr": {
+        "title": "Brands & QR codes",
+        "description": "Use saved brand styles and downloadable QR codes for offline or social placements.",
+        "point1": "Standard QR codes can be generated from each short link.",
+        "point2": "Brand styles control QR colors and optional center logos.",
+        "point3": "QR scans are tracked separately from regular short-link clicks."
+      },
+      "customDomains": {
+        "title": "Custom domains",
+        "description": "Set up a branded subdomain for short links without breaking existing AffProf URLs.",
+        "point1": "AffProf supports subdomains such as go.yourbrand.com.",
+        "point2": "You configure TXT and CNAME records, then click Verify when DNS is live.",
+        "point3": "Default AffProf short links continue to work after verification."
+      },
+      "importExport": {
+        "title": "Import & export links",
+        "description": "Move campaign data in and out of AffProf with CSV workflows.",
+        "point1": "Use the import template for products, slugs, destinations, UTM fields, and tags.",
+        "point2": "Missing products can be created automatically during import.",
+        "point3": "Export your links when you need reporting, backups, or offline cleanup."
+      },
+      "fallbacks": {
+        "title": "Fallback URLs & Link Health",
+        "description": "Protect traffic and monitor link health when destinations break or become unavailable.",
+        "point1": "A link-level fallback sends visitors to a backup destination for that link.",
+        "point2": "A default fallback covers links that do not have their own backup URL.",
+        "point3": "Fallback redirects are tracked in analytics so you can spot revenue risk."
+      },
+      "analytics": {
+        "title": "Dashboard & analytics",
+        "description": "Understand clicks, devices, countries, QR scans, fallback redirects, and link health.",
+        "point1": "The home page shows the essentials; Dashboard is for deeper analysis.",
+        "point2": "Health metrics help you find broken links before they cost commissions.",
+        "point3": "Filters let you compare products, platforms, tags, and time ranges."
+      },
+      "billing": {
+        "title": "Billing & subscription",
+        "description": "Understand plan limits, Pro features, invoices, trials, and subscription changes.",
+        "point1": "Free includes core tracking with limits for products and links.",
+        "point2": "Pro unlocks advanced workflows such as custom domains, branding, imports, and fallbacks.",
+        "point3": "Billing settings let you manage checkout, invoices, and subscription changes."
+      },
+      "accountSettings": {
+        "title": "Account & settings",
+        "description": "Manage profile details, account preferences, notifications, and defaults.",
+        "point1": "Profile settings control your account slug, timezone, and language.",
+        "point2": "Notification settings control broken-link alerts and weekly digest emails.",
+        "point3": "Settings centralize brands, custom domains, fallbacks, and other account defaults."
+      }
+    }
+  },
+  "contact": {
+    "metadataTitle": "Contact & Feedback",
+    "title": "Contact & Feedback",
     "description": "Questions, suggestions, or something not working? We're here.",
     "cardTitle": "Get in touch with us",
     "cardDesc": "We read every message and reply within 24 hours. No bots, no ticket queues — just a direct line to the team building AffProf.",
@@ -83,7 +165,8 @@
   },
   "nav": {
     "home": "Home",
-    "help": "Help & Feedback",
+    "help": "Help Center",
+    "contact": "Contact & Feedback",
     "dashboard": "Dashboard",
     "products": "Products",
     "links": "Links",
@@ -656,7 +739,7 @@
       "subdomain": "Subdomain",
       "subdomainPlaceholder": "go.yourbrand.com",
       "subdomainHelp": "Subdomains only — e.g. go.yourbrand.com. Root domains are not supported yet.",
-      "dnsHelp": "Once added, AffProf will show the exact TXT and CNAME records to configure. Verification is automatic once DNS is live.",
+      "dnsHelp": "Once added, AffProf will show the exact TXT and CNAME records to configure.",
       "verified": "Verified",
       "pendingVerification": "Pending verification",
       "primary": "Primary",
@@ -667,7 +750,7 @@
       "cnameRecord": "CNAME record",
       "recordName": "Name",
       "dnsUpdateHelp": "DNS changes can take a few minutes to propagate. Once both records are live, click Verify.",
-      "brandedLinksActive": "All your short links now resolve from {hostname}.",
+      "brandedLinksActive": "Existing and new short links can now be shared from {hostname}.",
       "addDomain": "Add domain",
       "copied": "{label} copied",
       "invalidHostname": "Enter a valid subdomain — e.g. go.yourbrand.com.",
@@ -675,11 +758,11 @@
       "toastDomainVerified": "Domain verified",
       "toastPrimaryUpdated": "Primary domain updated",
       "toastDomainRemoved": "Custom domain removed",
-      "verifiedHelp": "New links can use this branded domain immediately.",
+      "verifiedHelp": "Your branded domain is verified and ready to use.",
       "pendingHelp": "Finish the DNS records below, then verify the domain.",
-      "footerDefault": "Subdomains only — e.g. go.yourbrand.com. Root domains are not supported yet.",
-      "footerPending": "DNS changes can take a few minutes to propagate globally.",
-      "footerVerified": "One custom domain per account is supported for now."
+      "footerDefault": "One custom domain per account is supported for now.",
+      "footerPending": "One custom domain per account is supported for now.",
+      "footerVerified": "Default AffProf short links continue to work."
     },
     "notifications": {
       "title": "Notifications",

@@ -70,8 +70,90 @@
     "downloadPng": "Descargar PNG"
   },
   "help": {
-    "metadataTitle": "Ayuda y comentarios",
-    "title": "Ayuda y comentarios",
+    "metadataTitle": "Centro de ayuda",
+    "title": "Centro de ayuda de AffProf",
+    "badge": "Docs",
+    "description": "Guías prácticas para configurar tu cuenta, organizar enlaces, usar códigos QR, configurar dominios personalizados y leer tus analíticas.",
+    "backToHelp": "Volver al Centro de ayuda",
+    "outlineTitle": "Qué cubrirá esta guía",
+    "outlineDescription": "Esta página está lista para la guía completa. Por ahora mantiene los temas clave organizados y fáciles de expandir.",
+    "contactCard": {
+      "title": "¿Necesitas hablar con alguien?",
+      "description": "Preguntas, errores y comentarios del producto ahora están en Contacto y feedback.",
+      "cta": "Contactarnos"
+    },
+    "gettingStarted": {
+      "title": "Primeros pasos con AffProf",
+      "description": "Una guía rápida para crear tu primer enlace rastreado y entender el flujo principal antes de pasar a configuraciones avanzadas.",
+      "time": "5-10 minutos",
+      "step1": "Crea tu cuenta gratis",
+      "step2": "Revisa tu dashboard inicial",
+      "step3": "Crea tu primer producto",
+      "step4": "Agrega y comparte un enlace rastreado",
+      "step5": "Observa clicks y salud del enlace"
+    },
+    "topics": {
+      "products": {
+        "title": "Productos, enlaces y etiquetas",
+        "description": "Cómo AffProf organiza campañas y los datos detrás de cada enlace corto.",
+        "point1": "Los productos agrupan enlaces por artículo, oferta o campaña que promocionas.",
+        "point2": "Los enlaces guardan URL destino, slug, campos UTM, estado y tracking de clicks.",
+        "point3": "Las etiquetas ayudan a filtrar enlaces por productos, plataformas y campañas."
+      },
+      "brandsQr": {
+        "title": "Marcas y códigos QR",
+        "description": "Usa estilos de marca guardados y códigos QR descargables para piezas offline o redes sociales.",
+        "point1": "Los códigos QR estándar se pueden generar desde cada enlace corto.",
+        "point2": "Los estilos de marca controlan colores QR y logos centrales opcionales.",
+        "point3": "Los escaneos QR se rastrean separado de los clicks regulares."
+      },
+      "customDomains": {
+        "title": "Dominios personalizados",
+        "description": "Configura un subdominio de marca para enlaces cortos sin romper las URLs existentes de AffProf.",
+        "point1": "AffProf soporta subdominios como go.tumarca.com.",
+        "point2": "Configuras registros TXT y CNAME, luego haces click en Verificar cuando el DNS esté activo.",
+        "point3": "Los enlaces cortos predeterminados de AffProf siguen funcionando después de verificar."
+      },
+      "importExport": {
+        "title": "Importar y exportar enlaces",
+        "description": "Mueve datos de campañas dentro y fuera de AffProf con flujos CSV.",
+        "point1": "Usa la plantilla de importación para productos, slugs, destinos, campos UTM y etiquetas.",
+        "point2": "Los productos faltantes pueden crearse automáticamente durante la importación.",
+        "point3": "Exporta tus enlaces cuando necesites reportes, respaldos o limpieza offline."
+      },
+      "fallbacks": {
+        "title": "Fallback URLs y Link Health",
+        "description": "Protege el tráfico y monitorea la salud cuando los destinos se rompen o dejan de estar disponibles.",
+        "point1": "Un fallback por enlace envía visitantes a un destino de respaldo para ese enlace.",
+        "point2": "Un fallback predeterminado cubre enlaces que no tienen su propia URL de respaldo.",
+        "point3": "Los redirects a fallback se rastrean en analíticas para detectar riesgo de ingresos."
+      },
+      "analytics": {
+        "title": "Dashboard y analíticas",
+        "description": "Entiende clicks, dispositivos, países, escaneos QR, redirects a fallback y salud de enlaces.",
+        "point1": "La página inicial muestra lo esencial; Dashboard sirve para análisis más profundo.",
+        "point2": "Las métricas de salud ayudan a encontrar enlaces rotos antes de perder comisiones.",
+        "point3": "Los filtros permiten comparar productos, plataformas, etiquetas y rangos de tiempo."
+      },
+      "billing": {
+        "title": "Facturación y suscripción",
+        "description": "Entiende límites del plan, funciones Pro, facturas, trials y cambios de suscripción.",
+        "point1": "Free incluye tracking básico con límites de productos y enlaces.",
+        "point2": "Pro desbloquea flujos avanzados como dominios personalizados, branding, importaciones y fallbacks.",
+        "point3": "La configuración de facturación permite gestionar checkout, facturas y cambios de suscripción."
+      },
+      "accountSettings": {
+        "title": "Cuenta y configuración",
+        "description": "Gestiona datos de perfil, preferencias de cuenta, notificaciones y valores predeterminados.",
+        "point1": "La configuración de perfil controla tu slug, zona horaria e idioma.",
+        "point2": "La configuración de notificaciones controla alertas de enlaces rotos y emails semanales.",
+        "point3": "Settings centraliza marcas, dominios personalizados, fallbacks y otros valores de cuenta."
+      }
+    }
+  },
+  "contact": {
+    "metadataTitle": "Contacto y feedback",
+    "title": "Contacto y feedback",
     "description": "¿Tienes preguntas, sugerencias o algo que no funciona? Estamos aquí.",
     "cardTitle": "Contáctanos",
     "cardDesc": "Leemos cada mensaje y respondemos en menos de 24 horas. Sin bots ni filas de soporte — una línea directa con el equipo que construye AffProf.",
@@ -83,7 +165,8 @@
   },
   "nav": {
     "home": "Inicio",
-    "help": "Ayuda y comentarios",
+    "help": "Centro de ayuda",
+    "contact": "Contacto y feedback",
     "dashboard": "Panel",
     "products": "Productos",
     "links": "Enlaces",
@@ -656,7 +739,7 @@
       "subdomain": "Subdominio",
       "subdomainPlaceholder": "go.tumarca.com",
       "subdomainHelp": "Solo subdominios — ej. go.tumarca.com. Los dominios raíz no están soportados aún.",
-      "dnsHelp": "Una vez agregado, AffProf mostrará los registros TXT y CNAME exactos a configurar. La verificación es automática cuando el DNS esté activo.",
+      "dnsHelp": "Una vez agregado, AffProf mostrará los registros TXT y CNAME exactos a configurar.",
       "verified": "Verificado",
       "pendingVerification": "Verificación pendiente",
       "primary": "Principal",
@@ -667,7 +750,7 @@
       "cnameRecord": "Registro CNAME",
       "recordName": "Nombre",
       "dnsUpdateHelp": "Los cambios DNS pueden tardar unos minutos en propagarse. Una vez activos los dos registros, haz clic en Verificar.",
-      "brandedLinksActive": "Todos tus enlaces cortos ahora resuelven desde {hostname}.",
+      "brandedLinksActive": "Los enlaces cortos existentes y nuevos ahora se pueden compartir desde {hostname}.",
       "addDomain": "Agregar dominio",
       "copied": "{label} copiado",
       "invalidHostname": "Ingresa un subdominio válido — ej. go.tumarca.com.",
@@ -675,11 +758,11 @@
       "toastDomainVerified": "Dominio verificado",
       "toastPrimaryUpdated": "Dominio principal actualizado",
       "toastDomainRemoved": "Dominio personalizado eliminado",
-      "verifiedHelp": "Los nuevos enlaces pueden usar este dominio de marca inmediatamente.",
+      "verifiedHelp": "Tu dominio de marca está verificado y listo para usarse.",
       "pendingHelp": "Completa los registros DNS a continuación, luego verifica el dominio.",
-      "footerDefault": "Solo subdominios — ej. go.tumarca.com. Los dominios raíz no están soportados aún.",
-      "footerPending": "Los cambios DNS pueden tardar unos minutos en propagarse globalmente.",
-      "footerVerified": "Por ahora se admite un dominio personalizado por cuenta."
+      "footerDefault": "Por ahora se admite un dominio personalizado por cuenta.",
+      "footerPending": "Por ahora se admite un dominio personalizado por cuenta.",
+      "footerVerified": "Los enlaces cortos predeterminados de AffProf siguen funcionando."
     },
     "notifications": {
       "title": "Notificaciones",

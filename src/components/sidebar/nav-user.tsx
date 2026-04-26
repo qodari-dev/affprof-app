@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronsUpDown, CreditCard, LifeBuoy, LogOut, Settings, User } from 'lucide-react';
+import { BookOpen, ChevronsUpDown, CreditCard, LifeBuoy, LogOut, Settings, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { api } from '@/clients/api';
@@ -118,8 +118,12 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => (window.location.href = '/help')}>
-                <LifeBuoy />
+                <BookOpen />
                 {t('help')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => (window.location.href = '/contact')}>
+                <LifeBuoy />
+                {t('contact')}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
