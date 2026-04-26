@@ -122,7 +122,7 @@
         "point3": "Export your links when you need reporting, backups, or offline cleanup."
       },
       "fallbacks": {
-        "title": "Fallback URLs & link health",
+        "title": "Fallback URLs & Link Health",
         "description": "Protect traffic and monitor link health when destinations break or become unavailable.",
         "point1": "A link-level fallback sends visitors to a backup destination for that link.",
         "point2": "A default fallback covers links that do not have their own backup URL.",

@@ -42,6 +42,8 @@ type ImportExportContent = {
   title: string;
   description: string;
   note: string;
+  tocTitle: string;
+  tocLinks: Array<{ href: string; label: string }>;
   useCases: string[];
   sections: Section[];
   updateTitle: string;
@@ -63,6 +65,19 @@ const content = {
     description:
       'Move link data in and out of AffProf using CSV files. This is useful for migrations, bulk updates, UTM changes, backups, and reports.',
     note: 'Bulk CSV import is a Pro feature. Export is available on all plans, including Free.',
+    tocTitle: 'In this guide',
+    tocLinks: [
+      { href: '#export', label: 'Export your links' },
+      { href: '#workflow', label: 'Edit and re-upload' },
+      { href: '#import-start', label: 'Import basics' },
+      { href: '#columns', label: 'CSV columns' },
+      { href: '#preview-errors', label: 'Preview and errors' },
+      { href: '#confirm', label: 'Confirm import' },
+      { href: '#updates', label: 'How updates work' },
+      { href: '#tips', label: 'Clean import tips' },
+      { href: '#limitations', label: 'Limitations' },
+      { href: '#questions', label: 'Common questions' },
+    ],
     useCases: [
       'Migrating from another shortener or spreadsheet.',
       'Updating destination URLs across many links at once.',
@@ -261,7 +276,7 @@ const content = {
     limitations: [
       'Maximum 10 tags per link. Extra tags are ignored.',
       'Slugs must be unique within your account.',
-      'CSV files only. XLSX, ODS, and other formats must be exported to CSV first.',
+      'AffProf supports CSV format. If your file is XLSX or ODS, export it to CSV first using your spreadsheet app.',
       'Per-link brand assignments are not included in import/export.',
     ],
     questionsTitle: 'Common questions',
@@ -306,6 +321,19 @@ const content = {
       'Mueve data de links dentro y fuera de AffProf usando archivos CSV. Es útil para migraciones, cambios masivos, UTMs, backups y reportes.',
     note:
       'La importación masiva por CSV es una feature Pro. La exportación está disponible en todos los planes, incluyendo Free.',
+    tocTitle: 'En esta guía',
+    tocLinks: [
+      { href: '#export', label: 'Exportar links' },
+      { href: '#workflow', label: 'Editar y re-subir' },
+      { href: '#import-start', label: 'Import básico' },
+      { href: '#columns', label: 'Columnas CSV' },
+      { href: '#preview-errors', label: 'Preview y errores' },
+      { href: '#confirm', label: 'Confirmar import' },
+      { href: '#updates', label: 'Actualizaciones' },
+      { href: '#tips', label: 'Tips de import' },
+      { href: '#limitations', label: 'Limitaciones' },
+      { href: '#questions', label: 'Preguntas comunes' },
+    ],
     useCases: [
       'Migrar desde otro acortador o una hoja de cálculo.',
       'Actualizar URLs de destino a través de muchos links a la vez.',
@@ -504,7 +532,7 @@ const content = {
     limitations: [
       'Máximo 10 tags por link. Tags extra se ignoran.',
       'Los slugs deben ser únicos dentro de tu cuenta.',
-      'Solo CSV. XLSX, ODS y otros formatos deben exportarse a CSV primero.',
+      'AffProf soporta formato CSV. Si tu archivo es XLSX u ODS, expórtalo a CSV primero usando tu app de hoja de cálculo.',
       'Asignaciones de brand por link no se incluyen en import/export.',
     ],
     questionsTitle: 'Preguntas comunes',
@@ -698,6 +726,25 @@ export default async function ImportExportHelpPage() {
           </div>
         </section>
 
+        <Card className="rounded-2xl">
+          <CardHeader>
+            <CardTitle>{page.tocTitle}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+              {page.tocLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="rounded-xl border bg-muted/20 px-3 py-2 text-sm font-medium text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         <section className="grid gap-4 lg:grid-cols-2">
           {page.sections.map(({ id, icon: Icon, title, description, blocks }) => (
             <Card key={id} id={id} className="scroll-mt-20 rounded-2xl">
@@ -721,7 +768,7 @@ export default async function ImportExportHelpPage() {
           ))}
         </section>
 
-        <section className="rounded-2xl border bg-card p-6">
+        <section id="updates" className="scroll-mt-20 rounded-2xl border bg-card p-6">
           <h2 className="text-xl font-semibold">{page.updateTitle}</h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">{page.updateDescription}</p>
           <div className="mt-4">
@@ -730,17 +777,17 @@ export default async function ImportExportHelpPage() {
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
-          <Card className="rounded-2xl">
+          <Card id="tips" className="scroll-mt-20 rounded-2xl">
             <CardHeader><CardTitle>{page.tipsTitle}</CardTitle></CardHeader>
             <CardContent><BulletList items={page.tips} /></CardContent>
           </Card>
-          <Card className="rounded-2xl">
+          <Card id="limitations" className="scroll-mt-20 rounded-2xl">
             <CardHeader><CardTitle>{page.limitationsTitle}</CardTitle></CardHeader>
             <CardContent><BulletList items={page.limitations} /></CardContent>
           </Card>
         </section>
 
-        <section className="rounded-2xl border bg-card p-6">
+        <section id="questions" className="scroll-mt-20 rounded-2xl border bg-card p-6">
           <div className="flex items-start justify-between gap-4">
             <h2 className="text-xl font-semibold">{page.questionsTitle}</h2>
             <HelpCircle className="size-5 text-muted-foreground" />

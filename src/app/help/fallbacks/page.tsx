@@ -38,6 +38,8 @@ type GuideSection = {
 type FallbackContent = {
   title: string;
   description: string;
+  tocTitle: string;
+  tocLinks: Array<{ href: string; label: string }>;
   introSummary: Array<{ title: string; body: string }>;
   sections: GuideSection[];
   scenarioTitle: string;
@@ -62,9 +64,22 @@ type FallbackContent = {
 
 const content = {
   en: {
-    title: 'Fallback URLs & link health',
+    title: 'Fallback URLs & Link Health',
     description:
       "Affiliate links break silently. The page goes 404, the product gets pulled, the affiliate program rotates URLs, or the destination domain expires. AffProf pairs automatic link health monitoring with fallback URLs so you do not lose clicks while you fix the original destination.",
+    tocTitle: 'In this guide',
+    tocLinks: [
+      { href: '#problem', label: 'The problem' },
+      { href: '#monitoring', label: 'Link Health' },
+      { href: '#manual-checks', label: 'Manual checks' },
+      { href: '#fallbacks', label: 'Fallback URLs' },
+      { href: '#choosing', label: 'Choosing fallbacks' },
+      { href: '#setup', label: 'Setup' },
+      { href: '#how-they-work', label: 'How they work together' },
+      { href: '#click-counts', label: 'Click counts' },
+      { href: '#questions', label: 'Common questions' },
+      { href: '#checklist', label: 'Setup checklist' },
+    ],
     introSummary: [
       {
         title: 'Automatic monitoring',
@@ -110,7 +125,7 @@ const content = {
       {
         id: 'monitoring',
         icon: Clock3,
-        title: 'Part 1: Link health monitoring',
+        title: 'Part 1: Link Health monitoring',
         description: 'AffProf automatically checks every link in your account on a schedule.',
         blocks: [
           {
@@ -336,9 +351,22 @@ const content = {
       'Email hello@affprof.com with your account email and a description of what you are trying to set up. We respond within 24 hours, faster for Pro users.',
   },
   es: {
-    title: 'Fallback URLs y salud de links',
+    title: 'Fallback URLs y Link Health',
     description:
       'Los links de afiliado se rompen silenciosamente. La página da 404, el producto se descontinúa, el programa rota URLs, o el dominio del destino expira. AffProf combina monitoreo automático de salud de links con fallback URLs para que no pierdas clicks mientras arreglas el destino original.',
+    tocTitle: 'En esta guía',
+    tocLinks: [
+      { href: '#problem', label: 'El problema' },
+      { href: '#monitoring', label: 'Link Health' },
+      { href: '#manual-checks', label: 'Chequeos manuales' },
+      { href: '#fallbacks', label: 'Fallback URLs' },
+      { href: '#choosing', label: 'Elegir fallbacks' },
+      { href: '#setup', label: 'Configuración' },
+      { href: '#how-they-work', label: 'Cómo trabajan juntos' },
+      { href: '#click-counts', label: 'Conteos de clicks' },
+      { href: '#questions', label: 'Preguntas comunes' },
+      { href: '#checklist', label: 'Checklist' },
+    ],
     introSummary: [
       {
         title: 'Monitoreo automático',
@@ -384,7 +412,7 @@ const content = {
       {
         id: 'monitoring',
         icon: Clock3,
-        title: 'Parte 1: Monitoreo de salud de links',
+        title: 'Parte 1: Link Health',
         description: 'AffProf chequea automáticamente cada link en tu cuenta con un horario.',
         blocks: [
           {
@@ -766,6 +794,25 @@ export default async function FallbacksHelpPage() {
           </div>
         </section>
 
+        <Card className="rounded-2xl">
+          <CardHeader>
+            <CardTitle>{page.tocTitle}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+              {page.tocLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="rounded-xl border bg-muted/20 px-3 py-2 text-sm font-medium text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         <section className="grid gap-4 lg:grid-cols-2">
           {page.sections.map(({ id, icon: Icon, title, description, blocks }) => (
             <Card key={id} id={id} className="scroll-mt-20 rounded-2xl">
@@ -789,7 +836,7 @@ export default async function FallbacksHelpPage() {
           ))}
         </section>
 
-        <section className="rounded-2xl border bg-card p-6">
+        <section id="how-they-work" className="scroll-mt-20 rounded-2xl border bg-card p-6">
           <div className="flex items-start gap-3">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border bg-background">
               <ShieldCheck className="size-5 text-muted-foreground" />
@@ -807,7 +854,7 @@ export default async function FallbacksHelpPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border bg-muted/20 p-6">
+        <section id="click-counts" className="scroll-mt-20 rounded-2xl border bg-muted/20 p-6">
           <h2 className="text-xl font-semibold">{page.countsTitle}</h2>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <Card className="rounded-2xl">
@@ -831,7 +878,7 @@ export default async function FallbacksHelpPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border bg-card p-6">
+        <section id="questions" className="scroll-mt-20 rounded-2xl border bg-card p-6">
           <div className="flex items-start justify-between gap-4">
             <h2 className="text-xl font-semibold">{page.questionsTitle}</h2>
             <HelpCircle className="size-5 text-muted-foreground" />
@@ -848,7 +895,7 @@ export default async function FallbacksHelpPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border bg-card p-6">
+        <section id="checklist" className="scroll-mt-20 rounded-2xl border bg-card p-6">
           <h2 className="text-xl font-semibold">{page.checklistTitle}</h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">{page.checklistIntro}</p>
           <div className="mt-5 grid gap-4 md:grid-cols-2">

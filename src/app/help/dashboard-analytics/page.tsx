@@ -37,6 +37,8 @@ type DashboardContent = {
   title: string;
   description: string;
   linkAnalyticsNote: string;
+  tocTitle: string;
+  tocLinks: Array<{ href: string; label: string }>;
   answersTitle: string;
   answers: string[];
   readingTitle: string;
@@ -69,6 +71,19 @@ const content = {
     description:
       "The Dashboard is your command center for understanding what's actually earning, where your audience is, and which links need attention. This guide walks through every section so you can read your data confidently.",
     linkAnalyticsNote: 'For analytics on a single link, see the per-link analytics section below.',
+    tocTitle: 'In this guide',
+    tocLinks: [
+      { href: '#broken-links', label: 'Broken links banner' },
+      { href: '#filters', label: 'Filters and date range' },
+      { href: '#kpis', label: 'KPI cards' },
+      { href: '#clicks-over-time', label: 'Clicks over time' },
+      { href: '#top-performance', label: 'Top performance' },
+      { href: '#link-health', label: 'Link Health metrics' },
+      { href: '#per-link', label: 'Per-link analytics' },
+      { href: '#interpretations', label: 'Common interpretations' },
+      { href: '#filtering', label: 'Filtering tips' },
+      { href: '#not-shown', label: 'What is not shown' },
+    ],
     answersTitle: 'What the Dashboard answers',
     answers: [
       'Are any of my links broken right now?',
@@ -160,7 +175,7 @@ const content = {
       {
         id: 'link-health',
         icon: Clock3,
-        title: '8. Link health metrics',
+        title: '8. Link Health metrics',
         description: 'The infrastructure layer at the bottom of the Dashboard.',
         items: [
           'Uptime shows what percentage of health checks passed.',
@@ -274,7 +289,7 @@ const content = {
     ],
     attributionTip:
       'For attribution to specific content, use UTM parameters. The destination URL passes those UTMs through so your affiliate program or analytics tool can read them.',
-    fallbackGuideLabel: 'Fallback URLs & link health',
+    fallbackGuideLabel: 'Fallback URLs & Link Health',
     helpTitle: 'Need help interpreting your data?',
     helpBody:
       'Email hello@affprof.com with a screenshot of what you are trying to understand. We respond within 24 hours, faster for Pro users.',
@@ -284,6 +299,19 @@ const content = {
     description:
       'El Dashboard es tu centro de comando para entender qué está generando ingresos, dónde está tu audiencia, y qué links necesitan atención. Esta guía te lleva por cada sección para que leas tu data con confianza.',
     linkAnalyticsNote: 'Para analytics de un solo link, ve la sección de per-link analytics al final.',
+    tocTitle: 'En esta guía',
+    tocLinks: [
+      { href: '#broken-links', label: 'Banner de links rotos' },
+      { href: '#filters', label: 'Filtros y rango de fechas' },
+      { href: '#kpis', label: 'KPI cards' },
+      { href: '#clicks-over-time', label: 'Clicks over time' },
+      { href: '#top-performance', label: 'Top performance' },
+      { href: '#link-health', label: 'Métricas de Link Health' },
+      { href: '#per-link', label: 'Per-link analytics' },
+      { href: '#interpretations', label: 'Interpretaciones comunes' },
+      { href: '#filtering', label: 'Tips de filtrado' },
+      { href: '#not-shown', label: 'Lo que no muestra' },
+    ],
     answersTitle: 'Qué responde el Dashboard',
     answers: [
       '¿Hay algún link mío roto ahora?',
@@ -375,7 +403,7 @@ const content = {
       {
         id: 'link-health',
         icon: Clock3,
-        title: '8. Métricas de link health',
+        title: '8. Métricas de Link Health',
         description: 'La capa de infraestructura al final del Dashboard.',
         items: [
           'Uptime muestra qué porcentaje de chequeos de salud pasó.',
@@ -489,7 +517,7 @@ const content = {
     ],
     attributionTip:
       'Para atribución a contenido específico, usa UTM parameters. El URL de destino pasa esos UTMs para que tu programa de afiliados o herramienta de analytics los pueda leer.',
-    fallbackGuideLabel: 'Fallback URLs & link health',
+    fallbackGuideLabel: 'Fallback URLs & Link Health',
     helpTitle: '¿Necesitas ayuda interpretando tu data?',
     helpBody:
       'Escribe a hello@affprof.com con un screenshot de lo que estás tratando de entender. Respondemos dentro de 24 horas, más rápido para usuarios Pro.',
@@ -598,6 +626,25 @@ export default async function DashboardAnalyticsHelpPage() {
           <p className="mt-3 text-sm text-muted-foreground">{page.linkAnalyticsNote}</p>
         </section>
 
+        <Card className="rounded-2xl">
+          <CardHeader>
+            <CardTitle>{page.tocTitle}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+              {page.tocLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="rounded-xl border bg-muted/20 px-3 py-2 text-sm font-medium text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         <section className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
           <Card className="rounded-2xl">
             <CardHeader>
@@ -609,7 +656,7 @@ export default async function DashboardAnalyticsHelpPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl">
+          <Card id="kpis" className="scroll-mt-20 rounded-2xl">
             <CardHeader>
               <CardTitle>{page.kpiTitle}</CardTitle>
               <CardDescription>{page.readingTitle}</CardDescription>
@@ -662,7 +709,7 @@ export default async function DashboardAnalyticsHelpPage() {
           ))}
         </section>
 
-        <section className="rounded-2xl border bg-card p-6">
+        <section id="per-link" className="scroll-mt-20 rounded-2xl border bg-card p-6">
           <div className="flex items-start gap-3">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border bg-background">
               <Globe2 className="size-5 text-muted-foreground" />
@@ -684,7 +731,7 @@ export default async function DashboardAnalyticsHelpPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border bg-muted/20 p-6">
+        <section id="interpretations" className="scroll-mt-20 rounded-2xl border bg-muted/20 p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold">{page.interpretationsTitle}</h2>
@@ -711,7 +758,7 @@ export default async function DashboardAnalyticsHelpPage() {
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
-          <Card className="rounded-2xl">
+          <Card id="filtering" className="scroll-mt-20 rounded-2xl">
             <CardHeader>
               <CardTitle>{page.filteringTitle}</CardTitle>
             </CardHeader>
@@ -720,7 +767,7 @@ export default async function DashboardAnalyticsHelpPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl">
+          <Card id="not-shown" className="scroll-mt-20 rounded-2xl">
             <CardHeader>
               <CardTitle>{page.notShownTitle}</CardTitle>
               <CardDescription>{page.notShownIntro}</CardDescription>

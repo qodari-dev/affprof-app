@@ -122,7 +122,7 @@
         "point3": "Exporta tus enlaces cuando necesites reportes, respaldos o limpieza offline."
       },
       "fallbacks": {
-        "title": "URLs de respaldo y salud de enlaces",
+        "title": "Fallback URLs y Link Health",
         "description": "Protege el tráfico y monitorea la salud cuando los destinos se rompen o dejan de estar disponibles.",
         "point1": "Un fallback por enlace envía visitantes a un destino de respaldo para ese enlace.",
         "point2": "Un fallback predeterminado cubre enlaces que no tienen su propia URL de respaldo.",

@@ -183,7 +183,7 @@ const content = {
             type: 'bullets',
             items: [
               'The Tags list shows name, color, linked count, created date, and actions.',
-              'The "Linked products" label currently counts links using the tag, not products.',
+              'The current UI label "Linked products" refers to the number of links using that tag, not imported CSV tags or product records.',
               'You can sort by Name or Created and search when you have many tags.',
             ],
           },
@@ -411,7 +411,7 @@ const content = {
             type: 'bullets',
             items: [
               'La lista de Tags muestra nombre, color, conteo vinculado, creado y acciones.',
-              'El label "Linked products" actualmente cuenta links que usan el tag, no productos.',
+              'El label actual "Linked products" se refiere al número de links que usan ese tag, no a tags importados por CSV ni a registros de productos.',
               'Puedes ordenar por Name o Created y buscar cuando tienes muchos tags.',
             ],
           },
@@ -663,6 +663,14 @@ export default async function ProductsLinksTagsHelpPage() {
           </Card>
         </section>
 
+        <section className="rounded-2xl border bg-card p-6">
+          <h2 className="text-xl font-semibold">{page.setupTitle}</h2>
+          <div className="mt-4"><StepList items={page.setupItems} /></div>
+          <div className="mt-5 rounded-xl border bg-muted/30 p-4 text-sm leading-6 text-muted-foreground">
+            {page.setupNote}
+          </div>
+        </section>
+
         <section className="grid gap-4 lg:grid-cols-2">
           {page.sections.map(({ id, icon: Icon, title, description, blocks }) => (
             <Card key={id} id={id} className="scroll-mt-20 rounded-2xl">
@@ -713,14 +721,6 @@ export default async function ProductsLinksTagsHelpPage() {
                 <p className="mt-2 text-sm leading-6 text-muted-foreground"><EmailText text={faq.answer} /></p>
               </div>
             ))}
-          </div>
-        </section>
-
-        <section className="rounded-2xl border bg-card p-6">
-          <h2 className="text-xl font-semibold">{page.setupTitle}</h2>
-          <div className="mt-4"><StepList items={page.setupItems} /></div>
-          <div className="mt-5 rounded-xl border bg-muted/30 p-4 text-sm leading-6 text-muted-foreground">
-            {page.setupNote}
           </div>
         </section>
 

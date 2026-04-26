@@ -127,7 +127,7 @@ const content = {
             type: 'bullets',
             items: [
               'Optional UTMs: use `utm_source`, `utm_medium`, and `utm_campaign` for most tracking needs.',
-              'Recommended fallback: set a **Fallback URL** in Options so broken destinations can still redirect somewhere useful. See [Fallback URLs & link health](/help/fallbacks).',
+              'Recommended fallback: set a **Fallback URL** in Options so broken destinations can still redirect somewhere useful. See [Fallback URLs & Link Health](/help/fallbacks).',
               'Optional tags: add existing tags or create new ones in **Tags**.',
             ],
           },
@@ -152,8 +152,7 @@ const content = {
             items: [
               'In the Links table, find your link.',
               'Open the actions menu and click **QR Code**.',
-              'On Free, download the standard black-and-white QR.',
-              'On Pro, create a brand in **Settings -> Brands -> Add brand**, then choose it in the QR dialog.',
+              'On Free, download the standard black-and-white QR. On Pro, optionally create a brand in **Settings -> Brands -> Add brand**, then choose it in the QR dialog before downloading.',
               'Click **Download PNG**.',
             ],
           },
@@ -187,7 +186,7 @@ const content = {
           },
           {
             type: 'note',
-            text: 'The result appears in the link analytics under **Recent checks**. For details, see [Fallback URLs & link health](/help/fallbacks).',
+            text: 'The result appears in the link analytics under **Recent checks**. For details, see [Fallback URLs & Link Health](/help/fallbacks).',
           },
         ],
       },
@@ -265,6 +264,11 @@ const content = {
         question: 'Where do I see my plan and billing?',
         answer:
           'Go to Billing. See Billing & subscription for plans, trials, refunds, and cancellation.',
+      },
+      {
+        question: 'Should I create more products or more tags first?',
+        answer:
+          'Start with products for the things you promote, then add tags for channels, campaigns, and contexts. See Products, links & tags when you are ready to organize deeper.',
       },
     ],
     helpTitle: 'Need help?',
@@ -346,7 +350,7 @@ const content = {
             type: 'bullets',
             items: [
               'UTMs opcionales: usa `utm_source`, `utm_medium`, y `utm_campaign` para la mayoría de tracking.',
-              'Fallback recomendado: configura un **Fallback URL** en Options para que destinos rotos todavía redirijan a algo útil. Ve [Fallback URLs y salud de links](/help/fallbacks).',
+              'Fallback recomendado: configura un **Fallback URL** en Options para que destinos rotos todavía redirijan a algo útil. Ve [Fallback URLs y Link Health](/help/fallbacks).',
               'Tags opcionales: agrega tags existentes o crea nuevos en **Tags**.',
             ],
           },
@@ -371,8 +375,7 @@ const content = {
             items: [
               'En la tabla de Links, encuentra tu link.',
               'Abre el menú de acciones y haz clic en **QR Code**.',
-              'En Free, descarga el QR estándar blanco y negro.',
-              'En Pro, crea una marca en **Settings -> Brands -> Add brand**, luego elígela en el diálogo QR.',
+              'En Free, descarga el QR estándar blanco y negro. En Pro, opcionalmente crea una marca en **Settings -> Brands -> Add brand**, luego elígela en el diálogo QR antes de descargar.',
               'Haz clic en **Download PNG**.',
             ],
           },
@@ -406,7 +409,7 @@ const content = {
           },
           {
             type: 'note',
-            text: 'El resultado aparece en analytics del link bajo **Recent checks**. Para detalles, ve [Fallback URLs y salud de links](/help/fallbacks).',
+            text: 'El resultado aparece en analytics del link bajo **Recent checks**. Para detalles, ve [Fallback URLs y Link Health](/help/fallbacks).',
           },
         ],
       },
@@ -484,6 +487,11 @@ const content = {
         question: '¿Dónde veo mi plan y facturación?',
         answer:
           'Ve a Billing. Consulta Facturación y suscripción para planes, trials, reembolsos y cancelación.',
+      },
+      {
+        question: '¿Creo más productos o más tags primero?',
+        answer:
+          'Empieza con productos para las cosas que promocionas, luego agrega tags para canales, campañas y contexto. Ve Productos, links y tags cuando quieras organizar más profundo.',
       },
     ],
     helpTitle: '¿Necesitas ayuda?',

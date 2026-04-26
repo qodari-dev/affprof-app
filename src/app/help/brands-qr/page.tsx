@@ -31,6 +31,7 @@ type Block =
   | { type: 'bullets'; items: string[] }
   | { type: 'steps'; items: string[] }
   | { type: 'note'; text: string }
+  | { type: 'warning'; text: string }
   | { type: 'screenshot'; label: string };
 
 type Section = {
@@ -264,7 +265,7 @@ const content = {
             ],
           },
           {
-            type: 'note',
+            type: 'warning',
             text: 'Note about naming: don’t confuse "Standard AffProf QR" (the system option that produces a plain black-and-white QR with no logo, always available) with a brand you might create and name "AffProf" yourself. They’re separate things. The system option is always there regardless of your brands. A brand named "AffProf" that you created is just a custom brand that happens to use that name.',
           },
         ],
@@ -295,7 +296,7 @@ const content = {
       'Trade show banner: main logo and high-impact colors.',
       'All variations redirect to the same destination and contribute to the same link analytics.',
     ],
-    bestPracticesTitle: 'QR best practices',
+    bestPracticesTitle: 'Advanced QR tips',
     bestPractices: [
       {
         title: 'Sizing for print',
@@ -622,7 +623,7 @@ const content = {
             ],
           },
           {
-            type: 'note',
+            type: 'warning',
             text: 'Nota sobre el naming: no confundas "Standard AffProf QR" (la opción del sistema que produce un QR plano blanco y negro sin logo, siempre disponible) con una marca que tú podrías crear y nombrar "AffProf". Son cosas separadas. La opción del sistema siempre está ahí sin importar tus marcas. Una marca llamada "AffProf" que tú creaste es solo una marca custom que casualmente usa ese nombre.',
           },
         ],
@@ -653,7 +654,7 @@ const content = {
       'Banner de feria: logo principal y colores de alto impacto.',
       'Todas las variaciones redirigen al mismo destino y contribuyen al mismo analytics del link.',
     ],
-    bestPracticesTitle: 'Mejores prácticas para QR',
+    bestPracticesTitle: 'Tips avanzados de QR',
     bestPractices: [
       {
         title: 'Tamaño para impresión',
@@ -876,6 +877,12 @@ function RenderBlock({ block }: { block: Block }) {
           <EmailText text={block.text} />
         </div>
       );
+    case 'warning':
+      return (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-100">
+          <EmailText text={block.text} />
+        </div>
+      );
     case 'screenshot':
       return (
         <figure className="overflow-hidden rounded-xl border bg-muted/20">
@@ -978,22 +985,6 @@ export default async function BrandsQrHelpPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border bg-muted/20 p-6">
-          <h2 className="text-xl font-semibold">{page.bestPracticesTitle}</h2>
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            {page.bestPractices.map((practice) => (
-              <Card key={practice.title} className="rounded-2xl">
-                <CardHeader>
-                  <CardTitle>{practice.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <BulletList items={practice.items} />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
         <section className="rounded-2xl border bg-card p-6">
           <div className="flex items-start gap-3">
             <Sparkles className="mt-0.5 size-5 text-muted-foreground" />
@@ -1040,6 +1031,22 @@ export default async function BrandsQrHelpPage() {
                 </CardHeader>
                 <CardContent>
                   <BulletList items={item.items} />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border bg-muted/20 p-6">
+          <h2 className="text-xl font-semibold">{page.bestPracticesTitle}</h2>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {page.bestPractices.map((practice) => (
+              <Card key={practice.title} className="rounded-2xl">
+                <CardHeader>
+                  <CardTitle>{practice.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <BulletList items={practice.items} />
                 </CardContent>
               </Card>
             ))}
