@@ -5,13 +5,11 @@ import {
   ArrowLeft,
   BarChart3,
   BookOpen,
-  CreditCard,
   Database,
   FileSpreadsheet,
   Globe2,
   QrCode,
   RotateCcw,
-  Settings,
   type LucideIcon,
 } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
@@ -33,9 +31,7 @@ type TopicId =
   | 'custom-domains'
   | 'import-export'
   | 'fallbacks'
-  | 'dashboard-analytics'
-  | 'billing-subscription'
-  | 'account-settings';
+  | 'dashboard-analytics';
 
 type TopicConfig = {
   icon: LucideIcon;
@@ -77,16 +73,6 @@ const TOPICS: Record<TopicId, TopicConfig> = {
   'dashboard-analytics': {
     icon: BarChart3,
     translationKey: 'topics.analytics',
-    points: ['point1', 'point2', 'point3'],
-  },
-  'billing-subscription': {
-    icon: CreditCard,
-    translationKey: 'topics.billing',
-    points: ['point1', 'point2', 'point3'],
-  },
-  'account-settings': {
-    icon: Settings,
-    translationKey: 'topics.accountSettings',
     points: ['point1', 'point2', 'point3'],
   },
 };
