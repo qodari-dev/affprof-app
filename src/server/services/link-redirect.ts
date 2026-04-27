@@ -5,9 +5,70 @@ import { and, eq, isNull, sql } from 'drizzle-orm';
 import geoip from 'geoip-lite';
 
 import { db, customDomains, linkClicks, links, userSettings, users } from '@/server/db';
+import { getClientIp } from '@/server/utils/get-client-ip';
+import { checkInMemoryRateLimit } from '@/server/utils/in-memory-rate-limit';
+
+const REDIRECT_RATE_LIMIT_WINDOW_MS = 60_000;
+const REDIRECT_IP_LIMIT_PER_MINUTE = 300;
+const REDIRECT_IP_LINK_LIMIT_PER_MINUTE = 120;
+const CLICK_ANALYTICS_DEDUPE_WINDOW_MS = 10_000;
+
+function hashRateLimitKey(value: string): string {
+  return createHash('sha256').update(value).digest('hex').slice(0, 24);
+}
 
 function hashIp(ip: string): string {
   return createHash('sha256').update(ip).digest('hex').slice(0, 16);
+}
+
+function rateLimitResponse(retryAfterSeconds: number) {
+  return new Response('Too many requests', {
+    status: 429,
+    headers: {
+      'Retry-After': String(retryAfterSeconds),
+      'Cache-Control': 'no-store',
+    },
+  });
+}
+
+function checkRedirectRateLimit(request: NextRequest, linkKey: string) {
+  const ip = getClientIp(request);
+  if (ip === 'unknown') return null;
+
+  const ipKey = hashRateLimitKey(ip);
+  const linkKeyHash = hashRateLimitKey(linkKey);
+
+  const globalLimit = checkInMemoryRateLimit(
+    `redirect:ip:${ipKey}`,
+    REDIRECT_IP_LIMIT_PER_MINUTE,
+    REDIRECT_RATE_LIMIT_WINDOW_MS,
+  );
+
+  if (!globalLimit.allowed) {
+    return rateLimitResponse(globalLimit.retryAfterSeconds);
+  }
+
+  const linkLimit = checkInMemoryRateLimit(
+    `redirect:ip-link:${ipKey}:${linkKeyHash}`,
+    REDIRECT_IP_LINK_LIMIT_PER_MINUTE,
+    REDIRECT_RATE_LIMIT_WINDOW_MS,
+  );
+
+  if (!linkLimit.allowed) {
+    return rateLimitResponse(linkLimit.retryAfterSeconds);
+  }
+
+  return null;
+}
+
+function shouldTrackClickAnalytics(linkId: string, ip: string | null) {
+  if (!ip) return true;
+
+  return checkInMemoryRateLimit(
+    `click-dedupe:${linkId}:${hashIp(ip)}`,
+    1,
+    CLICK_ANALYTICS_DEDUPE_WINDOW_MS,
+  ).allowed;
 }
 
 function parseDevice(ua: string): 'mobile' | 'desktop' | 'tablet' {
@@ -185,9 +246,8 @@ async function redirectToLink(
 
   const ua = request.headers.get('user-agent') ?? '';
   const referrer = request.headers.get('referer') ?? null;
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    ?? request.headers.get('x-real-ip')
-    ?? null;
+  const clientIp = getClientIp(request);
+  const ip = clientIp === 'unknown' ? null : clientIp;
 
   const { searchParams } = request.nextUrl;
   const isQr = searchParams.get('qr') === '1';
@@ -198,43 +258,45 @@ async function redirectToLink(
   const utmTerm = searchParams.get('utm_term') ?? null;
   const geoFromHeaders = parseGeoHeaders(request.headers);
 
-  after(async () => {
-    try {
-      const { country, city } = geoFromHeaders.country
-        ? geoFromHeaders
-        : ip ? geoLookupByIp(ip) : { country: null, city: null };
+  if (shouldTrackClickAnalytics(link.id, ip)) {
+    after(async () => {
+      try {
+        const { country, city } = geoFromHeaders.country
+          ? geoFromHeaders
+          : ip ? geoLookupByIp(ip) : { country: null, city: null };
 
-      await db.transaction(async (tx) => {
-        await tx.insert(linkClicks).values({
-          linkId: link.id,
-          country,
-          city,
-          device: parseDevice(ua),
-          os: parseOs(ua),
-          browser: parseBrowser(ua),
-          userAgent: ua.slice(0, 512),
-          referrer: referrer?.slice(0, 2048) ?? null,
-          referrerSource: parseReferrerSource(referrer),
-          isQr,
-          usedFallback: target?.usedFallback ?? false,
-          failed: target === null,
-          ipHash: ip ? hashIp(ip) : null,
-          utmSource,
-          utmMedium,
-          utmCampaign,
-          utmContent,
-          utmTerm,
+        await db.transaction(async (tx) => {
+          await tx.insert(linkClicks).values({
+            linkId: link.id,
+            country,
+            city,
+            device: parseDevice(ua),
+            os: parseOs(ua),
+            browser: parseBrowser(ua),
+            userAgent: ua.slice(0, 512),
+            referrer: referrer?.slice(0, 2048) ?? null,
+            referrerSource: parseReferrerSource(referrer),
+            isQr,
+            usedFallback: target?.usedFallback ?? false,
+            failed: target === null,
+            ipHash: ip ? hashIp(ip) : null,
+            utmSource,
+            utmMedium,
+            utmCampaign,
+            utmContent,
+            utmTerm,
+          });
+
+          await tx
+            .update(links)
+            .set({ totalClicks: sql`${links.totalClicks} + 1` })
+            .where(eq(links.id, link.id));
         });
-
-        await tx
-          .update(links)
-          .set({ totalClicks: sql`${links.totalClicks} + 1` })
-          .where(eq(links.id, link.id));
-      });
-    } catch (err) {
-      console.error('[redirect] click tracking failed:', err);
-    }
-  });
+      } catch (err) {
+        console.error('[redirect] click tracking failed:', err);
+      }
+    });
+  }
 
   if (!target) {
     return Response.redirect(new URL('/link-unavailable', request.url), 302);
@@ -248,6 +310,12 @@ export async function handleDefaultShortLinkRedirect(
   request: NextRequest,
   input: { userSlug: string; linkSlug: string },
 ) {
+  const rateLimited = checkRedirectRateLimit(
+    request,
+    `default:${input.userSlug}:${input.linkSlug}`,
+  );
+  if (rateLimited) return rateLimited;
+
   const user = await db.query.users.findFirst({
     where: eq(users.slug, input.userSlug),
     columns: { id: true },
@@ -276,6 +344,8 @@ export async function handleCustomDomainRedirect(
   input: { linkSlug: string },
 ) {
   const hostname = normalizeRequestHostname(request);
+  const rateLimited = checkRedirectRateLimit(request, `custom:${hostname}:${input.linkSlug}`);
+  if (rateLimited) return rateLimited;
 
   const domain = await db.query.customDomains.findFirst({
     where: and(eq(customDomains.hostname, hostname), eq(customDomains.status, 'verified')),
