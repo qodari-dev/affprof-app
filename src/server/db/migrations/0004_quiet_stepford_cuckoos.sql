@@ -1,0 +1,1 @@
+ALTER TYPE "public"."notification_dispatch_type" ADD VALUE 'trial_reminder';

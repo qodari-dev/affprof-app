@@ -91,7 +91,6 @@ export function BillingHistoryCard() {
                     </TableCell>
                     <TableCell className="py-3">
                       <div className="font-medium">{formatMoney(invoice.amountPaid || invoice.amountDue, invoice.currency, locale)}</div>
-                      <div className="text-xs text-muted-foreground uppercase">{invoice.currency}</div>
                     </TableCell>
                     <TableCell className="py-3">
                       <Badge variant={getInvoiceStatusVariant(invoice.status)}>

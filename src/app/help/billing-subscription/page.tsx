@@ -516,7 +516,6 @@ export default async function BillingSubscriptionHelpPage() {
   const content = billingContent[locale];
   const title = t('topics.billing.title');
 
-  // TODO: Add automated trial-ending reminder emails and log the dispatch in notification history.
   return (
     <PageLayout
       breadcrumbs={[
