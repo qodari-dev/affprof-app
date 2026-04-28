@@ -69,7 +69,7 @@ export const weekdayEnum = pgEnum("weekday", [
 
 export const notificationDispatchTypeEnum = pgEnum(
   "notification_dispatch_type",
-  ["broken_links", "weekly_digest"],
+  ["broken_links", "weekly_digest", "trial_reminder"],
 );
 
 export const notificationDispatchStatusEnum = pgEnum(

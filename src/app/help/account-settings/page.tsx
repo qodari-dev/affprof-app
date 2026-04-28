@@ -109,9 +109,8 @@ const accountContent = {
           {
             type: 'bullets',
             items: [
-              'Analytics views use your timezone when showing clicks by day and date breakdowns.',
               'Weekly digest scheduling uses your timezone so the email arrives in the morning locally.',
-              'UTC is the default. Change it to your real timezone for accurate reporting.',
+              'UTC is the default. Change it to your real timezone if you want scheduled emails aligned with your local morning.',
             ],
           },
           { type: 'subheading', text: 'Language' },
@@ -379,9 +378,8 @@ const accountContent = {
           {
             type: 'bullets',
             items: [
-              'Las vistas de analytics usan tu timezone cuando muestran clicks por día y desgloses por fecha.',
               'La programación del weekly digest usa tu timezone para que el email llegue en la mañana local.',
-              'UTC es el valor por defecto. Cámbialo a tu zona horaria real para reportes precisos.',
+              'UTC es el valor por defecto. Cámbialo a tu zona horaria real si quieres que los emails programados se alineen con tu mañana local.',
             ],
           },
           { type: 'subheading', text: 'Language' },

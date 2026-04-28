@@ -1,5 +1,6 @@
 import { env } from "@/env";
 import { runScheduledLinkChecks } from "@/server/services/link-checker";
+import { runTrialReminders } from "@/server/services/trial-reminders";
 import { runScheduledWeeklyDigests } from "@/server/services/weekly-digest";
 import { CronJob } from "cron";
 
@@ -33,6 +34,17 @@ async function runWeeklyDigestCron() {
   }
 }
 
+async function runTrialReminderCron() {
+  try {
+    const result = await runTrialReminders();
+    console.log(
+      `[cron][trial-reminder] eligible=${result.eligibleUsers} sent=${result.sentCount} skipped=${result.skippedCount} failed=${result.failedCount}`,
+    );
+  } catch (error) {
+    console.error("[cron][trial-reminder]", error);
+  }
+}
+
 export function startCrons() {
   if (globalThis.__cronsStarted) return;
   globalThis.__cronsStarted = true;
@@ -50,6 +62,12 @@ export function startCrons() {
       cron: env.WEEKLY_DIGEST_CRON,
       fn: () => {
         void runWeeklyDigestCron();
+      },
+    },
+    {
+      cron: env.TRIAL_REMINDER_CRON,
+      fn: () => {
+        void runTrialReminderCron();
       },
     },
   ];

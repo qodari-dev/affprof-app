@@ -61,6 +61,7 @@ export const env = createEnv({
       .optional()
       .default(25),
     WEEKLY_DIGEST_CRON: z.string().optional().default("0 * * * *"),
+    TRIAL_REMINDER_CRON: z.string().optional().default("0 * * * *"),
     WEEKLY_DIGEST_HOUR: z.coerce
       .number()
       .int()
@@ -122,6 +123,7 @@ export const env = createEnv({
     LINK_CHECKER_CRON: process.env.LINK_CHECKER_CRON,
     LINK_CHECKER_BATCH_SIZE: process.env.LINK_CHECKER_BATCH_SIZE,
     WEEKLY_DIGEST_CRON: process.env.WEEKLY_DIGEST_CRON,
+    TRIAL_REMINDER_CRON: process.env.TRIAL_REMINDER_CRON,
     WEEKLY_DIGEST_HOUR: process.env.WEEKLY_DIGEST_HOUR,
     SCHEDULER_TIMEZONE: process.env.SCHEDULER_TIMEZONE,
 

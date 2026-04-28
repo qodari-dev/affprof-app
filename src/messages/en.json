@@ -78,8 +78,8 @@
     "outlineTitle": "What this guide will cover",
     "outlineDescription": "This page is ready for the full guide. For now, it keeps the key topics scoped and easy to expand.",
     "contactCard": {
-      "title": "Need a human?",
-      "description": "Questions, bugs, and product feedback now live in Contact & Feedback.",
+      "title": "Need help?",
+      "description": "Send us questions, report bugs, or share suggestions through Contact & Feedback.",
       "cta": "Contact us"
     },
     "gettingStarted": {
@@ -793,7 +793,7 @@
     },
     "emailHistory": {
       "title": "Email history",
-      "description": "Review previously sent broken-link alerts and weekly digest emails.",
+      "description": "Review previously sent broken-link alerts, weekly digests, and trial reminders.",
       "cardDescription": "Review sent, failed, and pending notification emails. This history is also used to prevent duplicate deliveries.",
       "empty": "No email history yet",
       "emptyDescription": "Sent alerts and weekly digests will appear here once the scheduler starts delivering them.",
@@ -808,7 +808,8 @@
       "cc": "CC",
       "types": {
         "broken_links": "Broken links",
-        "weekly_digest": "Weekly digest"
+        "weekly_digest": "Weekly digest",
+        "trial_reminder": "Trial reminder"
       },
       "statuses": {
         "sent": "Sent",

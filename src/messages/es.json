@@ -78,8 +78,8 @@
     "outlineTitle": "Qué cubrirá esta guía",
     "outlineDescription": "Esta página está lista para la guía completa. Por ahora mantiene los temas clave organizados y fáciles de expandir.",
     "contactCard": {
-      "title": "¿Necesitas hablar con alguien?",
-      "description": "Preguntas, errores y comentarios del producto ahora están en Contacto y feedback.",
+      "title": "¿Necesitas ayuda?",
+      "description": "Envíanos preguntas, reporta errores o comparte sugerencias desde Contacto y feedback.",
       "cta": "Contactarnos"
     },
     "gettingStarted": {
@@ -793,7 +793,7 @@
     },
     "emailHistory": {
       "title": "Historial de emails",
-      "description": "Revisa alertas de enlaces rotos y resúmenes semanales enviados anteriormente.",
+      "description": "Revisa alertas de enlaces rotos, resúmenes semanales y recordatorios de trial enviados anteriormente.",
       "cardDescription": "Revisa los emails de notificación enviados, fallidos y pendientes. Este historial también se usa para prevenir envíos duplicados.",
       "empty": "Sin historial de emails aún",
       "emptyDescription": "Las alertas enviadas y los resúmenes semanales aparecerán aquí una vez que el programador comience a entregarlos.",
@@ -808,7 +808,8 @@
       "cc": "CC",
       "types": {
         "broken_links": "Enlaces rotos",
-        "weekly_digest": "Resumen semanal"
+        "weekly_digest": "Resumen semanal",
+        "trial_reminder": "Recordatorio de trial"
       },
       "statuses": {
         "sent": "Enviado",

@@ -192,6 +192,35 @@ const subscriptionTranslations = {
   },
 } as const;
 
+const trialReminderTranslations = {
+  en: {
+    subject: () => 'Your AffProf Pro trial ends in 3 days',
+    preheader: 'Your Pro trial is ending soon. Review billing or cancel before your trial ends.',
+    badge: 'Trial ending soon',
+    heading: (name: string) => `Your trial ends soon, ${name}`,
+    body: (trialEnd: string) => `Your AffProf Pro trial ends on ${trialEnd}. After that, Stripe will automatically charge your selected plan unless you cancel before the trial ends.`,
+    trialEndsLabel: 'Trial ends',
+    nextChargeLabel: 'Next step',
+    nextChargeValue: 'Automatic billing starts after the trial',
+    cta: 'Review billing settings',
+    secondaryCta: 'Open AffProf',
+    footerNote: 'You can manage or cancel your trial from Billing.',
+  },
+  es: {
+    subject: () => 'Tu prueba de AffProf Pro termina en 3 días',
+    preheader: 'Tu prueba Pro termina pronto. Revisa facturación o cancela antes de que termine.',
+    badge: 'Prueba por terminar',
+    heading: (name: string) => `Tu prueba termina pronto, ${name}`,
+    body: (trialEnd: string) => `Tu prueba de AffProf Pro termina el ${trialEnd}. Después de eso, Stripe cobrará automáticamente el plan seleccionado a menos que canceles antes de que termine la prueba.`,
+    trialEndsLabel: 'Prueba termina',
+    nextChargeLabel: 'Siguiente paso',
+    nextChargeValue: 'La facturación automática inicia después de la prueba',
+    cta: 'Revisar facturación',
+    secondaryCta: 'Abrir AffProf',
+    footerNote: 'Puedes administrar o cancelar tu prueba desde Billing.',
+  },
+} as const;
+
 export function getEmailTranslations(locale: EmailLocale) {
   return translations[locale] ?? translations.en;
 }
@@ -202,4 +231,8 @@ export function getWelcomeTranslations(locale: EmailLocale) {
 
 export function getSubscriptionTranslations(locale: EmailLocale) {
   return subscriptionTranslations[locale] ?? subscriptionTranslations.en;
+}
+
+export function getTrialReminderTranslations(locale: EmailLocale) {
+  return trialReminderTranslations[locale] ?? trialReminderTranslations.en;
 }

@@ -5,6 +5,7 @@ import * as React from 'react';
 import { canSendResendEmail, sendResendEmail } from '@/server/clients/resend';
 import { BrokenLinksEmail } from '@/server/emails/broken-links-email';
 import { SubscriptionActivatedEmail } from '@/server/emails/subscription-activated-email';
+import { TrialEndingReminderEmail } from '@/server/emails/trial-ending-reminder-email';
 import { WeeklyDigestEmail } from '@/server/emails/weekly-digest-email';
 import { WelcomeEmail } from '@/server/emails/welcome-email';
 import { env } from '@/env';
@@ -82,6 +83,16 @@ export async function GET(request: NextRequest) {
       userName: 'Carlos',
       plan: 'pro',
       isTrial: false,
+      appUrl,
+      locale,
+    });
+  } else if (type === 'trial-reminder') {
+    subject = locale === 'es'
+      ? '[TEST] Tu prueba de AffProf Pro termina en 3 días'
+      : '[TEST] Your AffProf Pro trial ends in 3 days';
+    component = React.createElement(TrialEndingReminderEmail, {
+      userName: 'Carlos',
+      trialEndDate: locale === 'es' ? '1 de mayo de 2026' : 'May 1, 2026',
       appUrl,
       locale,
     });

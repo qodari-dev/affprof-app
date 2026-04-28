@@ -15,7 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 
-type TypeFilter = 'all' | 'broken_links' | 'weekly_digest';
+type TypeFilter = 'all' | 'broken_links' | 'weekly_digest' | 'trial_reminder';
 type StatusFilter = 'all' | 'processing' | 'sent' | 'failed';
 
 function getStatusVariant(value: string): 'default' | 'secondary' | 'destructive' | 'outline' {
@@ -44,6 +44,7 @@ export function EmailHistoryCard() {
       { value: 'all', label: t('allTypes') },
       { value: 'broken_links', label: tTypes('broken_links') },
       { value: 'weekly_digest', label: tTypes('weekly_digest') },
+      { value: 'trial_reminder', label: tTypes('trial_reminder') },
     ],
     [t, tTypes],
   );
@@ -59,7 +60,9 @@ export function EmailHistoryCard() {
   );
 
   function formatDispatchType(value: string) {
-    return value === 'broken_links' ? tTypes('broken_links') : tTypes('weekly_digest');
+    if (value === 'broken_links') return tTypes('broken_links');
+    if (value === 'trial_reminder') return tTypes('trial_reminder');
+    return tTypes('weekly_digest');
   }
 
   function formatDispatchStatus(value: string) {
