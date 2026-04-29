@@ -39,6 +39,10 @@ import {
   CreateBrandBodySchema,
 } from '@/schemas/brand';
 import {
+  compressImageForUpload,
+  IMAGE_UPLOAD_COMPRESSION_PROFILES,
+} from '@/lib/image-upload-compression';
+import {
   useBrands,
   useCreateBrand,
   useDeleteBrand,
@@ -161,17 +165,18 @@ function BrandFormSheet({
       setIsUploadingLogo(true);
 
       try {
+        const uploadFile = await compressImageForUpload(file, IMAGE_UPLOAD_COMPRESSION_PROFILES.brandLogo);
         const response = await presignLogoUpload({
           body: {
-            contentType: file.type as (typeof BRAND_LOGO_ALLOWED_TYPES)[number],
-            fileSize: file.size,
+            contentType: uploadFile.type as (typeof BRAND_LOGO_ALLOWED_TYPES)[number],
+            fileSize: uploadFile.size,
           },
         });
 
         const upload = await fetch(response.body.uploadUrl, {
           method: response.body.method,
           headers: response.body.uploadHeaders as Record<string, string>,
-          body: file,
+          body: uploadFile,
         });
 
         if (!upload.ok) {
@@ -292,7 +297,7 @@ function BrandFormSheet({
                 <BrandLogo name={brandName || t('brandFallback')} logoUrl={previewUrl} className="size-20 rounded-2xl" />
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <p className="text-sm font-medium">{previewUrl ? t('currentLogo') : t('noLogo')}</p>
-                  <p className="break-all text-xs text-muted-foreground">{previewUrl || t('noLogoHelp')}</p>
+                  <p className="text-xs text-muted-foreground">{previewUrl ? t('logoSelected') : t('noLogoHelp')}</p>
                   <div className="flex flex-wrap gap-2">
                     <Button
                       type="button"
