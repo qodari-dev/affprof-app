@@ -1,5 +1,4 @@
 import { Button, Heading, Section, Text } from '@react-email/components';
-import * as React from 'react';
 
 import { DARK, FONT, GRAY, GREEN, LIGHT_GRAY, EmailLayout } from './layout';
 import { type EmailLocale, getWelcomeTranslations } from './translations';
@@ -14,6 +13,7 @@ export function WelcomeEmail({ userName, appUrl, locale = 'en' }: Props) {
   const t = getWelcomeTranslations(locale);
   const logoUrl = `${appUrl}/logo-fondo-blanco.png`;
   const linksUrl = `${appUrl}/links`;
+  const gettingStartedUrl = `${appUrl}/help/getting-started`;
 
   const features = [
     { title: t.feature1Title, desc: t.feature1Desc, icon: '🔗' },
@@ -90,7 +90,7 @@ export function WelcomeEmail({ userName, appUrl, locale = 'en' }: Props) {
       </table>
 
       {/* CTA */}
-      <Section style={{ textAlign: 'left' as const }}>
+      <Section style={{ textAlign: 'left' as const,marginBottom: '12px' }}>
         <Button href={linksUrl} style={{
           backgroundColor: GREEN,
           borderRadius: '10px',
@@ -102,6 +102,21 @@ export function WelcomeEmail({ userName, appUrl, locale = 'en' }: Props) {
           textDecoration: 'none',
         }}>
           {t.cta}
+        </Button>
+      </Section>
+      <Section style={{ textAlign: 'left' as const }}>
+        <Button href={gettingStartedUrl} style={{
+          backgroundColor: '#ffffff',
+          border: `1px solid ${GREEN}`,
+          borderRadius: '10px',
+          color: DARK,
+          fontFamily: FONT,
+          fontSize: '15px',
+          fontWeight: 600,
+          padding: '12px 22px',
+          textDecoration: 'none',
+        }}>
+          {t.secondaryCta}
         </Button>
       </Section>
 
