@@ -15,6 +15,7 @@ import {
   normalizeCustomHostname,
   verifyCustomDomainRecord,
 } from '@/server/services/custom-domains';
+import { provisionTraefikDomainConfig, removeTraefikDomainConfig } from '@/server/services/traefik-config';
 
 function getVerificationError(input: {
   hasVerificationTxt: boolean;
@@ -103,6 +104,8 @@ export const customDomainHandler = tsr.router(contract.customDomain, {
         .where(and(eq(customDomains.userId, auth.userId), eq(customDomains.id, id)))
         .returning();
 
+      await provisionTraefikDomainConfig(domain.hostname);
+
       return { status: 200, body: verifiedDomain };
     } catch (e) {
       return genericTsRestErrorResponse(e, {
@@ -149,6 +152,8 @@ export const customDomainHandler = tsr.router(contract.customDomain, {
       const domain = await getCustomDomainByIdForUser(auth.userId, id);
 
       await db.delete(customDomains).where(and(eq(customDomains.userId, auth.userId), eq(customDomains.id, id)));
+
+      await removeTraefikDomainConfig(domain.hostname);
 
       return { status: 200, body: domain };
     } catch (e) {

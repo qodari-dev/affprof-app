@@ -36,6 +36,11 @@ export const env = createEnv({
     // Custom domain
     CUSTOM_DOMAIN_CNAME_TARGET: z.string().min(1).optional(),
 
+    // Traefik dynamic config (for custom domain SSL provisioning)
+    TRAEFIK_DYNAMIC_CONFIG_DIR: z.string().min(1).optional(),
+    TRAEFIK_CERT_RESOLVER: z.string().min(1).optional().default('letsencrypt'),
+    TRAEFIK_ENTRYPOINT: z.string().min(1).optional().default('websecure'),
+
     // DigitalOcean Spaces
     DO_SPACES_ENDPOINT: z.url().optional(),
     DO_SPACES_REGION: z.string().min(1).optional(),
@@ -109,6 +114,11 @@ export const env = createEnv({
     STRIPE_PRO_MONTHLY_PRICE_ID: process.env.STRIPE_PRO_MONTHLY_PRICE_ID,
     STRIPE_PRO_ANNUAL_PRICE_ID: process.env.STRIPE_PRO_ANNUAL_PRICE_ID,
     CUSTOM_DOMAIN_CNAME_TARGET: process.env.CUSTOM_DOMAIN_CNAME_TARGET,
+
+    TRAEFIK_DYNAMIC_CONFIG_DIR: process.env.TRAEFIK_DYNAMIC_CONFIG_DIR,
+
+    TRAEFIK_CERT_RESOLVER: process.env.TRAEFIK_CERT_RESOLVER,
+    TRAEFIK_ENTRYPOINT: process.env.TRAEFIK_ENTRYPOINT,
 
     // DigitalOcean Spaces
     DO_SPACES_ENDPOINT: process.env.DO_SPACES_ENDPOINT,
