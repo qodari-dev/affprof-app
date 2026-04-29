@@ -15,6 +15,7 @@ const iamProxy = createIamProxy({
 const appHostname = new URL(env.NEXT_PUBLIC_APP_URL).hostname;
 
 export default async function proxy(request: NextRequest) {
+  console.log('[proxy]', request.method, request.nextUrl.hostname, request.nextUrl.pathname);
   try {
     // 1) Custom-domain requests are public redirect routes — skip auth entirely.
     //    Only requests arriving on the app's own hostname need authentication.
