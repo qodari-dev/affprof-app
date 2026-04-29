@@ -828,6 +828,8 @@
       "label": "Fallback URL",
       "placeholder": "https://yourbrand.com/backup",
       "help": "Leave empty to show no redirect when a link is unavailable.",
+      "availableOnPro": "Available on Pro",
+      "upgradeDescription": "Upgrade to Pro to send visitors to a backup destination when links are broken or disabled.",
       "save": "Save",
       "toastSaved": "Fallback URL saved"
     }

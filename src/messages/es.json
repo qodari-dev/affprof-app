@@ -828,6 +828,8 @@
       "label": "URL de respaldo",
       "placeholder": "https://tumarca.com/respaldo",
       "help": "Déjalo vacío para no redirigir cuando un enlace no esté disponible.",
+      "availableOnPro": "Disponible en Pro",
+      "upgradeDescription": "Actualiza a Pro para enviar visitantes a un destino de respaldo cuando los enlaces estén rotos o deshabilitados.",
       "save": "Guardar",
       "toastSaved": "URL de respaldo guardada"
     }

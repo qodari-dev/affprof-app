@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useBilling } from '@/hooks/queries/use-billing-queries';
 import { UpdateUserSettingsBodySchema } from '@/schemas/user-settings';
 import { useUserSettings, useUpdateUserSettings } from '@/hooks/queries/use-user-settings-queries';
 
@@ -25,6 +26,7 @@ const FallbackUrlSchema = z.object({
 export function FallbackUrlCard() {
   const t = useTranslations('settings.fallbackUrl');
   const { data: settingsData, isLoading } = useUserSettings();
+  const { data: billingData, isLoading: isLoadingBilling } = useBilling();
   const { mutateAsync: updateSettings, isPending: isSaving } = useUpdateUserSettings();
   const [isFormReady, setIsFormReady] = React.useState(false);
 
@@ -54,7 +56,7 @@ export function FallbackUrlCard() {
     [updateSettings, t],
   );
 
-  if (isLoading || !isFormReady) {
+  if (isLoading || isLoadingBilling || !isFormReady) {
     return (
       <Card>
         <CardHeader>
@@ -68,6 +70,9 @@ export function FallbackUrlCard() {
       </Card>
     );
   }
+
+  const subscription = billingData?.status === 200 ? billingData.body : null;
+  const isPro = subscription ? subscription.plan !== 'free' : false;
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -85,39 +90,58 @@ export function FallbackUrlCard() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {/* When is this used? */}
-          <div className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
-            <ShieldAlert className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-            <p className="text-sm text-amber-800 dark:text-amber-300">
-              {t('whenUsed')}
-            </p>
-          </div>
+          {!isPro ? (
+            <div className="rounded-xl border border-dashed bg-muted/20 p-5">
+              <div className="flex items-start gap-3">
+                <div className="flex size-10 items-center justify-center rounded-xl border bg-background">
+                  <Globe className="size-5 text-muted-foreground" />
+                </div>
+                <div className="space-y-1">
+                  <div className="font-medium">{t('availableOnPro')}</div>
+                  <p className="text-sm text-muted-foreground">
+                    {t('upgradeDescription')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
+                <ShieldAlert className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                <p className="text-sm text-amber-800 dark:text-amber-300">
+                  {t('whenUsed')}
+                </p>
+              </div>
 
-          <Controller
-            name="defaultFallbackUrl"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel>{t('label')}</FieldLabel>
-                <Input
-                  type="text"
-                  placeholder={t('placeholder')}
-                  value={field.value ?? ''}
-                  onChange={(e) => field.onChange(e.target.value || null)}
-                />
-                <FieldDescription>{t('help')}</FieldDescription>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
+              <Controller
+                name="defaultFallbackUrl"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid || undefined}>
+                    <FieldLabel>{t('label')}</FieldLabel>
+                    <Input
+                      type="text"
+                      placeholder={t('placeholder')}
+                      value={field.value ?? ''}
+                      onChange={(e) => field.onChange(e.target.value || null)}
+                    />
+                    <FieldDescription>{t('help')}</FieldDescription>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+            </>
+          )}
         </CardContent>
 
-        <CardFooter className="flex justify-end border-t bg-muted/10">
-          <Button type="submit" disabled={isSaving}>
-            {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
-            {t('save')}
-          </Button>
-        </CardFooter>
+        {isPro ? (
+          <CardFooter className="flex justify-end border-t bg-muted/10">
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
+              {t('save')}
+            </Button>
+          </CardFooter>
+        ) : null}
       </Card>
     </form>
   );

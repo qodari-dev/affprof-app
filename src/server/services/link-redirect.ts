@@ -4,7 +4,7 @@ import { after, type NextRequest } from 'next/server';
 import { and, eq, isNull, sql } from 'drizzle-orm';
 import geoip from 'geoip-lite';
 
-import { db, customDomains, linkClicks, links, userSettings, users } from '@/server/db';
+import { db, customDomains, linkClicks, links, subscriptions, userSettings, users } from '@/server/db';
 import { getClientIp } from '@/server/utils/get-client-ip';
 import { checkInMemoryRateLimit } from '@/server/utils/in-memory-rate-limit';
 
@@ -199,6 +199,17 @@ async function findRedirectableLink(userId: string, linkSlug: string) {
 }
 
 async function getDefaultFallbackUrl(userId: string) {
+  const subscription = await db.query.subscriptions.findFirst({
+    where: eq(subscriptions.userId, userId),
+    columns: {
+      plan: true,
+    },
+  });
+
+  if (!subscription || subscription.plan === 'free') {
+    return null;
+  }
+
   const settings = await db.query.userSettings.findFirst({
     where: eq(userSettings.userId, userId),
     columns: {
