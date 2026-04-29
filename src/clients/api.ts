@@ -58,11 +58,15 @@ const refreshAccessToken = async (): Promise<boolean> => {
 
 /**
  * Redirects to home page which will trigger IAM login via proxy.
+ * Debounced to prevent infinite reload loops when the proxy is
+ * unavailable or mis-configured.
  */
+let redirectScheduled = false;
+
 const redirectToLogin = () => {
-  if (typeof window !== 'undefined') {
-    window.location.href = '/';
-  }
+  if (typeof window === 'undefined' || redirectScheduled) return;
+  redirectScheduled = true;
+  window.location.href = '/';
 };
 
 export const api = initTsrReactQuery(contract, {
@@ -89,6 +93,8 @@ export const api = initTsrReactQuery(contract, {
 
     // On client-side, handle 401 with auto-refresh
     if (typeof window !== 'undefined' && response.status === 401) {
+      if (redirectScheduled) return response;
+
       const refreshed = await refreshAccessToken();
 
       if (refreshed) {
