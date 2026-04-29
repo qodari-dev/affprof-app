@@ -7,14 +7,18 @@ export async function register() {
     const { startCrons } = await import('./server/crons');
     startCrons();
 
-    const { reprovisionAllDomainConfigs } = await import('./server/services/traefik-config');
-    const { db, customDomains } = await import('./server/db');
-    const { and, eq } = await import('drizzle-orm');
-    const verifiedDomains = await db.query.customDomains.findMany({
-      where: and(eq(customDomains.status, 'verified')),
-      columns: { hostname: true },
-    });
-    await reprovisionAllDomainConfigs(verifiedDomains.map((d) => d.hostname));
+    try {
+      const { reprovisionAllDomainConfigs } = await import('./server/services/traefik-config');
+      const { db, customDomains } = await import('./server/db');
+      const { eq } = await import('drizzle-orm');
+      const verifiedDomains = await db.query.customDomains.findMany({
+        where: eq(customDomains.status, 'verified'),
+        columns: { hostname: true },
+      });
+      await reprovisionAllDomainConfigs(verifiedDomains.map((d) => d.hostname));
+    } catch (err) {
+      console.error('[traefik] Failed to reprovision custom domain configs:', err);
+    }
   }
 
   if (process.env.NEXT_RUNTIME === 'edge') {
