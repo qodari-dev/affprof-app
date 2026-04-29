@@ -61,6 +61,7 @@ export async function createStripeCheckoutSession(input: {
       metadata: { userId: input.userId },
     },
     metadata: { userId: input.userId },
+    allow_promotion_codes: true,
     success_url: `${env.NEXT_PUBLIC_APP_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${env.NEXT_PUBLIC_APP_URL}/billing/canceled`,
   });
