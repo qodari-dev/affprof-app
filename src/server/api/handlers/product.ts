@@ -1,4 +1,4 @@
-import { db, products } from '@/server/db';
+import { db, products, links } from '@/server/db';
 import type { Products } from '@/server/db';
 import { genericTsRestErrorResponse, throwHttpError } from '@/server/utils/generic-ts-rest-error';
 import { getAuthContext } from '@/server/utils/auth-context';
@@ -314,6 +314,20 @@ export const product = tsr.router(contract.product, {
 
       if (!existing) {
         throwHttpError({ status: 404, message: 'Product not found', code: 'NOT_FOUND' });
+      }
+
+      const [linkCount] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(links)
+        .where(and(eq(links.productId, id), isNull(links.deletedAt)));
+
+      if ((linkCount?.count ?? 0) > 0) {
+        throwHttpError({
+          status: 409,
+          message: `Delete the ${linkCount!.count} active links first`,
+          code: 'PRODUCT_HAS_ACTIVE_LINKS',
+          params: { count: linkCount!.count },
+        });
       }
 
       const [deleted] = await db
