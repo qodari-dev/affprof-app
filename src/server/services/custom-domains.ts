@@ -1,5 +1,8 @@
 import { randomBytes } from 'crypto';
-import { resolveCname, resolveTxt } from 'dns/promises';
+import { Resolver } from 'dns/promises';
+
+const resolver = new Resolver();
+resolver.setServers(['8.8.8.8', '1.1.1.1']);
 import { and, asc, eq } from 'drizzle-orm';
 import { parse as parseDomain } from 'tldts';
 
@@ -106,7 +109,7 @@ export function getShortLinkDefaultHostname() {
 
 async function resolveTxtValues(hostname: string) {
   try {
-    const records = await resolveTxt(hostname);
+    const records = await resolver.resolveTxt(hostname);
     return records.flat().map((value) => value.trim());
   } catch {
     return [];
@@ -115,7 +118,7 @@ async function resolveTxtValues(hostname: string) {
 
 async function resolveCnameValues(hostname: string) {
   try {
-    const records = await resolveCname(hostname);
+    const records = await resolver.resolveCname(hostname);
     return records.map((value) => normalizeDnsValue(value));
   } catch {
     return [];
