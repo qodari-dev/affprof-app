@@ -5,15 +5,9 @@ import { useApiError } from '@/hooks/use-api-error';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import type { ListTagsQuery } from '@/schemas/tag';
-import { linksKeys } from '@/hooks/queries/use-link-queries';
+import { linksKeys, tagsKeys } from '@/hooks/queries/query-keys';
 
-export const tagsKeys = {
-  all: ['tags'] as const,
-  lists: () => [...tagsKeys.all, 'list'] as const,
-  list: (filters: Partial<ListTagsQuery> = {}) => [...tagsKeys.lists(), filters] as const,
-  details: () => [...tagsKeys.all, 'detail'] as const,
-  detail: (id: string) => [...tagsKeys.details(), id] as const,
-};
+export { tagsKeys };
 
 export function useTags(filters: Partial<ListTagsQuery> = {}) {
   return api.tag.list.useQuery({
