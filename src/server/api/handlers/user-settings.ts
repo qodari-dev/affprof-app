@@ -4,6 +4,7 @@ import { getAuthContext } from '@/server/utils/auth-context';
 import { tsr } from '@ts-rest/serverless/next';
 import { desc, eq } from 'drizzle-orm';
 import { contract } from '../contracts';
+import { requireProPlan } from '@/server/services/plan-limits';
 
 // ============================================
 // HANDLER
@@ -65,6 +66,10 @@ export const userSettingsHandler = tsr.router(contract.userSettings, {
   update: async ({ body }, { request }) => {
     try {
       const auth = await getAuthContext(request);
+
+      if (body.defaultFallbackUrl) {
+        await requireProPlan(auth.userId, 'Default fallback URL');
+      }
 
       // Upsert: create if not exists, update if exists
       const existing = await db.query.userSettings.findFirst({
