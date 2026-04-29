@@ -15,11 +15,17 @@ const iamProxy = createIamProxy({
 const appHostname = new URL(env.NEXT_PUBLIC_APP_URL).hostname;
 
 export default async function proxy(request: NextRequest) {
-  console.log('[proxy]', request.method, request.nextUrl.hostname, request.nextUrl.pathname);
   try {
+    // Use the Host header forwarded by Traefik rather than request.nextUrl.hostname,
+    // which resolves to HOSTNAME (0.0.0.0) in Docker and would never match appHostname.
+    const requestHostname =
+      request.headers.get('x-forwarded-host')?.split(':')[0] ??
+      request.headers.get('host')?.split(':')[0] ??
+      request.nextUrl.hostname;
+
     // 1) Custom-domain requests are public redirect routes — skip auth entirely.
     //    Only requests arriving on the app's own hostname need authentication.
-    if (request.nextUrl.hostname !== appHostname) {
+    if (requestHostname !== appHostname) {
       const response = NextResponse.next();
 
       if (!request.cookies.get(LOCALE_COOKIE)?.value) {
