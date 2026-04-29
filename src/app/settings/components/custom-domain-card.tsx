@@ -21,17 +21,13 @@ import {
 } from '@/hooks/queries/use-custom-domain-queries';
 import { getTsRestErrorMessage } from '@/utils/get-ts-rest-error-message';
 
-function CopyRow({
+function CopyField({
   label,
-  name,
   value,
-  nameLabel,
   copiedMessage,
 }: {
   label: string;
-  name: string;
   value: string;
-  nameLabel: string;
   copiedMessage: string;
 }) {
   const handleCopy = React.useCallback(async () => {
@@ -40,16 +36,41 @@ function CopyRow({
   }, [copiedMessage, value]);
 
   return (
+    <div className="flex items-center gap-2">
+      <div className="min-w-0 flex-1">
+        <div className="mb-0.5 text-xs text-muted-foreground">{label}</div>
+        <code className="block break-all rounded-md bg-background px-2 py-1.5 text-xs">{value}</code>
+      </div>
+      <Button type="button" size="icon" variant="outline" className="size-8 shrink-0 rounded-lg" onClick={handleCopy}>
+        <Copy className="size-3.5" />
+      </Button>
+    </div>
+  );
+}
+
+function CopyRow({
+  label,
+  name,
+  value,
+  nameLabel,
+  valueLabel,
+  copiedNameMessage,
+  copiedValueMessage,
+}: {
+  label: string;
+  name: string;
+  value: string;
+  nameLabel: string;
+  valueLabel: string;
+  copiedNameMessage: string;
+  copiedValueMessage: string;
+}) {
+  return (
     <div className="rounded-xl border bg-muted/20 p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1">
-          <div className="text-sm font-medium">{label}</div>
-          <div className="text-xs text-muted-foreground">{nameLabel}: {name}</div>
-          <code className="block break-all rounded-md bg-background px-2 py-1.5 text-xs">{value}</code>
-        </div>
-        <Button type="button" size="icon" variant="outline" className="size-9 rounded-lg" onClick={handleCopy}>
-          <Copy className="size-4" />
-        </Button>
+      <div className="mb-3 text-sm font-medium">{label}</div>
+      <div className="space-y-2">
+        <CopyField label={nameLabel} value={name} copiedMessage={copiedNameMessage} />
+        <CopyField label={valueLabel} value={value} copiedMessage={copiedValueMessage} />
       </div>
     </div>
   );
@@ -246,15 +267,22 @@ export function CustomDomainCard() {
                   name={currentDomain.verificationHost}
                   value={currentDomain.verificationValue}
                   nameLabel={t('recordName')}
-                  copiedMessage={t('copied', { label: t('txtRecord') })}
+                  valueLabel={t('recordValue')}
+                  copiedNameMessage={t('copiedName')}
+                  copiedValueMessage={t('copiedValue')}
                 />
                 <CopyRow
                   label={t('cnameRecord')}
                   name={currentDomain.hostname}
                   value={currentDomain.cnameTarget}
                   nameLabel={t('recordName')}
-                  copiedMessage={t('copied', { label: t('cnameRecord') })}
+                  valueLabel={t('recordValue')}
+                  copiedNameMessage={t('copiedName')}
+                  copiedValueMessage={t('copiedValue')}
                 />
+                <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/20 dark:text-amber-200">
+                  {t('registrarHostNote')}
+                </div>
                 <div className="rounded-xl border border-dashed bg-background p-4 text-sm text-muted-foreground">
                   {t('dnsUpdateHelp')}
                 </div>
