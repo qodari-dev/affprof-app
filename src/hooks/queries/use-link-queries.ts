@@ -5,6 +5,7 @@ import { useApiError } from '@/hooks/use-api-error';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import type { ListLinksQuery } from '@/schemas/link';
+import { productsKeys } from '@/hooks/queries/use-product-queries';
 
 // ============================================================================
 // Query Keys
@@ -222,6 +223,7 @@ export function useCheckLinks() {
   return api.link.checkBulk.useMutation({
     onSuccess(data) {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: productsKeys.lists() });
       const results = data.body;
       const broken = results.filter((r) => r.isBroken).length;
       const healthy = results.length - broken;
