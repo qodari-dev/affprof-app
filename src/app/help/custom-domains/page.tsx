@@ -143,6 +143,10 @@ const content = {
           },
           {
             type: 'note',
+            text: '⚠️ Most registrars (Namecheap, GoDaddy, Cloudflare) automatically append your root domain to the Name field. Enter only the subdomain part — for example `_affprof.go` for the TXT record and `go` for the CNAME — not the full hostname. If you paste the full name, the record is created at the wrong address and verification will fail.',
+          },
+          {
+            type: 'note',
             text: 'Use the copy buttons in AffProf to grab each value exactly. A typo, extra space, missing dot, or capitalization issue can make verification fail.',
           },
           {
@@ -357,6 +361,10 @@ const content = {
                 ],
               },
             ],
+          },
+          {
+            type: 'note',
+            text: '⚠️ La mayoría de registradores (Namecheap, GoDaddy, Cloudflare) agregan automáticamente tu dominio raíz al campo Nombre. Escribe solo la parte del subdominio — por ejemplo `_affprof.go` para el registro TXT y `go` para el CNAME — no el nombre completo. Si pegas el nombre completo, el registro se crea en la dirección incorrecta y la verificación fallará.',
           },
           {
             type: 'note',
