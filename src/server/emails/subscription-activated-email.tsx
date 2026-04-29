@@ -23,7 +23,7 @@ export function SubscriptionActivatedEmail({
 }: Props) {
   const t = getSubscriptionTranslations(locale);
   const logoUrl = `${appUrl}/logo-fondo-blanco.png`;
-  const dashboardUrl = `${appUrl}/dashboard`;
+  const dashboardUrl = `${appUrl}/`;
   const billingUrl = `${appUrl}/billing`;
 
   const planLabel = plan === 'pro_annual' ? 'Pro Annual' : 'Pro';
