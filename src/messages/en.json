@@ -21,7 +21,8 @@
       "feat2": "Click analytics",
       "feat3": "Broken link alerts",
       "feat4": "Instant QR codes",
-      "cta": "Create your first link"
+      "cta": "Create your first link",
+      "guideCta": "View getting started guide"
     },
     "actions": {
       "addLink": "Add link",

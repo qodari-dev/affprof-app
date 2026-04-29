@@ -175,10 +175,15 @@ function HomeEmpty() {
         ))}
       </div>
 
-      <Button onClick={() => router.push('/links')}>
-        <Plus className="mr-1.5 size-4" />
-        {t('cta')}
-      </Button>
+      <div className="flex flex-wrap justify-center gap-2">
+        <Button onClick={() => router.push('/links')}>
+          <Plus className="mr-1.5 size-4" />
+          {t('cta')}
+        </Button>
+        <Link href="/help/getting-started" className={cn(buttonVariants({ variant: 'outline' }))}>
+          {t('guideCta')}
+        </Link>
+      </div>
     </div>
   );
 }
