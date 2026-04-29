@@ -118,6 +118,7 @@ const welcomeTranslations = {
     feature3Title: 'Get alerts before you lose money',
     feature3Desc: 'We monitor your links and notify you before broken links cost you commissions.',
     cta: 'Add your first link and start tracking →',
+    secondaryCta: 'Read the getting started guide',
     footerNote: 'Have questions? Just reply — we\'ll help you get set up.',
   },
   es: {
@@ -133,6 +134,7 @@ const welcomeTranslations = {
     feature3Title: 'Recibe alertas antes de perder dinero',
     feature3Desc: 'Monitoreamos tus enlaces y te avisamos antes de que pierdas comisiones.',
     cta: 'Agrega tu primer enlace y empieza a rastrear →',
+    secondaryCta: 'Leer la guía de primeros pasos',
     footerNote: '¿Tienes preguntas? Responde este correo — te ayudamos a empezar.',
   },
 } as const;
