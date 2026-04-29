@@ -67,6 +67,7 @@ export function useCreateLink() {
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
       queryClient.invalidateQueries({ queryKey: linksKeys.platforms() });
+      queryClient.invalidateQueries({ queryKey: productsKeys.lists() });
       toast.success(t('linkCreated'));
     },
     onError(error) {
@@ -88,6 +89,7 @@ export function useUpdateLink() {
     onSuccess(_data, variables) {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
       queryClient.invalidateQueries({ queryKey: linksKeys.detail(variables.params.id) });
+      queryClient.invalidateQueries({ queryKey: productsKeys.lists() });
       toast.success(t('linkUpdated'));
     },
     onError(error) {
@@ -141,7 +143,7 @@ export function useImportLinksCsv() {
     onSuccess(data) {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
       queryClient.invalidateQueries({ queryKey: linksKeys.platforms() });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: productsKeys.lists() });
       const { createdCount, updatedCount, skippedCount, createdProductsCount } = data.body;
       const productNote = createdProductsCount > 0
         ? ` ${t('linksImportProductsCreated', { count: createdProductsCount })}`
@@ -173,6 +175,7 @@ export function useDeleteLink() {
       queryClient.removeQueries({ queryKey: linksKeys.detail(variables.params.id) });
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
       queryClient.invalidateQueries({ queryKey: linksKeys.platforms() });
+      queryClient.invalidateQueries({ queryKey: productsKeys.lists() });
       toast.success(t('linkDeleted'));
     },
     onError(error) {
