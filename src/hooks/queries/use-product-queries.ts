@@ -5,14 +5,9 @@ import { useApiError } from '@/hooks/use-api-error';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import type { ListProductsQuery } from '@/schemas/product';
+import { productsKeys } from '@/hooks/queries/query-keys';
 
-export const productsKeys = {
-  all: ['products'] as const,
-  lists: () => [...productsKeys.all, 'list'] as const,
-  list: (filters: Partial<ListProductsQuery> = {}) => [...productsKeys.lists(), filters] as const,
-  details: () => [...productsKeys.all, 'detail'] as const,
-  detail: (id: string) => [...productsKeys.details(), id] as const,
-};
+export { productsKeys };
 
 export function useProducts(filters: Partial<ListProductsQuery> = {}) {
   return api.product.list.useQuery({
