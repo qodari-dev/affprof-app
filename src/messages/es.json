@@ -21,7 +21,8 @@
       "feat2": "Analíticas de clics",
       "feat3": "Alertas de enlaces rotos",
       "feat4": "Códigos QR al instante",
-      "cta": "Crear tu primer enlace"
+      "cta": "Crear tu primer enlace",
+      "guideCta": "Ver guía de primeros pasos"
     },
     "actions": {
       "addLink": "Agregar enlace",
