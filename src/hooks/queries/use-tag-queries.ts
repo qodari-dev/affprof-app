@@ -5,6 +5,7 @@ import { useApiError } from '@/hooks/use-api-error';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import type { ListTagsQuery } from '@/schemas/tag';
+import { linksKeys } from '@/hooks/queries/use-link-queries';
 
 export const tagsKeys = {
   all: ['tags'] as const,
@@ -54,6 +55,7 @@ export function useUpdateTag() {
     onSuccess(_data, variables) {
       queryClient.invalidateQueries({ queryKey: tagsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: tagsKeys.detail(variables.params.id) });
+      queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
       toast.success(t('tagUpdated'));
     },
     onError(error) {
@@ -71,6 +73,7 @@ export function useDeleteTag() {
     onSuccess(_data, variables) {
       queryClient.removeQueries({ queryKey: tagsKeys.detail(variables.params.id) });
       queryClient.invalidateQueries({ queryKey: tagsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
       toast.success(t('tagDeleted'));
     },
     onError(error) {
