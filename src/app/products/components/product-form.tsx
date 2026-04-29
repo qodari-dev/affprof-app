@@ -31,6 +31,10 @@ import {
   useUpdateProduct,
 } from '@/hooks/queries/use-product-queries';
 import { useDeleteStorageFile } from '@/hooks/queries/use-storage-queries';
+import {
+  compressImageForUpload,
+  IMAGE_UPLOAD_COMPRESSION_PROFILES,
+} from '@/lib/image-upload-compression';
 import type { Products } from '@/server/db';
 import { ProductImage } from './product-image';
 
@@ -141,17 +145,18 @@ export function ProductForm({
       setIsUploadingImage(true);
 
       try {
+        const uploadFile = await compressImageForUpload(file, IMAGE_UPLOAD_COMPRESSION_PROFILES.productImage);
         const response = await presignImageUpload({
           body: {
-            contentType: file.type as (typeof PRODUCT_IMAGE_ALLOWED_TYPES)[number],
-            fileSize: file.size,
+            contentType: uploadFile.type as (typeof PRODUCT_IMAGE_ALLOWED_TYPES)[number],
+            fileSize: uploadFile.size,
           },
         });
 
         const upload = await fetch(response.body.uploadUrl, {
           method: response.body.method,
           headers: response.body.uploadHeaders as Record<string, string>,
-          body: file,
+          body: uploadFile,
         });
 
         if (!upload.ok) {
@@ -248,8 +253,8 @@ export function ProductForm({
                   <p className="text-sm font-medium">
                     {previewUrl ? t('currentImage') : t('noImage')}
                   </p>
-                  <p className="break-all text-xs text-muted-foreground">
-                    {previewUrl || 'Fallback: /no-imagen.png'}
+                  <p className="text-xs text-muted-foreground">
+                    {previewUrl ? t('imageSelected') : t('imageEmptyHelp')}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Button
