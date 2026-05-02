@@ -2,7 +2,7 @@
   "home": {
     "title": "Welcome to AffProf",
     "greeting": "Welcome back, {name}!",
-    "description": "Manage your affiliate links, track clicks, and monitor link health — all in one place.",
+    "description": "Manage your links, track clicks, and monitor link health — all in one place.",
     "stats": {
       "totalLinks": "Total links",
       "activeLinks": "{count, plural, one {# active} other {# active}}",
@@ -16,7 +16,7 @@
     },
     "empty": {
       "title": "Get started with AffProf",
-      "description": "Create your first link to track every click, monitor link health, and never lose a commission to a broken URL.",
+      "description": "Create your first link to track every click, monitor link health, and keep traffic flowing even when destinations break.",
       "feat1": "Short trackable links",
       "feat2": "Click analytics",
       "feat3": "Broken link alerts",
@@ -133,7 +133,7 @@
         "title": "Dashboard & analytics",
         "description": "Understand clicks, devices, countries, QR scans, fallback redirects, and link health.",
         "point1": "The home page shows the essentials; Dashboard is for deeper analysis.",
-        "point2": "Health metrics help you find broken links before they cost commissions.",
+        "point2": "Health metrics help you find broken links before they lose you traffic.",
         "point3": "Filters let you compare products, platforms, tags, and time ranges."
       },
       "billing": {
@@ -180,7 +180,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "description": "Your affiliate performance, link health, and audience insights.",
+    "description": "Your link performance, health metrics, and audience insights.",
     "toolbar": {
       "product": "Product",
       "clearFilter": "Clear filter",
@@ -265,7 +265,7 @@
     },
     "topPlatforms": {
       "title": "Top platforms",
-      "description": "Which affiliate platforms drive the most clicks",
+      "description": "Which platforms drive the most clicks",
       "empty": "No platform data yet."
     },
     "countries": {
@@ -279,7 +279,7 @@
   },
   "products": {
     "title": "Products",
-    "description": "Group your affiliate links by product to keep them organized.",
+    "description": "Group your links by product to keep them organized.",
     "searchPlaceholder": "Search products...",
     "newProduct": "New product",
     "limitReached": "Free plan limit reached (2 products). Upgrade to Pro for unlimited.",
@@ -287,11 +287,11 @@
     "form": {
       "createTitle": "Create product",
       "editTitle": "Edit product",
-      "createDescription": "Create a new product to group your affiliate links.",
+      "createDescription": "Create a new product to group your links.",
       "editDescription": "Update the product details.",
       "name": "Name",
       "namePlaceholder": "e.g. \"Blue Yeti Microphone\"",
-      "nameHelp": "The product or item you're promoting with affiliate links.",
+      "nameHelp": "The product, offer, or campaign you're promoting.",
       "description": "Description",
       "descriptionPlaceholder": "Optional short description...",
       "descriptionHelp": "A brief note about this product (only visible to you).",
@@ -323,14 +323,14 @@
       "goToLinks": "Go to links"
     },
     "info": {
-      "title": "Product details and linked affiliate links.",
+      "title": "Product details and linked links.",
       "general": "General",
       "name": "Name",
       "description": "Description",
       "image": "Image",
       "noImage": "No image uploaded",
       "links": "Links",
-      "affiliateLinks": "Affiliate links",
+      "affiliateLinks": "Links",
       "linkHealth": "Link health",
       "activity": "Activity",
       "created": "Created",
@@ -348,7 +348,7 @@
   },
   "links": {
     "title": "Links",
-    "description": "Create and manage your affiliate short links. Monitor their health and track every click.",
+    "description": "Create and manage your short links. Monitor their health and track every click.",
     "searchPlaceholder": "Search by slug, URL, or platform...",
     "newLink": "New link",
     "limitReached": "Free plan limit reached (10 links). Upgrade to Pro for unlimited.",
@@ -388,14 +388,14 @@
     "form": {
       "createTitle": "Create link",
       "editTitle": "Edit link",
-      "createDescription": "Add a new affiliate link to track clicks and monitor status.",
-      "editDescription": "Update the affiliate link details.",
+      "createDescription": "Add a new link to track clicks and monitor status.",
+      "editDescription": "Update the link details.",
       "product": "Product",
       "productLocked": "Product locked for this link",
       "selectProduct": "Select a product...",
       "searchProducts": "Search products...",
       "noProducts": "No products found.",
-      "productHelp": "The product this affiliate link belongs to.",
+      "productHelp": "The product this link belongs to.",
       "baseUrl": "Base URL",
       "baseUrlPlaceholder": "https://www.amazon.com/dp/B08N5...",
       "baseUrlHelp": "Paste the destination URL. If it already includes UTM parameters, AffProf will extract them automatically.",
@@ -421,7 +421,7 @@
       "fallbackUrlHelp": "If this link is disabled or currently marked broken, visitors will be redirected here instead.",
       "platform": "Platform",
       "platformPlaceholder": "e.g. amazon, shareasale, impact, rakuten...",
-      "platformHelp": "The affiliate network or marketplace for this link.",
+      "platformHelp": "The platform or marketplace for this link.",
       "slug": "Slug",
       "slugPlaceholder": "blue-yeti-amazon",
       "suggest": "Suggest",
@@ -503,7 +503,7 @@
     },
     "import": {
       "title": "Import links from CSV",
-      "description": "Import affiliate links in bulk. Products are matched by name — any missing ones are created automatically.",
+      "description": "Import links in bulk. Products are matched by name — any missing ones are created automatically.",
       "row": "Row",
       "product": "Product",
       "slug": "Slug",
@@ -658,7 +658,7 @@
       "title": "Delete account",
       "description": "Permanently delete your account and all associated data. This action cannot be undone.",
       "warningTitle": "This will permanently delete:",
-      "warning1": "All your affiliate links and click analytics",
+      "warning1": "All your links and click analytics",
       "warning2": "All your products, brands, and QR codes",
       "warning3": "Your custom domain and settings",
       "warning4": "Your active subscription (if any)",
@@ -776,7 +776,7 @@
       "title": "Notifications",
       "description": "Configure email alerts and weekly digest.",
       "brokenLinkAlerts": "Broken link alerts",
-      "brokenLinkAlertsHelp": "Get notified by email when one of your affiliate links is detected as broken.",
+      "brokenLinkAlertsHelp": "Get notified by email when one of your links is detected as broken.",
       "weeklyDigest": "Weekly digest",
       "weeklyDigestHelp": "Get a summary email with clicks, broken links, and top performers.",
       "digestDay": "Digest day",
@@ -961,9 +961,9 @@
     "success": {
       "metadataTitle": "Welcome to Pro — AffProf",
       "title": "You're in. Welcome to Pro.",
-      "description": "Your subscription is active. Every affiliate link you add is now tracked, monitored, and protected.",
+      "description": "Your subscription is active. Every link you add is now tracked, monitored, and protected.",
       "unlockedTitle": "What you just unlocked",
-      "feature1": "Unlimited affiliate links with click analytics",
+      "feature1": "Unlimited links with click analytics",
       "feature2": "Automatic broken link detection and alerts",
       "feature3": "Custom domain so links look like yours",
       "cta": "Start adding links",
@@ -1089,9 +1089,9 @@
   "auth": {
     "register": {
       "metadataTitle": "Create account — AffProf",
-      "metadataDescription": "Create your AffProf account to manage affiliate links, QR codes, and click analytics.",
-      "title": "Start protecting your affiliate revenue",
-      "subtitle": "Manage your affiliate links, QR codes, and analytics — all in one place.",
+      "metadataDescription": "Create your AffProf account to manage links, QR codes, and click analytics.",
+      "title": "One place for all your links",
+      "subtitle": "Short links, QR codes, analytics, and health monitoring — all in one place.",
       "firstName": "First name",
       "firstNamePlaceholder": "Jane",
       "lastName": "Last name",

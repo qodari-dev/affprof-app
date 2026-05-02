@@ -129,7 +129,7 @@ const content = {
           {
             type: 'bullets',
             items: [
-              'Update 50 destination URLs after an affiliate program rotates URLs.',
+              'Update 50 destination URLs after a platform or program rotates URLs.',
               'Add `utm_source=newsletter` to email campaign links.',
               'Rename a tag across many links at once.',
               'Disable seasonal links after a promotion ends.',
@@ -182,9 +182,9 @@ const content = {
             title: 'Required columns',
             columns: [
               { name: 'product', description: 'Product name. Created automatically if missing.', example: 'Blue Yeti Microphone' },
-              { name: 'link', description: 'The destination affiliate URL.', example: 'https://www.amazon.com/dp/B002VA464S' },
+              { name: 'link', description: 'The destination URL.', example: 'https://www.amazon.com/dp/B002VA464S' },
               { name: 'slug', description: 'Short link slug. Lowercase letters, numbers, and hyphens only.', example: 'blue-yeti-amazon' },
-              { name: 'platform', description: 'Affiliate network or marketplace.', example: 'amazon' },
+              { name: 'platform', description: 'Platform or marketplace.', example: 'amazon' },
             ],
           },
           {
@@ -204,7 +204,7 @@ const content = {
           },
           {
             type: 'csv',
-            text: 'product,link,slug,platform\nBlue Yeti Microphone,https://www.amazon.com/dp/B002VA464S,blue-yeti-amazon,amazon\nKindle Paperwhite,https://www.amazon.com/dp/B0CFPHTMDX,kindle-paperwhite-amazon,amazon\nNotion,https://affiliate.notion.so/abc123,notion-affiliate,notion',
+            text: 'product,link,slug,platform\nBlue Yeti Microphone,https://www.amazon.com/dp/B002VA464S,blue-yeti-amazon,amazon\nKindle Paperwhite,https://www.amazon.com/dp/B0CFPHTMDX,kindle-paperwhite-amazon,amazon\nMy Tech Blog,https://notion.so/pricing,notion-tools,notion',
           },
         ],
       },
@@ -438,9 +438,9 @@ const content = {
             title: 'Columnas requeridas',
             columns: [
               { name: 'product', description: 'Nombre del producto. Se crea automáticamente si no existe.', example: 'Blue Yeti Microphone' },
-              { name: 'link', description: 'URL de destino del afiliado.', example: 'https://www.amazon.com/dp/B002VA464S' },
+              { name: 'link', description: 'URL de destino.', example: 'https://www.amazon.com/dp/B002VA464S' },
               { name: 'slug', description: 'Slug del link corto. Solo minúsculas, números y guiones.', example: 'blue-yeti-amazon' },
-              { name: 'platform', description: 'Red o marketplace de afiliados.', example: 'amazon' },
+              { name: 'platform', description: 'Plataforma o marketplace.', example: 'amazon' },
             ],
           },
           {
@@ -460,7 +460,7 @@ const content = {
           },
           {
             type: 'csv',
-            text: 'product,link,slug,platform\nBlue Yeti Microphone,https://www.amazon.com/dp/B002VA464S,blue-yeti-amazon,amazon\nKindle Paperwhite,https://www.amazon.com/dp/B0CFPHTMDX,kindle-paperwhite-amazon,amazon\nNotion,https://affiliate.notion.so/abc123,notion-affiliate,notion',
+            text: 'product,link,slug,platform\nBlue Yeti Microphone,https://www.amazon.com/dp/B002VA464S,blue-yeti-amazon,amazon\nKindle Paperwhite,https://www.amazon.com/dp/B0CFPHTMDX,kindle-paperwhite-amazon,amazon\nMy Tech Blog,https://notion.so/pricing,notion-tools,notion',
           },
         ],
       },

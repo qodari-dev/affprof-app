@@ -43,9 +43,9 @@ const LINK_TEMPLATE_ROWS = [
     'amazon|books',
   ],
   [
-    'Notion',
-    'https://affiliate.notion.so/abc123',
-    'notion-affiliate',
+    'My Tech Blog',
+    'https://notion.so/pricing',
+    'notion-tools',
     'notion',
     '',
     '',

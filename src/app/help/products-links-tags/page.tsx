@@ -61,10 +61,10 @@ const content = {
   en: {
     title: 'Products, links & tags',
     description:
-      'Products, links, and tags work together to keep your affiliate library organized and your analytics meaningful. Understanding how they relate saves time as your library grows.',
+      'Products, links, and tags work together to keep your link library organized and your analytics meaningful. Understanding how they relate saves time as your library grows.',
     mentalTitle: 'The mental model in 30 seconds',
     mentalItems: [
-      'A **link** is an individual short URL that redirects to an affiliate destination.',
+      'A **link** is an individual short URL that redirects to a destination URL.',
       'A **product** is a container that groups related links. Every link belongs to exactly one product.',
       'A **tag** is a flexible label attached to a link for filtering and organization. A link can have up to 10 tags.',
     ],
@@ -81,7 +81,7 @@ const content = {
         icon: Box,
         title: 'Products',
         description:
-          'A product represents anything you promote through affiliate links and rolls analytics up across related links.',
+          'A product represents anything you promote and rolls analytics up across related links.',
         blocks: [
           {
             type: 'paragraph',
@@ -92,7 +92,7 @@ const content = {
             type: 'bullets',
             items: [
               '**Name**: required. Use something easy to recognize when you have many products.',
-              '**Description**: optional internal context about affiliate program, pricing tier, or notes.',
+              '**Description**: optional internal context about program, pricing tier, or notes.',
               '**Product image**: optional JPG, PNG, or WEBP up to 4 MB. Used visually in lists and analytics.',
             ],
           },
@@ -127,7 +127,7 @@ const content = {
         icon: Link2,
         title: 'Links',
         description:
-          'A link is the short URL that redirects to your affiliate destination. Every shared short URL is a link in AffProf.',
+          'A link is the short URL that redirects to your destination. Every shared short URL is a link in AffProf.',
         blocks: [
           {
             type: 'paragraph',
@@ -136,7 +136,7 @@ const content = {
           {
             type: 'bullets',
             items: [
-              'Different affiliate networks for the same product, such as Amazon and B&H.',
+              'Different platforms for the same product, such as Amazon and B&H.',
               'Different placements with different UTMs, such as `utm_source=youtube` vs `utm_source=blog`.',
               'A/B tests for slugs or fallback URLs.',
             ],
@@ -146,7 +146,7 @@ const content = {
             items: [
               'Go to **Links -> New link**.',
               'Pick or create a product.',
-              'Paste the affiliate destination as **Base URL**.',
+              'Paste the destination URL as **Base URL**.',
               'Choose a **slug**.',
               'Optionally add UTMs, fallback URL, tags, and notes.',
               'Click **Create link**.',
@@ -211,7 +211,7 @@ const content = {
     patternsTitle: 'Common patterns',
     patterns: [
       {
-        title: 'One product per affiliate item, tags for context',
+        title: 'One product per item, tags for context',
         items: [
           'Product: `Blue Yeti Microphone`.',
           'Links: Amazon link, ShareASale link, YouTube-specific link.',
@@ -289,10 +289,10 @@ const content = {
   es: {
     title: 'Productos, links y tags',
     description:
-      'Productos, links y tags trabajan juntos para mantener tu librería de afiliados organizada y tus analytics significativos. Entender cómo se relacionan ahorra tiempo mientras creces.',
+      'Productos, links y tags trabajan juntos para mantener tu librería de enlaces organizada y tus analytics significativos. Entender cómo se relacionan ahorra tiempo mientras creces.',
     mentalTitle: 'El modelo mental en 30 segundos',
     mentalItems: [
-      'Un **link** es un URL corto individual que redirige a un destino de afiliado.',
+      'Un **link** es un URL corto individual que redirige a un URL de destino.',
       'Un **producto** es un contenedor que agrupa links relacionados. Cada link pertenece a exactamente un producto.',
       'Un **tag** es una etiqueta flexible adjunta a un link para filtrado y organización. Un link puede tener hasta 10 tags.',
     ],
@@ -309,7 +309,7 @@ const content = {
         icon: Box,
         title: 'Productos',
         description:
-          'Un producto representa cualquier cosa que promocionas con links de afiliado y agrega analytics de links relacionados.',
+          'Un producto representa cualquier cosa que promocionas y agrega analytics de links relacionados.',
         blocks: [
           {
             type: 'paragraph',
@@ -355,7 +355,7 @@ const content = {
         icon: Link2,
         title: 'Links',
         description:
-          'Un link es el URL corto que redirige a tu destino de afiliado. Cada URL corto compartido es un link en AffProf.',
+          'Un link es el URL corto que redirige a tu destino. Cada URL corto compartido es un link en AffProf.',
         blocks: [
           {
             type: 'paragraph',
@@ -374,7 +374,7 @@ const content = {
             items: [
               'Ve a **Links -> New link**.',
               'Elige o crea un producto.',
-              'Pega el destino afiliado como **Base URL**.',
+              'Pega el URL de destino como **Base URL**.',
               'Elige un **slug**.',
               'Opcionalmente agrega UTMs, fallback URL, tags y notas.',
               'Haz clic en **Create link**.',
@@ -439,7 +439,7 @@ const content = {
     patternsTitle: 'Patrones comunes',
     patterns: [
       {
-        title: 'Un producto por ítem afiliado, tags para contexto',
+        title: 'Un producto por ítem, tags para contexto',
         items: [
           'Producto: `Blue Yeti Microphone`.',
           'Links: Amazon, ShareASale, link específico de YouTube.',

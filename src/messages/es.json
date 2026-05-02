@@ -2,7 +2,7 @@
   "home": {
     "title": "Bienvenido a AffProf",
     "greeting": "¡Bienvenido de nuevo, {name}!",
-    "description": "Gestiona tus enlaces de afiliado, rastrea clics y monitorea la salud de tus links — todo en un solo lugar.",
+    "description": "Gestiona tus enlaces, rastrea clics y monitorea la salud de tus links — todo en un solo lugar.",
     "stats": {
       "totalLinks": "Total de enlaces",
       "activeLinks": "{count, plural, one {# activo} other {# activos}}",
@@ -16,7 +16,7 @@
     },
     "empty": {
       "title": "Comienza con AffProf",
-      "description": "Crea tu primer enlace para rastrear cada clic, monitorear la salud de tus links y no perder ninguna comisión por una URL rota.",
+      "description": "Crea tu primer enlace para rastrear cada clic, monitorear la salud de tus links y mantener el tráfico fluyendo aunque un destino falle.",
       "feat1": "Links cortos rastreables",
       "feat2": "Analíticas de clics",
       "feat3": "Alertas de enlaces rotos",
@@ -133,7 +133,7 @@
         "title": "Dashboard y analíticas",
         "description": "Entiende clicks, dispositivos, países, escaneos QR, redirects a fallback y salud de enlaces.",
         "point1": "La página inicial muestra lo esencial; Dashboard sirve para análisis más profundo.",
-        "point2": "Las métricas de salud ayudan a encontrar enlaces rotos antes de perder comisiones.",
+        "point2": "Las métricas de salud ayudan a encontrar enlaces rotos antes de perder tráfico.",
         "point3": "Los filtros permiten comparar productos, plataformas, etiquetas y rangos de tiempo."
       },
       "billing": {
@@ -180,7 +180,7 @@
   },
   "dashboard": {
     "title": "Panel",
-    "description": "Tu rendimiento de afiliado, estado de enlaces e información de audiencia.",
+    "description": "Tu rendimiento de enlaces, métricas de salud e información de audiencia.",
     "toolbar": {
       "product": "Producto",
       "clearFilter": "Limpiar filtro",
@@ -265,7 +265,7 @@
     },
     "topPlatforms": {
       "title": "Plataformas principales",
-      "description": "Qué plataformas de afiliado generan más clics",
+      "description": "Qué plataformas generan más clics",
       "empty": "Sin datos de plataforma aún."
     },
     "countries": {
@@ -279,7 +279,7 @@
   },
   "products": {
     "title": "Productos",
-    "description": "Agrupa tus enlaces de afiliado por producto para mantenerlos organizados.",
+    "description": "Agrupa tus enlaces por producto para mantenerlos organizados.",
     "searchPlaceholder": "Buscar productos...",
     "newProduct": "Nuevo producto",
     "limitReached": "Límite del plan Free alcanzado (2 productos). Actualiza a Pro para ilimitados.",
@@ -287,11 +287,11 @@
     "form": {
       "createTitle": "Crear producto",
       "editTitle": "Editar producto",
-      "createDescription": "Crea un nuevo producto para agrupar tus enlaces de afiliado.",
+      "createDescription": "Crea un nuevo producto para agrupar tus enlaces.",
       "editDescription": "Actualiza los detalles del producto.",
       "name": "Nombre",
       "namePlaceholder": "ej. \"Micrófono Blue Yeti\"",
-      "nameHelp": "El producto o artículo que promueves con enlaces de afiliado.",
+      "nameHelp": "El producto, oferta o campaña que estás promocionando.",
       "description": "Descripción",
       "descriptionPlaceholder": "Descripción corta opcional...",
       "descriptionHelp": "Una nota breve sobre este producto (solo visible para ti).",
@@ -312,14 +312,14 @@
       "remove": "Eliminar"
     },
     "info": {
-      "title": "Detalles del producto y enlaces de afiliado vinculados.",
+      "title": "Detalles del producto y enlaces vinculados.",
       "general": "General",
       "name": "Nombre",
       "description": "Descripción",
       "image": "Imagen",
       "noImage": "Sin imagen subida",
       "links": "Enlaces",
-      "affiliateLinks": "Enlaces de afiliado",
+      "affiliateLinks": "Enlaces",
       "linkHealth": "Estado de enlaces",
       "activity": "Actividad",
       "created": "Creado",
@@ -348,7 +348,7 @@
   },
   "links": {
     "title": "Enlaces",
-    "description": "Crea y gestiona tus short links de afiliado. Monitorea su estado y rastrea cada clic.",
+    "description": "Crea y gestiona tus short links. Monitorea su estado y rastrea cada clic.",
     "searchPlaceholder": "Buscar por slug, URL o plataforma...",
     "newLink": "Nuevo enlace",
     "limitReached": "Límite del plan Free alcanzado (10 enlaces). Actualiza a Pro para ilimitados.",
@@ -388,14 +388,14 @@
     "form": {
       "createTitle": "Crear enlace",
       "editTitle": "Editar enlace",
-      "createDescription": "Agrega un nuevo enlace de afiliado para rastrear clics y monitorear estado.",
-      "editDescription": "Actualiza los detalles del enlace de afiliado.",
+      "createDescription": "Agrega un nuevo enlace para rastrear clics y monitorear estado.",
+      "editDescription": "Actualiza los detalles del enlace.",
       "product": "Producto",
       "productLocked": "Producto bloqueado para este enlace",
       "selectProduct": "Selecciona un producto...",
       "searchProducts": "Buscar productos...",
       "noProducts": "No se encontraron productos.",
-      "productHelp": "El producto al que pertenece este enlace de afiliado.",
+      "productHelp": "El producto al que pertenece este enlace.",
       "baseUrl": "URL base",
       "baseUrlPlaceholder": "https://www.amazon.com/dp/B08N5...",
       "baseUrlHelp": "Pega la URL de destino. Si ya incluye parámetros UTM, AffProf los extraerá automáticamente.",
@@ -421,7 +421,7 @@
       "fallbackUrlHelp": "Si este enlace está deshabilitado o marcado como roto, los visitantes serán redirigidos aquí.",
       "platform": "Plataforma",
       "platformPlaceholder": "ej. amazon, shareasale, impact, rakuten...",
-      "platformHelp": "La red de afiliados o marketplace para este enlace.",
+      "platformHelp": "La plataforma o marketplace para este enlace.",
       "slug": "Slug",
       "slugPlaceholder": "blue-yeti-amazon",
       "suggest": "Sugerir",
@@ -503,7 +503,7 @@
     },
     "import": {
       "title": "Importar enlaces desde CSV",
-      "description": "Importa enlaces de afiliado en masa. Los productos se emparejan por nombre — los que no existan se crean automáticamente.",
+      "description": "Importa enlaces en masa. Los productos se emparejan por nombre — los que no existan se crean automáticamente.",
       "row": "Fila",
       "product": "Producto",
       "slug": "Slug",
@@ -658,7 +658,7 @@
       "title": "Eliminar cuenta",
       "description": "Elimina permanentemente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer.",
       "warningTitle": "Esto eliminará permanentemente:",
-      "warning1": "Todos tus enlaces de afiliado y analíticas de clics",
+      "warning1": "Todos tus enlaces y analíticas de clics",
       "warning2": "Todos tus productos, marcas y códigos QR",
       "warning3": "Tu dominio personalizado y configuración",
       "warning4": "Tu suscripción activa (si tienes una)",
@@ -776,7 +776,7 @@
       "title": "Notificaciones",
       "description": "Configura alertas por email y resumen semanal.",
       "brokenLinkAlerts": "Alertas de enlaces rotos",
-      "brokenLinkAlertsHelp": "Recibe notificaciones por email cuando uno de tus enlaces de afiliado se detecta como roto.",
+      "brokenLinkAlertsHelp": "Recibe notificaciones por email cuando uno de tus enlaces se detecta como roto.",
       "weeklyDigest": "Resumen semanal",
       "weeklyDigestHelp": "Recibe un email de resumen con clics, enlaces rotos y mejores resultados.",
       "digestDay": "Día del resumen",
@@ -961,9 +961,9 @@
     "success": {
       "metadataTitle": "Bienvenido a Pro — AffProf",
       "title": "Ya estás dentro. Bienvenido a Pro.",
-      "description": "Tu suscripción está activa. Cada enlace de afiliado que agregues ahora está rastreado, monitoreado y protegido.",
+      "description": "Tu suscripción está activa. Cada enlace que agregues ahora está rastreado, monitoreado y protegido.",
       "unlockedTitle": "Lo que acabas de desbloquear",
-      "feature1": "Enlaces de afiliado ilimitados con analíticas de clics",
+      "feature1": "Enlaces ilimitados con analíticas de clics",
       "feature2": "Detección automática de enlaces rotos y alertas",
       "feature3": "Dominio personalizado para que los enlaces sean tuyos",
       "cta": "Empezar a agregar enlaces",
@@ -1089,9 +1089,9 @@
   "auth": {
     "register": {
       "metadataTitle": "Crear cuenta — AffProf",
-      "metadataDescription": "Crea tu cuenta de AffProf para administrar enlaces de afiliado, códigos QR y analítica de clics.",
-      "title": "Empieza a proteger tus ingresos de afiliado",
-      "subtitle": "Empieza a manejar tus enlaces de afiliado, códigos QR y analítica en un solo lugar.",
+      "metadataDescription": "Crea tu cuenta de AffProf para administrar enlaces, códigos QR y analítica de clics.",
+      "title": "Un solo lugar para todos tus enlaces",
+      "subtitle": "Short links, códigos QR, analítica y monitoreo de salud — todo en un solo lugar.",
       "firstName": "Nombre",
       "firstNamePlaceholder": "Carlos",
       "lastName": "Apellido",

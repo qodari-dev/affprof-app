@@ -153,11 +153,11 @@ const content = {
         id: 'sources-platforms',
         icon: MousePointerClick,
         title: '6. Traffic sources and Top platforms',
-        description: 'Understand where visitors come from and which affiliate networks drive clicks.',
+        description: 'Understand where visitors come from and which platforms drive clicks.',
         items: [
           'Traffic sources include Direct, Social, Search, Email, and Other.',
-          'Top platforms shows affiliate networks such as Amazon, ShareASale, Notion, and others.',
-          'Direct means no referrer was passed, which is normal for many affiliate links.',
+          'Top platforms shows platforms such as Amazon, ShareASale, Notion, and others.',
+          'Direct means no referrer was passed, which is common for many link types.',
         ],
       },
       {
@@ -282,13 +282,13 @@ const content = {
     notShownTitle: 'What the Dashboard does not show',
     notShownIntro: 'Set expectations before reading the numbers.',
     notShown: [
-      'Conversions or revenue. Use the affiliate program dashboard for that.',
+      'Conversions or revenue. Use your destination platform dashboard for that.',
       'Visitor identity. Country and device are aggregated only.',
       'A live click counter. Analytics update within seconds, but refresh for the latest numbers.',
       'Attribution to a specific content URL. AffProf shows source category, not the exact referring URL.',
     ],
     attributionTip:
-      'For attribution to specific content, use UTM parameters. The destination URL passes those UTMs through so your affiliate program or analytics tool can read them.',
+      'For attribution to specific content, use UTM parameters. The destination URL passes those UTMs through so your analytics tool or platform can read them.',
     fallbackGuideLabel: 'Fallback URLs & Link Health',
     helpTitle: 'Need help interpreting your data?',
     helpBody:
@@ -381,11 +381,11 @@ const content = {
         id: 'sources-platforms',
         icon: MousePointerClick,
         title: '6. Traffic sources y Top platforms',
-        description: 'Entiende desde dónde vienen los visitantes y qué redes de afiliados generan clicks.',
+        description: 'Entiende desde dónde vienen los visitantes y qué plataformas generan clicks.',
         items: [
           'Traffic sources incluye Direct, Social, Search, Email, y Other.',
           'Top platforms muestra redes como Amazon, ShareASale, Notion, y otras.',
-          'Direct significa que no se recibió referrer, algo normal en muchos links de afiliado.',
+          'Direct significa que no se recibió referrer, algo común en muchos tipos de links.',
         ],
       },
       {
@@ -510,13 +510,13 @@ const content = {
     notShownTitle: 'Lo que el Dashboard no muestra',
     notShownIntro: 'Para alinear expectativas antes de leer los números.',
     notShown: [
-      'Conversiones o ingresos. Usa el dashboard del programa de afiliados para eso.',
+      'Conversiones o ingresos. Usa el dashboard de tu plataforma de destino para eso.',
       'Identidad del visitante. País y device se guardan solo de forma agregada.',
       'Un contador en vivo. Analytics se actualiza en segundos, pero refresca para ver los números más recientes.',
       'Atribución a un URL específico de contenido. AffProf muestra categoría de fuente, no el URL exacto que refirió el clic.',
     ],
     attributionTip:
-      'Para atribución a contenido específico, usa UTM parameters. El URL de destino pasa esos UTMs para que tu programa de afiliados o herramienta de analytics los pueda leer.',
+      'Para atribución a contenido específico, usa UTM parameters. El URL de destino pasa esos UTMs para que tu herramienta de analytics o plataforma los pueda leer.',
     fallbackGuideLabel: 'Fallback URLs & Link Health',
     helpTitle: '¿Necesitas ayuda interpretando tu data?',
     helpBody:

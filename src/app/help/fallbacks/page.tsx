@@ -66,7 +66,7 @@ const content = {
   en: {
     title: 'Fallback URLs & Link Health',
     description:
-      "Affiliate links break silently. The page goes 404, the product gets pulled, the affiliate program rotates URLs, or the destination domain expires. AffProf pairs automatic link health monitoring with fallback URLs so you do not lose clicks while you fix the original destination.",
+      "Links break silently. The page goes 404, the product gets pulled, a program rotates URLs, or the destination domain expires. AffProf pairs automatic link health monitoring with fallback URLs so you do not lose clicks while you fix the original destination.",
     tocTitle: 'In this guide',
     tocLinks: [
       { href: '#problem', label: 'The problem' },
@@ -107,7 +107,7 @@ const content = {
             withoutTitle: 'Without AffProf',
             without: [
               'Your content keeps getting views.',
-              'Visitors click the affiliate link.',
+              'Visitors click the link.',
               'They land on a 404 or failed destination.',
               'They give up and search somewhere else.',
               'You earn $0 and may not know it happened.',
@@ -213,7 +213,7 @@ const content = {
             type: 'bullets',
             items: [
               'Product links: use a similar product, category page, search page, or your own alternatives page.',
-              'Tool or SaaS links: use the tool homepage with your affiliate code or your own review/comparison page.',
+              'Tool or SaaS links: use the tool homepage with your affiliate code, your own review/comparison page, or a direct landing page if you are linking to your own service.',
               'Everything else: use your homepage, deals page, or current recommendations page.',
             ],
           },
@@ -353,7 +353,7 @@ const content = {
   es: {
     title: 'Fallback URLs y Link Health',
     description:
-      'Los links de afiliado se rompen silenciosamente. La página da 404, el producto se descontinúa, el programa rota URLs, o el dominio del destino expira. AffProf combina monitoreo automático de salud de links con fallback URLs para que no pierdas clicks mientras arreglas el destino original.',
+      'Los links se rompen silenciosamente. La página da 404, el producto se descontinúa, un programa rota URLs, o el dominio del destino expira. AffProf combina monitoreo automático de salud de links con fallback URLs para que no pierdas clicks mientras arreglas el destino original.',
     tocTitle: 'En esta guía',
     tocLinks: [
       { href: '#problem', label: 'El problema' },
@@ -394,7 +394,7 @@ const content = {
             withoutTitle: 'Sin AffProf',
             without: [
               'Tu contenido sigue recibiendo views.',
-              'Los visitantes hacen clic en el link de afiliado.',
+              'Los visitantes hacen clic en el link.',
               'Llegan a un 404 o destino fallido.',
               'Se rinden y buscan otra cosa.',
               'Ganas $0 y quizás nunca te enteras.',
@@ -500,7 +500,7 @@ const content = {
             type: 'bullets',
             items: [
               'Links de productos: usa un producto similar, página de categoría, búsqueda, o tu propia página de alternativas.',
-              'Links de tools o SaaS: usa el homepage de la tool con tu código de afiliado o tu review/comparación.',
+              'Links de tools o SaaS: usa el homepage de la tool con tu código de afiliado, tu propia review/comparación, o una landing page directa si estás enlazando a tu propio servicio.',
               'Todo lo demás: usa tu homepage, página de ofertas, o página de recomendaciones actuales.',
             ],
           },
