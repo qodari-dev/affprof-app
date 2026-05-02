@@ -38,7 +38,7 @@ function buildBrokenLinksAlert(input: BrokenLinksAlertInput) {
   const text = [
     `Hi ${input.userName},`,
     '',
-    `We detected ${count} broken affiliate link${count === 1 ? '' : 's'}. This may be costing you affiliate revenue.`,
+    `We detected ${count} broken link${count === 1 ? '' : 's'}. This may be costing you traffic.`,
     '',
     ...input.items.flatMap((item, i) => {
       const state = item.state === 'newly_broken' ? 'Newly broken' : 'Still broken';

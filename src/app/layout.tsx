@@ -15,7 +15,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'AffProf',
-  description: 'Affiliate Link Manager — Never lose commissions to broken links again.',
+  description: 'Link Manager for creators, marketers, and businesses — short links, QR codes, analytics, and health monitoring.',
 };
 
 export default async function RootLayout({

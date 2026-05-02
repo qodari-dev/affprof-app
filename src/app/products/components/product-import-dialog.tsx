@@ -13,7 +13,7 @@ import {
 
 const PRODUCT_TEMPLATE_ROWS = [
   ['Blue Yeti Microphone', 'USB microphone for creators and podcasts'],
-  ['Kindle Paperwhite', 'Popular e-reader with affiliate demand'],
+  ['Kindle Paperwhite', 'Popular e-reader for reading and gifting'],
 ];
 
 export function ProductImportDialog({

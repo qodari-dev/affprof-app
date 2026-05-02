@@ -102,7 +102,7 @@ const content = {
           },
           {
             type: 'note',
-            text: 'If you are not sure what your first product should be, pick the affiliate link you promoted most recently. For deeper organization concepts, see [Products, links & tags](/help/products-links-tags).',
+            text: 'If you are not sure what your first product should be, pick the link you have shared most recently. For deeper organization concepts, see [Products, links & tags](/help/products-links-tags).',
           },
         ],
       },
@@ -117,7 +117,7 @@ const content = {
             items: [
               'Go to **Links -> New link**.',
               'In **Basic info**, choose the product you just created.',
-              'Paste your full affiliate URL as **Base URL**.',
+              'Paste your full destination URL as **Base URL**.',
               'Set **Platform**, such as `amazon`, `shareasale`, or `notion`.',
               'Choose a memorable **Slug**, such as `blue-yeti-amazon`, or click **Suggest**.',
               'Leave **Link availability** on.',
@@ -325,7 +325,7 @@ const content = {
           },
           {
             type: 'note',
-            text: 'Si no estás seguro de tu primer producto, elige el link de afiliado que promocionaste más recientemente. Para conceptos más profundos, ve [Productos, links y tags](/help/products-links-tags).',
+            text: 'Si no estás seguro de tu primer producto, elige el link que has compartido más recientemente. Para conceptos más profundos, ve [Productos, links y tags](/help/products-links-tags).',
           },
         ],
       },
@@ -340,7 +340,7 @@ const content = {
             items: [
               'Ve a **Links -> New link**.',
               'En **Basic info**, elige el producto que acabas de crear.',
-              'Pega tu URL afiliado completo como **Base URL**.',
+              'Pega tu URL de destino completo como **Base URL**.',
               'Configura **Platform**, como `amazon`, `shareasale`, o `notion`.',
               'Elige un **Slug** memorable, como `blue-yeti-amazon`, o haz clic en **Suggest**.',
               'Deja **Link availability** activado.',

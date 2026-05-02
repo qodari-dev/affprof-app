@@ -289,7 +289,7 @@ const accountContent = {
           {
             type: 'bullets',
             items: [
-              'All affiliate links and click analytics.',
+              'All links and click analytics.',
               'All products, brands, tags, and QR codes.',
               'Custom domain configuration and settings.',
               'Your active subscription, if any, is canceled immediately with no further charges.',
@@ -558,7 +558,7 @@ const accountContent = {
           {
             type: 'bullets',
             items: [
-              'Todos tus links de afiliado y analytics de clicks.',
+              'Todos tus links y analytics de clicks.',
               'Todos tus productos, marcas, tags, y códigos QR.',
               'Tu configuración de dominio personalizado y settings.',
               'Tu suscripción activa, si tienes, se cancela inmediatamente sin más cobros.',

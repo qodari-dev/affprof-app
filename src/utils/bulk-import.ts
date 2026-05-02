@@ -100,7 +100,7 @@ export const LINK_IMPORT_COLUMNS = [
   { name: 'product', required: true, description: 'Product name. Missing products will be created automatically.', example: 'Blue Yeti Microphone' },
   { name: 'link', required: true, description: 'Destination/base URL', example: 'https://www.amazon.com/dp/B08N5...' },
   { name: 'slug', required: true, description: 'Short-link slug. Lowercase letters, numbers, and hyphens only. Max 100 chars.', example: 'blue-yeti-amazon' },
-  { name: 'platform', required: true, description: 'Affiliate network or marketplace. Normalized to lowercase automatically.', example: 'amazon' },
+  { name: 'platform', required: true, description: 'Platform or marketplace. Normalized to lowercase automatically.', example: 'amazon' },
   { name: 'fallback_url', required: false, description: 'Optional fallback URL', example: 'https://yourbrand.com/backup' },
   { name: 'utm_source', required: false, description: 'Optional UTM source', example: 'instagram' },
   { name: 'utm_medium', required: false, description: 'Optional UTM medium', example: 'bio' },
