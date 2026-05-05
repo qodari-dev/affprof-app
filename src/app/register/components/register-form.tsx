@@ -7,8 +7,10 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Check, Eye, EyeOff, Loader2, Sparkles } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { LOCALE_COOKIE } from '@/i18n/config';
 import { PRICING } from '@/config/pricing';
 
 import { Button } from '@/components/ui/button';
@@ -41,11 +43,13 @@ type FormValues = z.output<typeof RegisterBodySchema>;
 // Component
 // ============================================================================
 
-export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId }) {
+export function RegisterForm({ initialPlan = 'free', initialLanguage = 'en' }: { initialPlan?: PlanId; initialLanguage?: 'en' | 'es' }) {
   const t = useTranslations('auth.register');
   const tPro = useTranslations('billing.plans.pro');
   const tProAnnual = useTranslations('billing.plans.pro_annual');
 
+  const locale = useLocale();
+  const router = useRouter();
   const [showPassword, setShowPassword] = React.useState(false);
 
   const form = useForm<FormInputValues, undefined, FormValues>({
@@ -56,10 +60,18 @@ export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId })
       lastName: '',
       password: '',
       plan: initialPlan,
+      language: initialLanguage,
     },
   });
 
   const { mutateAsync: register, isPending } = useRegister();
+
+  function toggleLanguage() {
+    const next = locale === 'en' ? 'es' : 'en';
+    document.cookie = `${LOCALE_COOKIE}=${next};path=/;max-age=${365 * 24 * 60 * 60};samesite=lax`;
+    form.setValue('language', next);
+    router.refresh();
+  }
   const selectedPlan = useWatch({ control: form.control, name: 'plan' });
 
   const plans = React.useMemo(
@@ -145,7 +157,19 @@ export function RegisterForm({ initialPlan = 'free' }: { initialPlan?: PlanId })
             priority
           />
         </Link>
-        <ModeToggle />
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={toggleLanguage}
+            className="w-10 text-xs font-semibold"
+            aria-label="Switch language"
+          >
+            {locale === 'en' ? 'ES' : 'EN'}
+          </Button>
+          <ModeToggle />
+        </div>
       </header>
 
       {/* Main */}

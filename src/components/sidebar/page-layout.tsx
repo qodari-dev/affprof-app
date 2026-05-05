@@ -11,6 +11,7 @@ import {
   BreadcrumbSeparator,
 } from '../ui/breadcrumb';
 import { ModeToggle } from '../mode-toggle';
+import { LanguageToggle } from '../language-toggle';
 
 interface BreadcrumbItemData {
   label: string;
@@ -49,7 +50,8 @@ export function PageLayout({ children, breadcrumbs }: Props) {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <div>
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
           <ModeToggle />
         </div>
       </header>

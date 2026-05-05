@@ -1,7 +1,9 @@
 import { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 
 import type { RegisterBody } from '@/schemas/auth';
+import { LOCALE_COOKIE, locales } from '@/i18n/config';
 
 import { RegisterForm } from './components/register-form';
 
@@ -28,5 +30,12 @@ export default async function RegisterPage({
   searchParams: Promise<{ plan?: string | string[] }>;
 }) {
   const { plan } = await searchParams;
-  return <RegisterForm initialPlan={parsePlan(plan)} />;
+
+  const cookieStore = await cookies();
+  const rawLocale = cookieStore.get(LOCALE_COOKIE)?.value;
+  const language = locales.includes(rawLocale as typeof locales[number])
+    ? (rawLocale as typeof locales[number])
+    : 'en';
+
+  return <RegisterForm initialPlan={parsePlan(plan)} initialLanguage={language} />;
 }

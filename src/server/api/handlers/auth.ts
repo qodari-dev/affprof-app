@@ -39,7 +39,7 @@ export const auth = tsr.router(contract.auth, {
   // ==========================================
   register: async ({ body }) => {
     try {
-      const { email, firstName, lastName, password, plan } = body;
+      const { email, firstName, lastName, password, plan, language = 'en' } = body;
 
       // 1) Check if user already exists locally
       const existingUser = await db.query.users.findFirst({
@@ -86,6 +86,7 @@ export const auth = tsr.router(contract.auth, {
           email: email.toLowerCase(),
           name: `${firstName} ${lastName}`,
           slug,
+          language,
         });
 
         await tx.insert(subscriptions).values({
@@ -103,7 +104,7 @@ export const auth = tsr.router(contract.auth, {
       void sendWelcomeEmail({
         userEmail: email.toLowerCase(),
         userName: `${firstName} ${lastName}`,
-        locale: 'en',
+        locale: language,
       });
 
       // 5) Auto-login: issue tokens for the new user and set auth cookies so the
