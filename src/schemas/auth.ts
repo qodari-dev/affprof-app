@@ -10,6 +10,7 @@ export const RegisterBodySchema = z.object({
   lastName: z.string().min(1).max(45),
   password: z.string().min(8).max(128),
   plan: z.enum(['free', 'pro', 'pro_annual']).default('free'),
+  language: z.enum(['en', 'es']).optional().default('en'),
 });
 
 export type RegisterBody = z.infer<typeof RegisterBodySchema>;
