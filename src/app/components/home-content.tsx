@@ -17,7 +17,11 @@ export function HomeContent() {
   const { data: profileData } = useProfile();
   const { data, isLoading } = useDashboardAnalytics({ range: '30d' });
 
-  const userName = profileData?.status === 200 ? profileData.body.name : '';
+  const rawName = profileData?.status === 200 ? profileData.body.name : '';
+  const userName = rawName
+    .split(' ')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
   const analytics = data?.body;
 
   const title = userName ? t('greeting', { name: userName }) : t('title');
