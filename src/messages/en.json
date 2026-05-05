@@ -31,6 +31,7 @@
     }
   },
   "common": {
+    "switchLanguageTo": "Switch language to {language}",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",

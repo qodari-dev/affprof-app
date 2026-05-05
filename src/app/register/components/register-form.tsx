@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Check, Eye, EyeOff, Loader2, Sparkles } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { LOCALE_COOKIE } from '@/i18n/config';
@@ -45,8 +46,11 @@ type FormValues = z.output<typeof RegisterBodySchema>;
 
 export function RegisterForm({ initialPlan = 'free', initialLanguage = 'en' }: { initialPlan?: PlanId; initialLanguage?: 'en' | 'es' }) {
   const t = useTranslations('auth.register');
+  const tCommon = useTranslations('common');
   const tPro = useTranslations('billing.plans.pro');
   const tProAnnual = useTranslations('billing.plans.pro_annual');
+
+  const LANGUAGE_LABELS: Record<string, string> = { en: 'English', es: 'Español' };
 
   const locale = useLocale();
   const router = useRouter();
@@ -158,16 +162,26 @@ export function RegisterForm({ initialPlan = 'free', initialLanguage = 'en' }: {
           />
         </Link>
         <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={toggleLanguage}
-            className="w-10 text-xs font-semibold"
-            aria-label="Switch language"
-          >
-            {locale === 'en' ? 'ES' : 'EN'}
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={toggleLanguage}
+                    className="text-xs font-semibold"
+                  >
+                    {LANGUAGE_LABELS[locale === 'en' ? 'es' : 'en']}
+                  </Button>
+                }
+              />
+              <TooltipContent side="bottom">
+                {tCommon('switchLanguageTo', { language: LANGUAGE_LABELS[locale === 'en' ? 'es' : 'en'] })}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <ModeToggle />
         </div>
       </header>
