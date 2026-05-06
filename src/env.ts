@@ -84,6 +84,7 @@ export const env = createEnv({
     NEXT_PUBLIC_API_URL: z.url(),
     NEXT_PUBLIC_APP_URL: z.url(),
     NEXT_PUBLIC_SHORTLINK_BASE_URL: z.url().optional(),
+    NEXT_PUBLIC_GA_ID: z.string().min(1),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
@@ -145,6 +146,7 @@ export const env = createEnv({
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_SHORTLINK_BASE_URL: process.env.NEXT_PUBLIC_SHORTLINK_BASE_URL,
+    NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });
