@@ -1,7 +1,9 @@
 import { Metadata } from 'next';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 
+import { env } from '@/env';
 import type { RegisterBody } from '@/schemas/auth';
 import { LOCALE_COOKIE, locales } from '@/i18n/config';
 
@@ -37,5 +39,10 @@ export default async function RegisterPage({
     ? (rawLocale as typeof locales[number])
     : 'en';
 
-  return <RegisterForm initialPlan={parsePlan(plan)} initialLanguage={language} />;
+  return (
+    <>
+      <RegisterForm initialPlan={parsePlan(plan)} initialLanguage={language} />
+      <GoogleAnalytics gaId={env.NEXT_PUBLIC_GA_ID} />
+    </>
+  );
 }

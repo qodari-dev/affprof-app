@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { sendGAEvent } from '@next/third-parties/google';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Controller, useForm, useWatch } from 'react-hook-form';
@@ -39,6 +40,30 @@ import logoDark from '../../../../public/logo-fondo-negro.png';
 type PlanId = RegisterBody['plan'];
 type FormInputValues = z.input<typeof RegisterBodySchema>;
 type FormValues = z.output<typeof RegisterBodySchema>;
+
+const SIGNUP_CONVERSION_EVENT = 'manual_event_SIGNUP';
+const SIGNUP_CONVERSION_TIMEOUT_MS = 800;
+
+function sendSignupConversionEvent() {
+  return new Promise<void>((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      resolve();
+    };
+
+    const timeout = window.setTimeout(finish, SIGNUP_CONVERSION_TIMEOUT_MS);
+
+    sendGAEvent('event', SIGNUP_CONVERSION_EVENT, {
+      value: 1,
+      currency: 'CAD',
+      event_callback: finish,
+      event_timeout: SIGNUP_CONVERSION_TIMEOUT_MS,
+    });
+  });
+}
 
 // ============================================================================
 // Component
@@ -113,6 +138,8 @@ export function RegisterForm({ initialPlan = 'free', initialLanguage = 'en' }: {
       const result = await register({ body: values });
 
       if (result.status === 201) {
+        await sendSignupConversionEvent();
+
         if (result.body.checkoutUrl) {
           // Paid plan → hand off to Stripe Checkout
           window.location.assign(result.body.checkoutUrl);
